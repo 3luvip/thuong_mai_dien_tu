@@ -1,4 +1,4 @@
-# Project_TMDT_12
+# thuong_mai_dien_tu
 
 Dự án gồm 2 phần:
 
