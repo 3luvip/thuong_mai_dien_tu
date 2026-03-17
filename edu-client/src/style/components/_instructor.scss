@@ -1,0 +1,614 @@
+// _instructor.scss
+// Dark industrial theme — professional tool aesthetic
+
+$slate_950: #020617;
+$slate_200: #e5e7eb;
+$background_footer: #2a2b3f;
+
+$bg-dark: #020617;
+$border-dark: #4b5563;
+$text-light: #e5e7eb;
+$text-muted: #9ca3af;
+$text-subtle: #cbd5f5;
+$primary: #6366f1;
+$primary-dark: #4f46e5;
+$purple: #6d28d2;
+$purple-light: rgba(108, 40, 210, 0.12);
+$indigo-light: rgba(129, 140, 248, 0.26);
+
+$font-base: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+$border-radius-sm: 6px;
+$border-radius-md: 8px;
+$border-radius-pill: 25px;
+$border-radius-lg: 12px;
+
+$shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.9);
+$shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.8);
+
+
+
+// ─── Page layout ─────────────────────────────────────────────────────────────
+.id-page {
+  min-height: 100vh;
+  background: $bg-dark;
+  color: $text-light;
+  font-family: $font-base;
+}
+
+.id-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem 2rem 1rem;
+  border-bottom: 1px solid $border-dark;
+
+  &__title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: $text-light;
+    margin-bottom: 2px;
+  }
+
+  &__sub {
+    font-size: 0.88rem;
+    color: $text-muted;
+  }
+}
+
+.id-content {
+  padding: 1.5rem 2rem;
+  max-width: 1100px;
+}
+
+// ─── Topbar (curriculum view) ─────────────────────────────────────────────────
+.id-topbar {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1rem 2rem;
+  background: #131525;
+  border-bottom: 1px solid $border-dark;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  &__info { flex: 1; }
+
+  &__label {
+    font-size: 0.75rem;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: $text-light;
+    margin: 2px 0 0;
+  }
+}
+
+.id-back-btn {
+  background: transparent;
+  border: 1px solid $border-dark;
+  color: $text-muted;
+  padding: 0.5rem 1rem;
+  border-radius: $border-radius-md;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.15s;
+
+  &:hover {
+    color: $text-light;
+    border-color: $primary;
+  }
+}
+
+// ─── Stats row ────────────────────────────────────────────────────────────────
+.id-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  padding: 1.5rem 2rem 0;
+  max-width: 1100px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.id-stat-card {
+  background: #131525;
+  border: 1px solid $border-dark;
+  border-radius: $border-radius-lg;
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: border-color 0.2s;
+
+  &:hover { border-color: $primary; }
+
+  &__icon {
+    font-size: 1.5rem;
+    color: $primary;
+    flex-shrink: 0;
+  }
+
+  &__num {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: $text-light;
+    line-height: 1;
+  }
+
+  &__label {
+    display: block;
+    font-size: 0.78rem;
+    color: $text-muted;
+    margin-top: 3px;
+  }
+}
+
+// ─── Course grid ──────────────────────────────────────────────────────────────
+.id-courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.2rem;
+}
+
+.id-course-card {
+  background: #131525;
+  border: 1px solid $border-dark;
+  border-radius: $border-radius-lg;
+  overflow: hidden;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: $primary;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.12);
+  }
+
+  &__img-wrap {
+    position: relative;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+  }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &__level {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  &__body {
+    padding: 1rem;
+  }
+
+  &__title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: $text-light;
+    margin-bottom: 3px;
+    line-height: 1.3;
+
+    // 2 dòng max
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__sub {
+    font-size: 0.8rem;
+    color: $text-muted;
+    margin-bottom: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__stats {
+    display: flex;
+    gap: 12px;
+    font-size: 0.78rem;
+    color: $text-muted;
+    margin-bottom: 0.8rem;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+  }
+
+  &__price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: $text-light;
+    margin-bottom: 1rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+  }
+}
+
+// ─── Curriculum Editor ────────────────────────────────────────────────────────
+.id-curriculum {
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: $text-light;
+    }
+  }
+}
+
+.id-section {
+  border: 1px solid $border-dark;
+  border-radius: $border-radius-md;
+  margin-bottom: 0.8rem;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.8rem 1rem;
+    background: #1a1c2e;
+    cursor: default;
+  }
+
+  &__toggle {
+    background: none;
+    border: none;
+    color: $text-muted;
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    font-size: 1rem;
+    transition: color 0.15s;
+
+    &:hover { color: $text-light; }
+  }
+
+  &__title {
+    flex: 1;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: $text-light;
+  }
+
+  &__meta {
+    font-size: 0.78rem;
+    color: $text-muted;
+    white-space: nowrap;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  &__header:hover &__actions { opacity: 1; }
+
+  &__body {
+    background: #0f1120;
+    border-top: 1px solid $border-dark;
+  }
+}
+
+// ─── Lecture row ──────────────────────────────────────────────────────────────
+.id-lecture {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.65rem 1.2rem;
+  border-bottom: 1px solid rgba(75, 85, 99, 0.2);
+  transition: background 0.15s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: rgba(99, 102, 241, 0.04); }
+
+  &__icon {
+    color: $text-muted;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    flex: 1;
+    font-size: 0.86rem;
+    color: $text-light;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  &:hover &__actions { opacity: 1; }
+}
+
+// ─── Buttons ──────────────────────────────────────────────────────────────────
+.id-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: $border-radius-md;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.6rem 1.1rem;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  &--primary {
+    background: $primary;
+    color: #fff;
+    &:hover { background: $primary-dark; }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: $text-muted;
+    border: 1px solid $border-dark;
+    &:hover { color: $text-light; border-color: $text-muted; }
+  }
+
+  &--sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}
+
+.id-icon-btn {
+  background: none;
+  border: none;
+  color: $text-muted;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: all 0.15s;
+  font-size: 0.85rem;
+
+  &:hover { color: $text-light; background: rgba(255,255,255,0.06); }
+
+  &--danger:hover { color: #ef4444; background: rgba(239,68,68,0.08); }
+}
+
+// ─── Inline form ──────────────────────────────────────────────────────────────
+.id-inline-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.6rem 1rem;
+  background: rgba(99, 102, 241, 0.05);
+  border-top: 1px solid $border-dark;
+
+  &--grow { flex: 1; }
+}
+
+.id-add-lecture-form {
+  margin: 4px 1.2rem 8px;
+  padding: 0.5rem 0.8rem;
+  border-radius: $border-radius-md;
+}
+
+.id-input {
+  background: #0f1120;
+  border: 1px solid $border-dark;
+  border-radius: $border-radius-sm;
+  color: $text-light;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.88rem;
+  flex: 1;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus { border-color: $primary; }
+
+  &--sm { font-size: 0.82rem; padding: 0.35rem 0.65rem; }
+}
+
+.id-add-lecture-btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: $primary;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-align: left;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(99, 102, 241, 0.06); }
+}
+
+// ─── Preview badge ────────────────────────────────────────────────────────────
+.id-preview-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid $border-dark;
+  color: $text-muted;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+
+  &:hover { border-color: $primary; color: $primary; }
+
+  &--on {
+    border-color: #10b981;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+  }
+}
+
+// ─── Video upload ─────────────────────────────────────────────────────────────
+.id-video-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+
+  &--has {
+    gap: 6px;
+  }
+}
+
+.id-video-icon {
+  font-size: 0.9rem;
+  &--ok { color: #10b981; }
+}
+
+.id-video-label {
+  font-size: 0.76rem;
+  color: $text-muted;
+}
+
+.id-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $primary;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px dashed rgba(99, 102, 241, 0.4);
+  border-radius: $border-radius-sm;
+  padding: 3px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.18);
+    border-color: $primary;
+  }
+}
+
+.id-upload-progress {
+  width: 120px;
+  height: 22px;
+  background: $border-dark;
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: $primary;
+    transition: width 0.2s ease;
+  }
+
+  span {
+    position: relative;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #fff;
+    z-index: 1;
+  }
+}
+
+.id-error-inline {
+  font-size: 0.72rem;
+  color: #ef4444;
+}
+
+// ─── Empty states ─────────────────────────────────────────────────────────────
+.id-empty {
+  padding: 2rem;
+  text-align: center;
+  color: $text-muted;
+  font-size: 0.9rem;
+
+  svg {
+    font-size: 2rem;
+    margin-bottom: 0.6rem;
+    color: $border-dark;
+    display: block;
+    margin-inline: auto;
+  }
+
+  &--page {
+    padding: 4rem 2rem;
+
+    h3 {
+      font-size: 1.2rem;
+      color: $text-light;
+      margin: 0.5rem 0 0.3rem;
+    }
+
+    p { margin-bottom: 1.2rem; }
+  }
+}
+
+// ─── Loading ──────────────────────────────────────────────────────────────────
+.id-loading-spin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: $text-muted;
+  font-size: 0.9rem;
+  padding: 2rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spin { animation: spin 1s linear infinite; }

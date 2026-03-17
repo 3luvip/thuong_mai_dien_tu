@@ -1,0 +1,396 @@
+// _learn.scss
+$slate_950: #020617;
+$slate_200: #e5e7eb;
+$background_footer: #2a2b3f;
+
+$bg-dark: #020617;
+$border-dark: #4b5563;
+$text-light: #e5e7eb;
+$text-muted: #9ca3af;
+$text-subtle: #cbd5f5;
+$primary: #6366f1;
+$primary-dark: #4f46e5;
+$purple: #6d28d2;
+$purple-light: rgba(108, 40, 210, 0.12);
+$indigo-light: rgba(129, 140, 248, 0.26);
+
+$font-base: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+$border-radius-sm: 6px;
+$border-radius-md: 8px;
+$border-radius-pill: 25px;
+$border-radius-lg: 12px;
+
+$shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.9);
+$shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.8);
+
+
+
+.lp-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: $bg-dark;
+  color: $text-light;
+  font-family: $font-base;
+}
+
+// ─── Topbar ───────────────────────────────────────────────────────────────────
+.lp-topbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.2rem;
+  height: 56px;
+  background: #0a0c1a;
+  border-bottom: 1px solid $border-dark;
+  flex-shrink: 0;
+  z-index: 10;
+
+  &__info { flex: 1; min-width: 0; }
+  &__title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  &__progress-track {
+    width: 120px;
+    height: 6px;
+    background: $border-dark;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  &__progress-fill {
+    height: 100%;
+    background: $primary;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  &__pct {
+    font-size: 0.78rem;
+    color: $text-muted;
+    white-space: nowrap;
+  }
+
+  &__badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(16,185,129,0.15);
+    color: #10b981;
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 3px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+}
+
+.lp-back {
+  background: none;
+  border: 1px solid $border-dark;
+  color: $text-muted;
+  width: 34px; height: 34px;
+  border-radius: $border-radius-md;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1rem;
+  transition: all 0.15s;
+
+  &:hover { color: $text-light; border-color: $primary; }
+}
+
+// ─── Body ─────────────────────────────────────────────────────────────────────
+.lp-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+// ─── Main (video + info) ──────────────────────────────────────────────────────
+.lp-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.lp-video-wrap {
+  position: relative;
+  background: #000;
+  aspect-ratio: 16/9;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.lp-video {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.lp-video-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: $text-muted;
+  background: #060810;
+
+  svg { font-size: 3.5rem; color: $border-dark; }
+  p   { font-size: 0.9rem; }
+}
+
+.lp-lecture-info {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid $border-dark;
+
+  &__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+.lp-complete-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid $border-dark;
+  color: $text-muted;
+  padding: 0.45rem 1rem;
+  border-radius: $border-radius-md;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.15s;
+
+  &:hover { border-color: $primary; color: $primary; }
+
+  &--done {
+    background: rgba(16,185,129,0.1);
+    border-color: #10b981;
+    color: #10b981;
+
+    &:hover { background: rgba(16,185,129,0.2); }
+  }
+}
+
+.lp-duration {
+  font-size: 0.8rem;
+  color: $text-muted;
+}
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+.lp-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  border-left: 1px solid $border-dark;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #0a0c1a;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid $border-dark;
+    font-size: 0.88rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  &__count {
+    font-size: 0.78rem;
+    color: $text-muted;
+    font-weight: 400;
+  }
+
+  &__list {
+    overflow-y: auto;
+    flex: 1;
+
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: $border-dark; border-radius: 2px; }
+  }
+}
+
+// ─── Section ──────────────────────────────────────────────────────────────────
+.lp-section {
+  border-bottom: 1px solid rgba(75,85,99,0.2);
+
+  &__header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.75rem 1rem;
+    background: #10122a;
+    border: none;
+    color: $text-light;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+
+    &:hover { background: #161830; }
+  }
+
+  &__title {
+    flex: 1;
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__prog {
+    font-size: 0.72rem;
+    color: $text-muted;
+    flex-shrink: 0;
+  }
+}
+
+// ─── Lecture row ──────────────────────────────────────────────────────────────
+.lp-lecture {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 0.6rem 1rem 0.6rem 1.4rem;
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  border-left: 3px solid transparent;
+
+  &:hover { background: rgba(99,102,241,0.05); color: $text-light; }
+
+  &--active {
+    background: rgba(99,102,241,0.08);
+    border-left-color: $primary;
+    color: $text-light;
+  }
+
+  &--done { color: lighten(#10b981, 10%); }
+
+  &__check {
+    width: 20px; height: 20px;
+    border: 1px solid $border-dark;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+
+    &--done {
+      background: #10b981;
+      border-color: #10b981;
+      color: #fff;
+    }
+  }
+
+  &__info { flex: 1; min-width: 0; }
+
+  &__name {
+    display: block;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__dur {
+    display: block;
+    font-size: 0.7rem;
+    color: $text-muted;
+    margin-top: 2px;
+  }
+
+  &__no-video {
+    font-size: 0.75rem;
+    color: $border-dark;
+    flex-shrink: 0;
+  }
+}
+
+// ─── States ───────────────────────────────────────────────────────────────────
+.lp-loading, .lp-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+  text-align: center;
+  color: $text-muted;
+
+  svg { font-size: 2.5rem; color: $border-dark; }
+  h3  { color: $text-light; font-size: 1rem; }
+
+  button {
+    background: $primary;
+    color: #fff;
+    border: none;
+    border-radius: $border-radius-md;
+    padding: 0.6rem 1.4rem;
+    font-weight: 600;
+    cursor: pointer;
+    &:hover { background: $primary-dark; }
+  }
+}
+
+.lp-spinner {
+  width: 36px; height: 36px;
+  border: 3px solid $border-dark;
+  border-top-color: $primary;
+  border-radius: 50%;
+  animation: lp-spin 0.8s linear infinite;
+}
+
+@keyframes lp-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 768px) {
+  .lp-body { flex-direction: column; }
+  .lp-sidebar {
+    width: 100%;
+    height: 45vh;
+    border-left: none;
+    border-top: 1px solid $border-dark;
+  }
+}

@@ -1,0 +1,336 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+$bg:        #030712;
+$bg-card:   #0c1424;
+$border:    #1a2540;
+$text:      #f1f5f9;
+$dim:       #94a3b8;
+$muted:     #475569;
+$indigo:    #6366f1;
+$violet:    #8b5cf6;
+$cyan:      #06b6d4;
+$t:         0.2s ease;
+
+.biz-section {
+  background: #020b1f;  // identical to .rev-section → no seam
+  padding: 48px 0 0;
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+// Remove .biz-container — grid goes edge-to-edge
+.biz-container { width: 100%; }
+
+.biz-grid {
+  display: grid;
+  grid-template-columns: 42% 58%;
+  align-items: center;
+  min-height: 540px;
+  position: relative;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+}
+
+// Left content — aligns with rev-container (92% width, max 1280px, centered)
+.biz-content {
+  padding: 80px 48px 80px 0;
+  // Push left edge to match rev-container's left margin
+  padding-left: max(4vw, calc((100vw - 1280px) / 2 + 32px));
+  position: relative;
+  z-index: 2;
+
+  @media (max-width: 768px) { padding: 48px 6% 0; }
+}
+
+.biz-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: $violet;
+  background: rgba($violet, 0.1);
+  border: 1px solid rgba($violet, 0.28);
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 22px;
+
+  svg { font-size: 0.8rem; }
+}
+
+.biz-heading {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(2rem, 3.8vw, 3rem);
+  font-weight: 800;
+  color: $text;
+  line-height: 1.15;
+  margin: 0 0 18px;
+  letter-spacing: -0.03em;
+
+  &__accent {
+    background: linear-gradient(135deg, $indigo, $cyan);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.biz-desc {
+  font-size: 0.9rem;
+  color: $dim;
+  line-height: 1.75;
+  margin: 0 0 32px;
+  max-width: 340px;
+  font-weight: 300;
+}
+
+.biz-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 26px;
+  background: rgba($indigo, 0.18);
+  border: 1.5px solid rgba($indigo, 0.5);
+  border-radius: 10px;
+  color: #c7d2fe;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all $t;
+  backdrop-filter: blur(4px);
+
+  &:hover {
+    background: $indigo;
+    border-color: $indigo;
+    color: #fff;
+    gap: 13px;
+    box-shadow: 0 6px 28px rgba($indigo, 0.4);
+  }
+
+  &__icon {
+    font-size: 0.75rem;
+    transition: transform $t;
+  }
+}
+
+// Right image — fills the column completely, no border/radius
+.biz-img-wrap {
+  position: relative;
+  height: 100%;
+  min-height: 540px;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    min-height: 280px;
+    order: -1;
+  }
+}
+
+.biz-img-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 50%, rgba($cyan, 0.07) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.biz-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 5s ease;
+
+  .biz-img-wrap:hover & { transform: scale(1.04); }
+}
+
+
+
+.rev-section {
+  background: #020b1f;
+  padding: 64px 0 72px;
+  font-family: 'DM Sans', sans-serif;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba($violet, 0.07) 0%, transparent 65%);
+    top: -160px;
+    right: -100px;
+    pointer-events: none;
+  }
+}
+
+.rev-container {
+  position: relative;
+  z-index: 1;
+  width: 92%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.rev-header {
+  margin-bottom: 44px;
+}
+
+.rev-heading {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  color: $text;
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+
+  &__accent {
+    background: linear-gradient(135deg, $indigo, $violet);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+// 4-column grid
+.rev-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+
+  @media (max-width: 1100px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 560px)  { grid-template-columns: 1fr; }
+}
+
+// Card
+.rev-card {
+  background: #0c1424;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 22px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: transform $t, box-shadow $t, border-color $t;
+  animation: revFadeUp 0.45s ease both;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+    border-color: rgba($indigo, 0.35);
+  }
+}
+
+// Large decorative quote mark
+.rev-card__quote-mark {
+  font-family: Georgia, serif;
+  font-size: 3.5rem;
+  line-height: 0.6;
+  color: rgba($violet, 0.35);
+  font-weight: 900;
+  user-select: none;
+  margin-bottom: -4px;
+}
+
+// Quote text
+.rev-card__text {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  line-height: 1.65;
+  margin: 0;
+  flex: 1;
+
+  strong { color: $text; font-weight: 600; }
+
+  a {
+    color: $violet;
+    text-decoration: none;
+    font-weight: 500;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+// Company logo area
+.rev-card__company {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid $border;
+}
+
+.rev-card__company-logo {
+  height: 22px;
+  object-fit: contain;
+  filter: brightness(0) invert(0.7);
+}
+
+.rev-card__company-stat {
+  font-size: 0.72rem;
+  color: $muted;
+}
+
+// Person row
+.rev-card__person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 4px;
+  border-top: 1px solid $border;
+}
+
+.rev-card__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1.5px solid rgba($indigo, 0.3);
+}
+
+.rev-card__name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $text;
+  margin: 0 0 2px;
+}
+
+.rev-card__role {
+  font-size: 0.72rem;
+  color: $muted;
+  margin: 0;
+  line-height: 1.4;
+}
+
+// CTA link
+.rev-card__link {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $indigo;
+  text-decoration: none;
+  display: inline-block;
+  transition: color $t, gap $t;
+
+  &:hover {
+    color: lighten($indigo, 15%);
+    text-decoration: underline;
+  }
+}
+
+@keyframes revFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

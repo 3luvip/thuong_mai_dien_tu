@@ -1,0 +1,34 @@
+.Brand-container {
+  width: 90%;
+  height: auto;
+  margin: 50px auto;
+  padding: 20px;
+
+  h2 {
+    font-family: sans-serif;
+    text-align: center;
+    color: #fff;
+    font-size: 18px;
+  }
+  .Brand-Partner {
+    margin-top: 50px;
+    .Brand-list {
+      list-style-type: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 20px;
+
+      li {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        img {
+          max-width: 100px;
+          height: auto;
+          object-fit: contain;
+        }
+      }
+    }
+  }
+}

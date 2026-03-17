@@ -1,0 +1,358 @@
+// _subscription.scss — Premium dark pricing section
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+// ── Tokens ────────────────────────────────────────────────────────────────────
+$bg:            #030712;
+$bg-card:       #0c1424;
+$bg-card-feat:  #0f1a32;
+$border:        #1a2540;
+$border-feat:   #2d3f6e;
+$text:          #f1f5f9;
+$dim:           #94a3b8;
+$muted:         #475569;
+$indigo:        #6366f1;
+$violet:        #8b5cf6;
+$cyan:          #06b6d4;
+$gold:          #f59e0b;
+$t:             0.2s ease;
+
+// ── Section wrapper ───────────────────────────────────────────────────────────
+.sub-section {
+  background: $bg;
+  padding: 80px 0 96px;
+  font-family: 'DM Sans', sans-serif;
+  position: relative;
+  overflow: hidden;
+
+  // Ambient glow blobs
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  &::before {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba($violet, 0.12) 0%, transparent 70%);
+    top: -80px;
+    left: -100px;
+  }
+
+  &::after {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba($cyan, 0.08) 0%, transparent 70%);
+    bottom: -60px;
+    right: -80px;
+  }
+}
+
+.sub-container {
+  position: relative;
+  z-index: 1;
+  width: 92%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.sub-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.sub-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $violet;
+  background: rgba($violet, 0.1);
+  border: 1px solid rgba($violet, 0.25);
+  padding: 5px 14px;
+  border-radius: 999px;
+  margin-bottom: 20px;
+
+  svg { font-size: 0.85rem; }
+}
+
+.sub-heading {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+  font-weight: 700;
+  color: $text;
+  line-height: 1.25;
+  margin: 0 0 16px;
+  letter-spacing: -0.02em;
+
+  &__highlight {
+    background: linear-gradient(135deg, $indigo 0%, $violet 50%, $cyan 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.sub-subtext {
+  font-size: 1rem;
+  color: $dim;
+  max-width: 540px;
+  margin: 0 auto;
+  line-height: 1.65;
+  font-weight: 300;
+}
+
+// ── Grid ──────────────────────────────────────────────────────────────────────
+.sub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: start;
+
+  @media (max-width: 960px)  { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+  @media (max-width: 640px)  { max-width: 100%; }
+}
+
+// ── Card base ─────────────────────────────────────────────────────────────────
+.sub-card {
+  position: relative;
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 0 0 28px;
+  transition: transform $t, box-shadow $t, border-color $t;
+  animation: cardFadeUp 0.5s ease both;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
+  }
+
+  // ── Personal — indigo accent ──
+  &--personal {
+    .sub-card__bar   { background: linear-gradient(90deg, $indigo, darken($indigo, 10%)); }
+    .sub-card__icon  { color: $indigo; background: rgba($indigo, 0.12); border-color: rgba($indigo, 0.25); }
+    .sub-card__check { color: $indigo; }
+    .sub-card__cta   {
+      background: transparent;
+      border-color: $indigo;
+      color: $indigo;
+      &:hover { background: $indigo; color: #fff; }
+    }
+  }
+
+  // ── Team — featured, violet accent ──
+  &--team {
+    background: $bg-card-feat;
+    border-color: $border-feat;
+    box-shadow: 0 0 0 1px rgba($violet, 0.2), 0 24px 56px rgba(0,0,0,0.5);
+
+    .sub-card__bar   { background: linear-gradient(90deg, $violet, $indigo); }
+    .sub-card__icon  { color: $violet; background: rgba($violet, 0.12); border-color: rgba($violet, 0.25); }
+    .sub-card__check { color: $violet; }
+    .sub-card__cta   {
+      background: linear-gradient(135deg, $violet, $indigo);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 4px 20px rgba($violet, 0.35);
+      &:hover { box-shadow: 0 6px 28px rgba($violet, 0.5); filter: brightness(1.08); }
+    }
+  }
+
+  // ── Enterprise — cyan accent ──
+  &--enterprise {
+    .sub-card__bar   { background: linear-gradient(90deg, $cyan, darken($cyan, 15%)); }
+    .sub-card__icon  { color: $cyan; background: rgba($cyan, 0.1); border-color: rgba($cyan, 0.2); }
+    .sub-card__check { color: $cyan; }
+    .sub-card__cta   {
+      background: transparent;
+      border-color: $cyan;
+      color: $cyan;
+      &:hover { background: $cyan; color: #000; }
+    }
+  }
+}
+
+// ── Most Popular badge ────────────────────────────────────────────────────────
+.sub-card__most-popular {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, $violet, $indigo);
+  padding: 4px 11px;
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgba($violet, 0.4);
+  z-index: 2;
+
+  svg { font-size: 0.75rem; }
+}
+
+// ── Top accent bar ────────────────────────────────────────────────────────────
+.sub-card__bar {
+  height: 4px;
+  width: 100%;
+}
+
+// ── Plan head ─────────────────────────────────────────────────────────────────
+.sub-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 22px 24px 16px;
+}
+
+.sub-card__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.sub-card__plan {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 3px;
+  letter-spacing: -0.01em;
+}
+
+.sub-card__audience {
+  font-size: 0.8rem;
+  color: $dim;
+  margin: 0 0 4px;
+  font-weight: 400;
+}
+
+.sub-card__size {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: $muted;
+  margin: 0;
+
+  svg { font-size: 0.8rem; }
+}
+
+// ── Divider ───────────────────────────────────────────────────────────────────
+.sub-card__divider {
+  height: 1px;
+  background: $border;
+  margin: 0 24px 20px;
+}
+
+// ── Pricing block ─────────────────────────────────────────────────────────────
+.sub-card__pricing {
+  padding: 0 24px;
+}
+
+.sub-card__price {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 2px;
+  letter-spacing: -0.02em;
+}
+
+.sub-card__period {
+  font-size: 0.78rem;
+  color: $dim;
+  margin: 0 0 6px;
+}
+
+.sub-card__billing {
+  font-size: 0.72rem;
+  color: $muted;
+  margin: 0 0 18px;
+}
+
+// ── CTA button ────────────────────────────────────────────────────────────────
+.sub-card__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 0;
+  border-radius: 9px;
+  border: 1.5px solid transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all $t;
+  letter-spacing: 0.01em;
+}
+
+.sub-card__cta-icon {
+  font-size: 0.75rem;
+  transition: transform $t;
+
+  .sub-card__cta:hover & {
+    transform: translateX(3px);
+  }
+}
+
+// ── Features list ─────────────────────────────────────────────────────────────
+.sub-card__features {
+  list-style: none;
+  padding: 0 24px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sub-card__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: $dim;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.sub-card__check {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+// ── Entrance animation ────────────────────────────────────────────────────────
+@keyframes cardFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

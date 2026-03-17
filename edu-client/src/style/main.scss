@@ -1,0 +1,21 @@
+@use "abstracts/variables" as *;
+
+html, body {
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+body::-webkit-scrollbar,
+html::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: $slate_950;
+    color: $slate_200;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+}

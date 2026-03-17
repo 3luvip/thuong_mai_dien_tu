@@ -1,0 +1,236 @@
+@use "sass:color";
+$bg: #1c1d1f;
+$bg-shine: #2d2f31;
+$text: #9e9ea7;
+$text-light: #d1d7dc;
+$accent: #a435f0;
+$white: #ffffff;
+$border: #3e4143;
+$t: 0.18s ease;
+$color-gray-600: oklch(25.65% 0.0265 278.04deg);
+.footer {
+  background: $bg;
+  color: $text;
+  font-size: 0.84rem;
+  line-height: 1.5;
+
+  // ── Divider ───────────────────────────────────────────────
+  &__divider {
+    border: none;
+    border-top: 1px solid $border;
+    margin: 0;
+  }
+
+  // ── Skills wrapper ────────────────────────────────────────
+  &__skills {
+    padding: 2rem 2.4rem 0.5rem;
+  }
+
+  &__skills-title {
+    color: $white;
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 1.5rem;
+  }
+
+  // ── 4-column grid (reused for both rows) ──────────────────
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.2rem 2rem;
+    padding-bottom: 1.8rem;
+
+    // Hàng 2 có border-top để tách biệt như Udemy
+    &--row2 {
+      border-top: 1px solid $border;
+      padding-top: 1.6rem;
+    }
+
+    @media (max-width: 960px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    @media (max-width: 520px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // ── Column ────────────────────────────────────────────────
+  &__col {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__col-heading {
+    color: $text-light;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin: 0 0 0.7rem;
+  }
+
+  &__col-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.38rem;
+  }
+
+  // ── Link ──────────────────────────────────────────────────
+  &__link {
+    color: $text;
+    text-decoration: none;
+    transition: color $t;
+
+    &:hover {
+      color: $white;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    &--see-all {
+      color: $accent;
+      font-weight: 600;
+      font-size: 0.8rem;
+      margin-top: 0.15rem;
+
+      &:hover {
+        color: color.adjust($accent, $lightness: 12%);
+      }
+    }
+  }
+
+  // ── Bottom static section ─────────────────────────────────
+  &__bottom {
+    padding: 1.8rem 2.4rem 0;
+    background-color: $color-gray-600;
+  }
+
+  // ── Copyright bar ─────────────────────────────────────────
+  &__bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.9rem 1.6rem;
+    padding: 1.1rem 0 1.5rem;
+  }
+
+  &__logo {
+    color: $white;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    padding: 0.25rem 0.6rem;
+    border: 2px solid $white;
+    border-radius: 4px;
+    transition:
+      background $t,
+      color $t;
+
+    &:hover {
+      background: $white;
+      color: $bg;
+    }
+  }
+
+  &__copy {
+    color: $text;
+    font-size: 0.8rem;
+    margin: 0;
+  }
+
+  &__socials {
+    display: flex;
+    gap: 0.7rem;
+    align-items: center;
+    margin-left: auto;
+  }
+
+  &__social-icon {
+    color: $text;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    transition:
+      color $t,
+      transform $t;
+
+    &:hover {
+      color: $white;
+      transform: translateY(-2px);
+    }
+  }
+
+  &__cookie,
+  &__lang {
+    color: $text;
+    font-size: 0.8rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    cursor: pointer;
+    transition: color $t;
+
+    &:hover {
+      color: $white;
+    }
+  }
+
+  &__error {
+    color: $text;
+    font-size: 0.82rem;
+    grid-column: 1 / -1;
+    padding-bottom: 1rem;
+  }
+
+  // ── Skeleton shimmer ──────────────────────────────────────
+  @keyframes shimmer {
+    0% {
+      background-position: -500px 0;
+    }
+    100% {
+      background-position: 500px 0;
+    }
+  }
+
+  &__skeleton {
+    background: linear-gradient(
+      90deg,
+      $bg-shine 25%,
+      #3a3c3e 50%,
+      $bg-shine 75%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 3px;
+
+    &--heading {
+      height: 11px;
+      width: 60%;
+      margin-bottom: 0.7rem;
+    }
+
+    &--link {
+      height: 9px;
+      margin-bottom: 0.38rem;
+      width: 85%;
+
+      &:nth-child(2) {
+        width: 70%;
+      }
+      &:nth-child(3) {
+        width: 90%;
+      }
+      &:nth-child(4) {
+        width: 75%;
+      }
+      &:nth-child(5) {
+        width: 55%;
+      }
+    }
+  }
+}

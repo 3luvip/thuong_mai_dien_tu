@@ -1,0 +1,32 @@
+### OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+### Node (client)
+edu-client/node_modules/
+edu-client/dist/
+edu-client/.vite/
+edu-client/.env
+edu-client/.env.*
+
+### Rust (server)
+edu-sever/target/
+
+### Python venv (present in repo)
+edu-sever/.venv/
+
+### Env secrets
+.env
+.env.*
+edu-sever/.env
+
+### Uploads / generated assets
+edu-sever/uploads/
+
+### Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
