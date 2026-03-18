@@ -3,6 +3,7 @@ import { CiSearch } from "react-icons/ci";
 import { IoCartOutline } from "react-icons/io5";
 import { BsGlobe } from "react-icons/bs";
 import { useEffect, useRef, useState } from "react";
+import axiosInstance from "../../lib/axios";
 import "../../style/components/_navbar.scss"
 const categories: Record<string, string[]> = {
   Development: [
@@ -42,6 +43,10 @@ const categories: Record<string, string[]> = {
 function Navbar() {
   const [isExploreOpen, setIsExploreOpen] = useState(false);
   const exploreRef = useRef<HTMLDivElement | null>(null);
+  const [search, setSearch] = useState("");
+  const [suggestions, setSuggestions] = useState<{ title: string; category: string; url: string }[]>([]);
+  const [showSuggest, setShowSuggest] = useState(false);
+  const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const onDocMouseDown = (e: MouseEvent) => {
@@ -63,6 +68,19 @@ function Navbar() {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, []);
+
+  useEffect(() => {
+    if (suggestTimer.current) clearTimeout(suggestTimer.current);
+    if (!search.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    suggestTimer.current = setTimeout(() => {
+      axiosInstance.post("/ai/suggest", { query: search, limit: 8 })
+        .then((res) => setSuggestions(res.data.suggestions ?? []))
+        .catch(() => setSuggestions([]));
+    }, 350);
+  }, [search]);
 
   return (
     <header>
@@ -101,7 +119,7 @@ function Navbar() {
                   {Object.entries(categories).map(([mainCategory, subs]) => (
                     <div className="explore-col" key={mainCategory}>
                       <NavLink
-                        to="/explore"
+                        to={`/courses?category=${encodeURIComponent(mainCategory)}`}
                         className="explore-title"
                         onClick={() => setIsExploreOpen(false)}
                       >
@@ -111,7 +129,7 @@ function Navbar() {
                         {subs.map((sub) => (
                           <NavLink
                             key={sub}
-                            to={`/explore?topic=${encodeURIComponent(sub)}`}
+                            to={`/courses?category=${encodeURIComponent(sub)}`}
                             className="explore-item"
                             onClick={() => setIsExploreOpen(false)}
                           >
@@ -131,11 +149,49 @@ function Navbar() {
                 placeholder="Search for Anything"
                 className="user-input"
                 aria-label="Search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onFocus={() => setShowSuggest(true)}
+                onBlur={() => setTimeout(() => setShowSuggest(false), 120)}
               />
 
               <span className="search-icon" aria-hidden="true">
                 <CiSearch />
               </span>
+
+              {showSuggest && suggestions.length > 0 && (
+                <div style={{
+                  position: "absolute",
+                  top: "calc(100% + 6px)",
+                  left: 0,
+                  right: 0,
+                  background: "#fff",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 10,
+                  boxShadow: "0 8px 24px rgba(2, 6, 23, 0.12)",
+                  zIndex: 50,
+                  maxHeight: 320,
+                  overflow: "auto",
+                }}>
+                  {suggestions.map((s, idx) => (
+                    <NavLink
+                      key={`${s.url}-${idx}`}
+                      to={s.url}
+                      onMouseDown={(e) => e.preventDefault()}
+                      style={{
+                        display: "block",
+                        padding: "10px 12px",
+                        color: "#0f172a",
+                        textDecoration: "none",
+                        borderBottom: idx === suggestions.length - 1 ? "none" : "1px solid #f1f5f9",
+                      }}
+                    >
+                      <div style={{ fontWeight: 600 }}>{s.title}</div>
+                      <div style={{ fontSize: 12, color: "#64748b" }}>{s.category}</div>
+                    </NavLink>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

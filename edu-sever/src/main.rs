@@ -21,7 +21,7 @@ use state::AppState;
 use crate::routes::{
     auth_routes, course_routes, instructor_routes,
     learning_routes, notification_routes, order_routes,
-    review_routes, user_routes, wishlist_routes,
+    review_routes, user_routes, wishlist_routes, ai_routes,
 };
 use crate::services::cron::start_discount_cron;
 
@@ -61,6 +61,7 @@ async fn main() {
         .nest("/courseCreation", course_routes())
         .nest("/notifications",  notification_routes())
         .nest("/wishlist",       wishlist_routes())
+        .nest("/ai",             ai_routes())
         .nest("/orders",         order_routes())
         .nest("/reviews",        review_routes())
         .nest("/instructor",     instructor_routes())

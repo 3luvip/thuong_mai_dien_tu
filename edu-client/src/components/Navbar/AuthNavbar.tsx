@@ -4,6 +4,7 @@ import { IoCartOutline, IoHeart, IoHeartOutline } from "react-icons/io5";
 import { CiBellOn } from "react-icons/ci";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import axiosInstance from "../../lib/axios";
 import DropDown from "./DropDown";
 import NotificationBell from "../Notification/NotificationBell";
 import { useWishlist } from "../../context/wishlistContext";
@@ -44,8 +45,12 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
   const [userName,       setUserName]       = useState<string | null>(null);
   const [userEmail,      setUserEmail]      = useState<string | null>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [suggestions, setSuggestions] = useState<{ title: string; category: string; url: string }[]>([]);
+  const [showSuggest, setShowSuggest] = useState(false);
   const userMenuRef        = useRef<HTMLDivElement | null>(null);
   const userMenuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { setrole(localStorage.getItem("role")); }, []);
 
@@ -64,6 +69,19 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
 
     if (userId) fetchCart(userId);
   }, []);
+
+  useEffect(() => {
+    if (suggestTimer.current) clearTimeout(suggestTimer.current);
+    if (!search.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    suggestTimer.current = setTimeout(() => {
+      axiosInstance.post("/ai/suggest", { query: search, limit: 8 })
+        .then((res) => setSuggestions(res.data.suggestions ?? []))
+        .catch(() => setSuggestions([]));
+    }, 350);
+  }, [search]);
 
   useEffect(() => {
     const onDocMouseDown = (e: MouseEvent) => {
@@ -105,11 +123,11 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
                 <div className="explore-menu-inner-auth">
                   {Object.entries(categories).map(([mainCategory, subs]) => (
                     <div className="explore-col-auth" key={mainCategory}>
-                      <NavLink to="/explore" className="explore-title-auth"
+                      <NavLink to={`/courses?category=${encodeURIComponent(mainCategory)}`} className="explore-title-auth"
                         onClick={() => setIsExploreOpen(false)}>{mainCategory}</NavLink>
                       <div className="explore-items-auth">
                         {subs.map((sub) => (
-                          <NavLink key={sub} to={`/explore?topic=${encodeURIComponent(sub)}`}
+                          <NavLink key={sub} to={`/courses?category=${encodeURIComponent(sub)}`}
                             className="explore-item-auth" onClick={() => setIsExploreOpen(false)}>{sub}</NavLink>
                         ))}
                       </div>
@@ -124,7 +142,48 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
           <div className="nav-center">
             <div className="nav-search">
               <span className="nav-search-icon" aria-hidden="true"><CiSearch /></span>
-              <input type="text" placeholder="Search for Anything" />
+              <input
+                type="text"
+                placeholder="Search for Anything"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onFocus={() => setShowSuggest(true)}
+                onBlur={() => setTimeout(() => setShowSuggest(false), 120)}
+              />
+
+              {showSuggest && suggestions.length > 0 && (
+                <div style={{
+                  position: "absolute",
+                  top: "calc(100% + 6px)",
+                  left: 0,
+                  right: 0,
+                  background: "#fff",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 10,
+                  boxShadow: "0 8px 24px rgba(2, 6, 23, 0.12)",
+                  zIndex: 50,
+                  maxHeight: 320,
+                  overflow: "auto",
+                }}>
+                  {suggestions.map((s, idx) => (
+                    <NavLink
+                      key={`${s.url}-${idx}`}
+                      to={s.url}
+                      onMouseDown={(e) => e.preventDefault()}
+                      style={{
+                        display: "block",
+                        padding: "10px 12px",
+                        color: "#0f172a",
+                        textDecoration: "none",
+                        borderBottom: idx === suggestions.length - 1 ? "none" : "1px solid #f1f5f9",
+                      }}
+                    >
+                      <div style={{ fontWeight: 600 }}>{s.title}</div>
+                      <div style={{ fontSize: 12, color: "#64748b" }}>{s.category}</div>
+                    </NavLink>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

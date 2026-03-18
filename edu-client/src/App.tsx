@@ -17,6 +17,7 @@ import CreateCoursePage from "./components/Instructor/CreateCoursePage";
 import CourseDetailPage from "./components/Course/CourseDetailPage";
 import MyCoursesPage from "./components/Learning/MyCoursesPage";
 import LearnPage from "./components/Learning/LearnPage";
+import CoursesPage from "./components/pages/CoursesPage";
 import { CartProvider } from "./context/CartProvider";
 import { ToastProvider } from "./context/toast";
 import { WishlistProvider } from "./context/wishlistContext";
@@ -55,6 +56,8 @@ function App() {
               <Route path="signup" element={<Register />} />
               <Route path="login"  element={<Login setIsAuthenticated={setIsAuthenticated} />} />
               <Route path="course-detail/:courseCardId" element={<CourseDetailPage />} />
+              <Route path="courses" element={<CoursesPage />} />
+              <Route path="explore" element={<CoursesPage />} />
 
               {/* ── User ── */}
               <Route path="authenticated-home" element={

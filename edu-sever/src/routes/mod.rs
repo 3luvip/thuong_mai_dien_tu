@@ -5,6 +5,7 @@ mod notification;
 mod wishlist;
 mod instructor;
 mod learning;
+mod ai;
 
 pub use auth::auth_routes;
 pub use course::course_routes;
@@ -15,3 +16,4 @@ pub use course::order_routes;
 pub use course::review_routes;
 pub use instructor::instructor_routes;
 pub use learning::learning_routes;
+pub use ai::ai_routes;
