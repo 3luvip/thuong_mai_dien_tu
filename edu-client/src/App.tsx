@@ -21,6 +21,7 @@ import CoursesPage from "./components/pages/CoursesPage";
 import { CartProvider } from "./context/CartProvider";
 import { ToastProvider } from "./context/toast";
 import { WishlistProvider } from "./context/wishlistContext";
+import EditProfilePage from "./components/pages/EditProfilePage";
 
 function App() {
   const [IsAuthenticated, setIsAuthenticated] = useState(false);

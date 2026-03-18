@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import "../../style/components/_navbar.scss";
-const categories = {
+
+const categories: Record<string, string[]> = {
   Development: [
     "Web Development",
     "App Development",
@@ -70,13 +71,12 @@ function DropDown() {
             {openMenu === mainCategory && (
               <div
                 className="mega-menu"
-                style={{ display: "block" }}
                 onMouseEnter={() => handleMouseEnter(mainCategory)}
                 onMouseLeave={handleMouseLeave}
               >
                 <div className="mega-menu-content">
-                  {subCategories.map((sub, index) => (
-                    <div className="mega-item" key={index}>
+                  {subCategories.map((sub) => (
+                    <div className="mega-item" key={sub}>
                       <NavLink
                         to={`/courses?category=${encodeURIComponent(sub)}`}
                         className="mega-item-link"

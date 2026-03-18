@@ -1,10 +1,11 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink } from "react-router-dom";
 import { CiSearch } from "react-icons/ci";
 import { IoCartOutline } from "react-icons/io5";
 import { BsGlobe } from "react-icons/bs";
 import { useEffect, useRef, useState } from "react";
 import axiosInstance from "../../lib/axios";
-import "../../style/components/_navbar.scss"
+import "../../style/components/_navbar.scss";
+
 const categories: Record<string, string[]> = {
   Development: [
     "Web Development",
@@ -43,24 +44,29 @@ const categories: Record<string, string[]> = {
 function Navbar() {
   const [isExploreOpen, setIsExploreOpen] = useState(false);
   const exploreRef = useRef<HTMLDivElement | null>(null);
+  const exploreTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [search, setSearch] = useState("");
-  const [suggestions, setSuggestions] = useState<{ title: string; category: string; url: string }[]>([]);
+  const [suggestions, setSuggestions] = useState<
+    { title: string; category: string; url: string }[]
+  >([]);
   const [showSuggest, setShowSuggest] = useState(false);
   const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  /* ── close on outside click / Escape ── */
   useEffect(() => {
     const onDocMouseDown = (e: MouseEvent) => {
-      const el = exploreRef.current;
-      if (!el) return;
-      if (e.target instanceof Node && !el.contains(e.target)) {
+      if (
+        e.target instanceof Node &&
+        exploreRef.current &&
+        !exploreRef.current.contains(e.target)
+      ) {
         setIsExploreOpen(false);
       }
     };
-
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsExploreOpen(false);
     };
-
     document.addEventListener("mousedown", onDocMouseDown);
     document.addEventListener("keydown", onKeyDown);
     return () => {
@@ -69,6 +75,7 @@ function Navbar() {
     };
   }, []);
 
+  /* ── search suggestions with debounce ── */
   useEffect(() => {
     if (suggestTimer.current) clearTimeout(suggestTimer.current);
     if (!search.trim()) {
@@ -76,16 +83,27 @@ function Navbar() {
       return;
     }
     suggestTimer.current = setTimeout(() => {
-      axiosInstance.post("/ai/suggest", { query: search, limit: 8 })
+      axiosInstance
+        .post("/ai/suggest", { query: search, limit: 8 })
         .then((res) => setSuggestions(res.data.suggestions ?? []))
         .catch(() => setSuggestions([]));
     }, 350);
   }, [search]);
 
+  /* ── explore hover handlers with delay ── */
+  const handleExploreEnter = () => {
+    if (exploreTimeoutRef.current) clearTimeout(exploreTimeoutRef.current);
+    setIsExploreOpen(true);
+  };
+  const handleExploreLeave = () => {
+    exploreTimeoutRef.current = setTimeout(() => setIsExploreOpen(false), 150);
+  };
+
   return (
     <header>
       <nav aria-label="Primary navigation">
         <div className="navbar">
+          {/* ── Logo ── */}
           <NavLink to="/" end className="logo" aria-label="Home">
             <img
               src="https://khoacntp.ctuet.edu.vn/wp-content/uploads/2020/03/%C4%90%E1%BA%A1i_h%E1%BB%8Dc_K%E1%BB%B9_thu%E1%BA%ADt_-_C%C3%B4ng_ngh%E1%BB%87_C%E1%BA%A7n_Th%C6%A1.png"
@@ -145,7 +163,7 @@ function Navbar() {
             </div>
 
             {/* ── Search ── */}
-            <div className="search">
+            <div className="search" style={{ position: "relative" }}>
               <input
                 type="text"
                 placeholder="Search for Anything"
@@ -161,19 +179,21 @@ function Navbar() {
               </span>
 
               {showSuggest && suggestions.length > 0 && (
-                <div style={{
-                  position: "absolute",
-                  top: "calc(100% + 6px)",
-                  left: 0,
-                  right: 0,
-                  background: "#fff",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: 10,
-                  boxShadow: "0 8px 24px rgba(2, 6, 23, 0.12)",
-                  zIndex: 50,
-                  maxHeight: 320,
-                  overflow: "auto",
-                }}>
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 6px)",
+                    left: 0,
+                    right: 0,
+                    background: "#fff",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 10,
+                    boxShadow: "0 8px 24px rgba(2, 6, 23, 0.12)",
+                    zIndex: 5000,
+                    maxHeight: 320,
+                    overflow: "auto",
+                  }}
+                >
                   {suggestions.map((s, idx) => (
                     <NavLink
                       key={`${s.url}-${idx}`}
@@ -184,11 +204,16 @@ function Navbar() {
                         padding: "10px 12px",
                         color: "#0f172a",
                         textDecoration: "none",
-                        borderBottom: idx === suggestions.length - 1 ? "none" : "1px solid #f1f5f9",
+                        borderBottom:
+                          idx === suggestions.length - 1
+                            ? "none"
+                            : "1px solid #f1f5f9",
                       }}
                     >
                       <div style={{ fontWeight: 600 }}>{s.title}</div>
-                      <div style={{ fontSize: 12, color: "#64748b" }}>{s.category}</div>
+                      <div style={{ fontSize: 12, color: "#64748b" }}>
+                        {s.category}
+                      </div>
                     </NavLink>
                   ))}
                 </div>
@@ -196,9 +221,12 @@ function Navbar() {
             </div>
           </div>
 
+          {/* ── Nav items ── */}
           <div className="nav-list-item">
             <ul>
-              <li><NavLink to="/tech-on-udemy">Tech on Edu</NavLink></li>
+              <li>
+                <NavLink to="/tech-on-udemy">Tech on Edu</NavLink>
+              </li>
               <li className="Cart">
                 <NavLink to="/cart">
                   <span aria-hidden="true">
@@ -209,6 +237,7 @@ function Navbar() {
             </ul>
           </div>
 
+          {/* ── Auth buttons ── */}
           <div className="nav-btn">
             <button className="login-btn" type="button">
               <NavLink to="/login">Login</NavLink>
