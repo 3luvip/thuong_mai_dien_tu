@@ -7,6 +7,7 @@ use axum::extract::{Path, State};
 use bigdecimal::ToPrimitive;
 use serde_json::{Value, json};
 use std::collections::HashMap;
+use crate::models::detail::CourseInfoRow;
 
 pub async fn get_course_detail_full(
     State(state): State<AppState>,
@@ -35,21 +36,6 @@ pub async fn get_course_detail_full(
     };
 
     // ── 2. Course + instructor ─────────────────────────────────────────────
-    #[derive(sqlx::FromRow)]
-    struct CourseInfoRow {
-        id:                String,
-        title:             String,
-        course_sub:        String,
-        description:       String,
-        language:          String,
-        level:             String,
-        category:          String,
-        filename:          String,
-        instructor_id:     String,
-        instructor_name:   Option<String>,
-        instructor_email:  Option<String>,
-        instructor_status: Option<String>,
-    }
 
     let course: CourseInfoRow = sqlx::query_as(
         r#"SELECT c.id, c.title, c.course_sub, c.description, c.language,
@@ -165,10 +151,6 @@ pub async fn get_course_detail_full(
         .collect();
 
     // ── 6. Reviews: stats + distribution + recent ─────────────────────────
-    //
-    // Trước: AVG/COUNT + 5 queries SELECT COUNT per star = 6 queries
-    // Sau:   1 query GROUP BY lấy distribution, tính avg/total in-memory
-
     #[derive(sqlx::FromRow)]
     struct RatingDistRow {
         star:  i8,

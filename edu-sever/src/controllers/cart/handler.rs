@@ -7,23 +7,12 @@ use serde_json::{Value, json};
 use uuid::Uuid;
 
 
-use crate::{errors::AppError, models::cart::AddToCartRequest, state::AppState};
+use crate::{errors::AppError, models::cart::{AddToCartRequest, CartItemSimple, RemoveFromCartRequest}, state::AppState};
 use crate::{
     errors::{AppResult},
 };
 
-#[derive(sqlx::FromRow)]
-struct CartCourseRow {
-    id: String,
-    title: String,
-    author: String,
-    price: bigdecimal::BigDecimal,
-    current_price: Option<bigdecimal::BigDecimal>,
-    level: String,
-    category: String,
-    path: String,
-}
-
+use crate::models::cart::CartCourseRow;
 
 pub async fn get_cart(
     State(state): State<AppState>,
@@ -34,7 +23,6 @@ pub async fn get_cart(
         .fetch_optional(&state.db)
         .await?;
 
-    // Chưa có cart → trả về rỗng, không báo lỗi
     let cart_id = match cart {
         Some((id,)) => id,
         None => return Ok(Json(json!({ "message": "Cart fetched successfully", "courses": [] }))),
@@ -75,7 +63,7 @@ pub async fn get_cart(
                 "title":        r.title,
                 "author":       r.author,
                 "price":        price,
-                "currentPrice": current_price,   // ✅ THÊM MỚI
+                "currentPrice": current_price,   
                 "level":        r.level,
                 "category":     r.category,
                 "path":         r.path
@@ -89,15 +77,6 @@ pub async fn get_cart(
 }
 
 
-
-#[derive(sqlx::FromRow)]
-struct CartItemSimple {
-    id: String,
-    title: String,
-    level: String,
-    category: String,
-    path: String,
-}
 
 pub async fn add_to_cart(
     State(state): State<AppState>,
@@ -163,11 +142,6 @@ pub async fn add_to_cart(
 }
 
 
-#[derive(serde::Deserialize)]
-pub struct RemoveFromCartRequest {
-    pub user_id: String,
-    pub course_id: String,
-}
 
 pub async fn remove_from_cart(
     State(state): State<AppState>,

@@ -4,26 +4,15 @@ use axum::{
     http::StatusCode,
 };
 use bigdecimal::ToPrimitive;
-use serde::Deserialize;
 use serde_json::{Value, json};
 use uuid::Uuid;
 
 use crate::{
-    errors::{AppError, AppResult},
-    state::AppState,
+    errors::{AppError, AppResult}, models::order::{CheckoutRequest, ItemRow, OrderRow}, state::AppState
 };
 
 // ─── POST /orders/checkout ────────────────────────────────────────────────────
 
-#[derive(Deserialize)]
-pub struct CheckoutRequest {
-    pub user_id:         String,
-    pub course_ids:      Vec<String>, // course_cards.id hoặc courses.id
-    pub coupon_id:       Option<String>,
-    pub total_amount:    f64,
-    pub discount_amount: f64,
-    pub final_amount:    f64,
-}
 
 pub async fn checkout(
     State(state): State<AppState>,
@@ -186,13 +175,6 @@ pub async fn get_my_orders(
     Path(user_id): Path<String>,
 ) -> AppResult<Json<Value>> {
     // ── Bước 1: lấy tất cả orders của user ───────────────────────────────
-    #[derive(sqlx::FromRow)]
-    struct OrderRow {
-        id:           String,
-        status:       String,
-        final_amount: bigdecimal::BigDecimal,
-        created_at:   chrono::NaiveDateTime,
-    }
 
     let orders: Vec<OrderRow> = sqlx::query_as(
         "SELECT id, status, final_amount, created_at
@@ -220,15 +202,7 @@ pub async fn get_my_orders(
            JOIN courses c ON c.id = oi.course_id
            WHERE oi.order_id IN ({placeholders})"#
     );
-
-    #[derive(sqlx::FromRow)]
-    struct ItemRow {
-        order_id:  String,
-        course_id: String,
-        title:     String,
-        filename:  String,
-        price:     bigdecimal::BigDecimal,
-    }
+    
 
     let mut items_q = sqlx::query_as::<_, ItemRow>(&items_sql);
     for id in &order_ids {

@@ -39,7 +39,7 @@ async fn main() {
         .connect(&database_url)
         .await
         .expect("Failed to connect to MySQL");
-    tracing::info!("✅ Connected to MySQL");
+    tracing::info!("Connected to MySQL");
 
     let upload_dir = std::env::var("UPLOAD_DIR").unwrap_or_else(|_| "uploads".to_string());
     tokio::fs::create_dir_all(&upload_dir).await.ok();
@@ -75,6 +75,6 @@ async fn main() {
         .parse().expect("PORT must be a number");
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
-    tracing::info!("✅ Server running on http://{}", addr);
+    tracing::info!("Server running on http://{}", addr);
     axum::serve(tokio::net::TcpListener::bind(addr).await.unwrap(), app).await.unwrap();
 }

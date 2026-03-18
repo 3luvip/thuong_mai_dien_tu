@@ -1,15 +1,10 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// src/controllers/instructor.rs
-// Instructor Dashboard — quản lý course, section, lecture, video upload
-// ─────────────────────────────────────────────────────────────────────────────
-
+use crate::models::instructior::{CourseRow, CreateLectureRequest,  CreateSectionRequest, LectureRow, SectionRow, UpdateLectureRequest, UpdateSectionRequest};
 use axum::{
     Json,
     extract::{Multipart, Path, State},
     http::StatusCode,
 };
 use bigdecimal::ToPrimitive;
-use serde::Deserialize;
 use serde_json::{Value, json};
 use uuid::Uuid;
 
@@ -18,22 +13,6 @@ use crate::{
     state::AppState,
 };
 
-// ─── Helper: lưu file upload ─────────────────────────────────────────────────
-
-async fn save_file(
-    upload_dir: &str,
-    data: Vec<u8>,
-    original_name: &str,
-) -> Result<(String, String), AppError> {
-    let now = chrono::Utc::now()
-        .format("%Y-%m-%dT%H-%M-%S%.3fZ")
-        .to_string();
-    let filename = format!("{}-{}", now, original_name);
-    let filepath = format!("{}/{}", upload_dir, filename);
-    tokio::fs::write(&filepath, &data).await?;
-    Ok((filepath, filename))
-}
-
 // ─── GET /instructor/my-courses/:instructor_id ────────────────────────────────
 // Trả về tất cả khóa học của giảng viên kèm thống kê cơ bản
 
@@ -41,19 +20,6 @@ pub async fn get_my_courses(
     State(state): State<AppState>,
     Path(instructor_id): Path<String>,
 ) -> AppResult<Json<Value>> {
-    #[derive(sqlx::FromRow)]
-    struct CourseRow {
-        id: String,
-        title: String,
-        course_sub: String,
-        description: String,
-        price: bigdecimal::BigDecimal,
-        language: String,
-        level: String,
-        category: String,
-        path: String,
-        created_at: chrono::NaiveDateTime,
-    }
 
     let courses: Vec<CourseRow> = sqlx::query_as(
         r#"SELECT id, title, course_sub, description, price,
@@ -131,23 +97,7 @@ pub async fn get_course_curriculum(
     State(state): State<AppState>,
     Path(course_id): Path<String>,
 ) -> AppResult<Json<Value>> {
-    #[derive(sqlx::FromRow)]
-    struct SectionRow {
-        id: String,
-        title: String,
-        position: i32,
-    }
 
-    #[derive(sqlx::FromRow)]
-    struct LectureRow {
-        id: String,
-        section_id: String,
-        title: String,
-        position: i32,
-        duration_sec: i32,
-        is_preview: i8,
-        video_url: Option<String>,
-    }
 
     let sections: Vec<SectionRow> = sqlx::query_as(
         "SELECT id, title, position FROM sections WHERE course_id = ? ORDER BY position ASC",
@@ -209,11 +159,7 @@ pub async fn get_course_curriculum(
 
 // ─── POST /instructor/sections ────────────────────────────────────────────────
 
-#[derive(Deserialize)]
-pub struct CreateSectionRequest {
-    pub course_id: String,
-    pub title: String,
-}
+
 
 pub async fn create_section(
     State(state): State<AppState>,
@@ -253,10 +199,7 @@ pub async fn create_section(
 
 // ─── PUT /instructor/sections/:section_id ────────────────────────────────────
 
-#[derive(Deserialize)]
-pub struct UpdateSectionRequest {
-    pub title: String,
-}
+
 
 pub async fn update_section(
     State(state): State<AppState>,
@@ -288,12 +231,7 @@ pub async fn delete_section(
 
 // ─── POST /instructor/lectures ────────────────────────────────────────────────
 
-#[derive(Deserialize)]
-pub struct CreateLectureRequest {
-    pub section_id: String,
-    pub title: String,
-    pub is_preview: Option<bool>,
-}
+
 
 pub async fn create_lecture(
     State(state): State<AppState>,
@@ -339,12 +277,6 @@ pub async fn create_lecture(
 
 // ─── PUT /instructor/lectures/:lecture_id ────────────────────────────────────
 
-#[derive(Deserialize)]
-pub struct UpdateLectureRequest {
-    pub title: Option<String>,
-    pub is_preview: Option<bool>,
-    pub duration_sec: Option<i32>,
-}
 
 pub async fn update_lecture(
     State(state): State<AppState>,

@@ -10,7 +10,7 @@ pub async fn save_upload(
         .to_string();
     let filename = format!("{}-{}", now, original_name);
     let filepath = format!("{}/{}", upload_dir, filename);
-    tokio::fs::write(&filepath, &data).await;
+    let _ = tokio::fs::write(&filepath, &data).await;
     Ok((filepath, filename))
 }
 

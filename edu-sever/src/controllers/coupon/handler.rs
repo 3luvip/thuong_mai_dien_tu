@@ -1,40 +1,21 @@
-use axum::{
-    Json, body,
-    extract::{Multipart, Path, State},
-    http::StatusCode,
-};
+use axum::{Json, extract::State};
 use bigdecimal::ToPrimitive;
-use serde::{Deserialize, de::value};
+use chrono::Utc;
 use serde_json::{Value, json};
-use uuid::Uuid;
 
-use crate::{models::{coupon::ConfirmCouponRequest, course_instruction::CreateCourseInstructionRequest}, utils};
-use crate::models::{cart::AddToCartRequest, coupon::ApplyCouponRequest};
+use crate::errors::{AppError, AppResult};
+use crate::models::coupon::ApplyCouponRequest;
 use crate::state::AppState;
-use crate::{
-    errors::{AppError, AppResult},
-    state,
-};
+use crate::{models::coupon::ConfirmCouponRequest, utils};
+use crate::models::coupon::CouponRow;
+
+
 
 pub async fn apply_coupon(
     State(state): State<AppState>,
     Json(body): Json<ApplyCouponRequest>,
 ) -> AppResult<Json<Value>> {
-    use chrono::Utc;
 
-    // ── 1. Tìm coupon ──────────────────────────────────────────────────────────
-    #[derive(sqlx::FromRow)]
-    struct CouponRow {
-        id: String,
-        r#type: String,
-        value: bigdecimal::BigDecimal,
-        total_limit: i32,
-        per_user_limit: i32,
-        min_order: bigdecimal::BigDecimal,
-        max_discount: Option<bigdecimal::BigDecimal>,
-        is_active: i8,
-        expires_at: Option<chrono::NaiveDateTime>,
-    }
 
     let coupon: Option<CouponRow> = sqlx::query_as(
         r#"SELECT id, type, value, total_limit, per_user_limit,
@@ -136,7 +117,6 @@ pub async fn apply_coupon(
         }
     })))
 }
-
 
 pub async fn confirm_coupon(
     State(state): State<AppState>,

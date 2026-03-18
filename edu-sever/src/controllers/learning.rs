@@ -6,14 +6,12 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
-use serde::Deserialize;
 use serde_json::{Value, json};
 use std::collections::HashMap;
 use uuid::Uuid;
 
 use crate::{
-    errors::{AppError, AppResult},
-    state::AppState,
+    errors::{AppError, AppResult}, models::learning::{CourseRow, LastLectureRow, LectureRow, ProgressRow, PurchasedRow, SectionRow, UpdateProgressRequest}, state::AppState
 };
 
 // ─── GET /learning/my-courses/:user_id ───────────────────────────────────────
@@ -22,12 +20,7 @@ pub async fn get_my_courses(
     State(state): State<AppState>,
     Path(user_id): Path<String>,
 ) -> AppResult<Json<Value>> {
-    // 1. Lấy danh sách course đã mua (status = 'paid')
-    #[derive(sqlx::FromRow)]
-    struct PurchasedRow {
-        course_id: String,
-        purchased_at: chrono::NaiveDateTime,
-    }
+    // 1. Lấy danh sách course đã mua (status = 'paid'
 
     let purchased: Vec<PurchasedRow> = sqlx::query_as(
         r#"SELECT 
@@ -51,16 +44,7 @@ pub async fn get_my_courses(
 
     for p in &purchased {
         // 2. Lấy thông tin course + instructor
-        #[derive(sqlx::FromRow)]
-        struct CourseRow {
-            id: String,
-            title: String,
-            course_sub: String,
-            path: String,
-            level: String,
-            category: String,
-            instructor_name: Option<String>,
-        }
+        
 
         let course: Option<CourseRow> = sqlx::query_as(
             r#"SELECT c.id, c.title, c.course_sub, c.path, c.level, c.category,
@@ -104,12 +88,6 @@ pub async fn get_my_courses(
         };
 
         // 5. Bài học đang học dở gần nhất
-        #[derive(sqlx::FromRow)]
-        struct LastLectureRow {
-            id: String,
-            title: String,
-        }
-
         let last_lecture: Option<LastLectureRow> = sqlx::query_as(
             r#"SELECT lp.lecture_id AS id, l.title
                FROM lecture_progress lp
@@ -184,12 +162,6 @@ pub async fn get_learn_data(
     .ok_or_else(|| AppError::NotFound("Course not found".into()))?;
 
     // 3. Sections
-    #[derive(sqlx::FromRow)]
-    struct SectionRow {
-        id: String,
-        title: String,
-        position: i32,
-    }
 
     let sections: Vec<SectionRow> = sqlx::query_as(
         "SELECT id, title, position FROM sections WHERE course_id = ? ORDER BY position ASC",
@@ -199,16 +171,6 @@ pub async fn get_learn_data(
     .await?;
 
     // 4. Lectures (kèm video_url)
-    #[derive(sqlx::FromRow)]
-    struct LectureRow {
-        id: String,
-        section_id: String,
-        title: String,
-        position: i32,
-        duration_sec: i32,
-        is_preview: i8,
-        video_url: Option<String>,
-    }
 
     let lectures: Vec<LectureRow> = sqlx::query_as(
         r#"SELECT l.id, l.section_id, l.title, l.position,
@@ -223,13 +185,6 @@ pub async fn get_learn_data(
     .await?;
 
     // 5. Tiến độ user
-    #[derive(sqlx::FromRow)]
-    struct ProgressRow {
-        lecture_id: String,
-        is_completed: i8,
-        watched_sec: i32,
-    }
-
     let progress_rows: Vec<ProgressRow> = sqlx::query_as(
         "SELECT lecture_id, is_completed, watched_sec FROM lecture_progress WHERE user_id = ? AND course_id = ?",
     )
@@ -290,14 +245,6 @@ pub async fn get_learn_data(
 
 // ─── POST /learning/progress ─────────────────────────────────────────────────
 
-#[derive(Deserialize)]
-pub struct UpdateProgressRequest {
-    pub user_id: String,
-    pub lecture_id: String,
-    pub course_id: String,
-    pub watched_sec: i32,
-    pub is_completed: bool,
-}
 
 pub async fn update_progress(
     State(state): State<AppState>,

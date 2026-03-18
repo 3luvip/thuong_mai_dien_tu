@@ -22,13 +22,12 @@ pub async fn start_discount_cron(pool: MySqlPool) {
 
     scheduler.add(job).await.expect("Failed to add cron job");
     scheduler.start().await.expect("Failed to start scheduler");
-    info!("✅ Discount cron started (every 2 minutes)");
+    info!("Discount cron started (every 2 minutes)");
 }
 
 #[derive(sqlx::FromRow)]
 struct CardPriceRow {
     id: String,
-    price: bigdecimal::BigDecimal,
     current_price: bigdecimal::BigDecimal,
 }
 
