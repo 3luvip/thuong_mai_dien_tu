@@ -11,18 +11,37 @@ use crate::models::detail::CourseInfoRow;
 
 pub async fn get_course_detail_full(
     State(state): State<AppState>,
-    Path(course_id): Path<String>,
+    Path(input_id): Path<String>,
 ) -> AppResult<Json<Value>> {
 
-    // ── 1. Giá: course_cards trước, fallback courses.price ────────────────
-    let card: Option<(bigdecimal::BigDecimal, bigdecimal::BigDecimal)> = sqlx::query_as(
-        "SELECT price, current_price FROM course_cards WHERE course_detail_id = ? LIMIT 1",
-    )
-    .bind(&course_id)
-    .fetch_optional(&state.db)
-    .await?;
+    // Resolve: input can be course_id or course_card_id
+    let mut course_id = input_id.clone();
+    let mut card_id: Option<String> = None;
 
-    let (card_price, card_current_price) = match card {
+    if let Some((course_detail_id,)) = sqlx::query_as::<_, (String,)>(
+        "SELECT course_detail_id FROM course_cards WHERE id = ?",
+    )
+    .bind(&input_id)
+    .fetch_optional(&state.db)
+    .await?
+    {
+        course_id = course_detail_id;
+        card_id = Some(input_id);
+    }
+    // ── 1. Giá: course_cards trước, fallback courses.price ────────────────
+    let card: Option<(bigdecimal::BigDecimal, bigdecimal::BigDecimal)> = if let Some(ref cid) = card_id {
+        sqlx::query_as("SELECT price, current_price FROM course_cards WHERE id = ? LIMIT 1")
+            .bind(cid)
+            .fetch_optional(&state.db)
+            .await?
+    } else {
+        sqlx::query_as(
+            "SELECT price, current_price FROM course_cards WHERE course_detail_id = ? LIMIT 1",
+        )
+        .bind(&course_id)
+        .fetch_optional(&state.db)
+        .await?
+    };let (card_price, card_current_price) = match card {
         Some(c) => c,
         None => {
             let (p,): (bigdecimal::BigDecimal,) =
@@ -283,3 +302,4 @@ pub async fn get_course_detail_full(
         },
     })))
 }
+

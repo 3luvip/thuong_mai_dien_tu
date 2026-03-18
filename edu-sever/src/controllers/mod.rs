@@ -8,3 +8,4 @@ pub mod cart;
 pub mod coupon;
 pub mod order;
 pub mod review;
+pub mod ai;

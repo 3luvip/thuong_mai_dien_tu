@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { NavLink } from "react-router-dom";
 import "../../style/components/_navbar.scss";
 const categories = {
   Development: [
@@ -6,7 +7,7 @@ const categories = {
     "App Development",
     "Game Development",
     "Programming Language",
-    "Database Design & Developement",
+    "Database Design & Development",
   ],
   Business: ["Entrepreneurship", "Leadership", "Strategy"],
   FinanceAccounting: [
@@ -14,8 +15,6 @@ const categories = {
     "CryptoCurrency & Blockchain",
     "Finance",
     "Investing & Trading",
-    "Graphic Design",
-    "Interior Design",
   ],
   Software: [
     "IT Certification",
@@ -23,30 +22,18 @@ const categories = {
     "Hardware",
     "Operating Systems & Server",
     "Other IT & Services",
-    "Leadership",
   ],
-  Productivity: [
-    "MicroSoft",
-    "Apple",
-    "Linux",
-    "Google",
-    "Samsung",
-    "Safery",
-    "Yahoo",
-    "Leadership",
-    "Strategy",
-  ],
+  Productivity: ["Microsoft", "Apple", "Linux", "Google", "Samsung"],
   PersonalDevelopment: [
     "Personal Transformation",
     "Personal Productivity",
-    "Leadership",
-    "career Development",
+    "Career Development",
     "Parenting & Relationship",
   ],
-  Design: ["Web Development", "App Development", "Game Development"],
-  Marketing: ["Entrepreneurship", "Leadership", "Strategy"],
-  Health: ["UX Design", "Graphic Design", "Interior Design"],
-  Music: ["UX Design", "Graphic Design", "Interior Design"],
+  Design: ["UX Design", "Graphic Design", "Interior Design"],
+  Marketing: ["Digital Marketing", "SEO", "Content Marketing"],
+  Health: ["Fitness", "Mental Health", "Nutrition"],
+  Music: ["Instruments", "Music Production", "Vocal"],
 };
 
 function DropDown() {
@@ -72,7 +59,13 @@ function DropDown() {
             onMouseEnter={() => handleMouseEnter(mainCategory)}
             onMouseLeave={handleMouseLeave}
           >
-            {mainCategory}
+            <NavLink
+              to={`/courses?category=${encodeURIComponent(mainCategory)}`}
+              className="menu-item-link"
+              onClick={() => setOpenMenu(null)}
+            >
+              {mainCategory}
+            </NavLink>
 
             {openMenu === mainCategory && (
               <div
@@ -84,7 +77,13 @@ function DropDown() {
                 <div className="mega-menu-content">
                   {subCategories.map((sub, index) => (
                     <div className="mega-item" key={index}>
-                      {sub}
+                      <NavLink
+                        to={`/courses?category=${encodeURIComponent(sub)}`}
+                        className="mega-item-link"
+                        onClick={() => setOpenMenu(null)}
+                      >
+                        {sub}
+                      </NavLink>
                     </div>
                   ))}
                 </div>
