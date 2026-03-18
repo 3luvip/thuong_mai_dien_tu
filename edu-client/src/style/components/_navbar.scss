@@ -671,3 +671,33 @@ nav {
     }
   }
 }
+
+
+// ─── Thêm vào cuối file _navbar.scss ────────────────────────────────────────
+// Skeleton loading cho Explore menu
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+%skeleton-base {
+  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 6px;
+}
+
+.skeleton-title {
+  @extend %skeleton-base;
+  height: 16px;
+  width: 80%;
+  margin-bottom: 10px;
+}
+
+.skeleton-item {
+  @extend %skeleton-base;
+  height: 12px;
+  width: 90%;
+  margin-bottom: 6px;
+}

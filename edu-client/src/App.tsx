@@ -17,6 +17,7 @@ import CreateCoursePage from "./components/Instructor/CreateCoursePage";
 import CourseDetailPage from "./components/Course/CourseDetailPage";
 import MyCoursesPage from "./components/Learning/MyCoursesPage";
 import LearnPage from "./components/Learning/LearnPage";
+import EditProfilePage from "./components/pages/EditProfilePage"; // 👈 thêm
 import { CartProvider } from "./context/CartProvider";
 import { ToastProvider } from "./context/toast";
 import { WishlistProvider } from "./context/wishlistContext";
@@ -75,6 +76,13 @@ function App() {
               <Route path="wishlist" element={
                 <ProtectedRoute isAuthenticated={IsAuthenticated} allowedRoles={["user","instructor"]}>
                   <WishlistPage />
+                </ProtectedRoute>
+              } />
+
+              {/* ── Profile ── */}
+              <Route path="edit-profile" element={
+                <ProtectedRoute isAuthenticated={IsAuthenticated} allowedRoles={["user","instructor"]}>
+                  <EditProfilePage />
                 </ProtectedRoute>
               } />
 

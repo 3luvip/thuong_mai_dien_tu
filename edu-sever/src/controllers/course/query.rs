@@ -3,6 +3,7 @@ use axum::{
     extract::{Path, State}
 };
 use bigdecimal::ToPrimitive;
+use serde::Serialize;
 use serde_json::{Value, json};
 use crate::{models::course::{AllCourseRow, CourseCardRow, CourseRow}, state::AppState};
 use crate::{
@@ -225,4 +226,49 @@ pub async fn get_footer(State(state): State<AppState>) -> AppResult<Json<Value>>
         "row1": row1,
         "row2": row2,
     })))
+}
+
+
+// --- Categories ---
+
+#[derive(Debug, Serialize)]
+pub struct CategoryItem {
+    pub category: String,
+    pub subcategories: Vec<String>,
+}
+
+pub async fn get_categories(
+    State(state): State<AppState>,
+) -> Result<Json<Vec<CategoryItem>>, AppError> {
+    // Lấy tất cả (category, course_sub) distinct từ bảng courses
+    let rows = sqlx::query!(
+        r#"
+        SELECT DISTINCT category, course_sub
+        FROM courses
+        ORDER BY category, course_sub
+        "#
+    )
+    .fetch_all(&state.db)
+    .await
+    .map_err(|e| AppError::Validation(e.to_string()))?;
+
+    // Gom nhóm: category -> Vec<course_sub>
+    let mut map: std::collections::BTreeMap<String, Vec<String>> =
+        std::collections::BTreeMap::new();
+
+    for row in rows {
+        map.entry(row.category)
+            .or_default()
+            .push(row.course_sub);
+    }
+
+    let result: Vec<CategoryItem> = map
+        .into_iter()
+        .map(|(category, subcategories)| CategoryItem {
+            category,
+            subcategories,
+        })
+        .collect();
+
+    Ok(Json(result))
 }
