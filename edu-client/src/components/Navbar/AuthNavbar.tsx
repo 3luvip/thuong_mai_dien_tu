@@ -1,7 +1,6 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { CiSearch } from "react-icons/ci";
 import { IoCartOutline, IoHeart, IoHeartOutline } from "react-icons/io5";
-import { CiBellOn } from "react-icons/ci";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import DropDown from "./DropDown";
@@ -9,19 +8,6 @@ import NotificationBell from "../Notification/NotificationBell";
 import { useWishlist } from "../../context/wishlistContext";
 import { useCart } from "../../context/useCart";
 import "../../style/components/_navbar.scss";
-
-const categories: Record<string, string[]> = {
-  Development: ["Web Development","App Development","Game Development","Programming Language","Database Design & Development"],
-  Business: ["Entrepreneurship","Leadership","Strategy"],
-  FinanceAccounting: ["Accounting & Bookkeeping","CryptoCurrency & Blockchain","Finance","Investing & Trading"],
-  Software: ["IT Certification","Network & Security","Hardware","Operating Systems & Server","Other IT & Services"],
-  Productivity: ["Microsoft","Apple","Linux","Google","Samsung"],
-  PersonalDevelopment: ["Personal Transformation","Personal Productivity","Career Development","Parenting & Relationship"],
-  Design: ["UX Design","Graphic Design","Interior Design"],
-  Marketing: ["Digital Marketing","SEO","Content Marketing"],
-  Health: ["Fitness","Mental Health","Nutrition"],
-  Music: ["Instruments","Music Production","Vocal"],
-};
 
 function getInitials(name: string | null): string {
   if (!name) return "";
@@ -32,7 +18,6 @@ function getInitials(name: string | null): string {
 
 function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) => void }) {
   const navigate  = useNavigate();
-  const location  = useLocation();
   const { total: wishlistTotal } = useWishlist();
   const { cartItems, fetchCart } = useCart();
 
@@ -77,7 +62,10 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
     };
     document.addEventListener("mousedown", onDocMouseDown);
     document.addEventListener("keydown", onKeyDown);
-    return () => { document.removeEventListener("mousedown", onDocMouseDown); document.removeEventListener("keydown", onKeyDown); };
+    return () => {
+      document.removeEventListener("mousedown", onDocMouseDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, []);
 
   const handleExploreEnter  = () => { if (exploreTimeoutRef.current) clearTimeout(exploreTimeoutRef.current); setIsExploreOpen(true); };
@@ -90,37 +78,42 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
     <header>
       <nav aria-label="Primary navigation">
         <div className="navbar-auth">
-          {/* LEFT */}
+
+          {/* ── LEFT ── */}
           <div className="nav-left">
             <NavLink to="/" end className="logo" aria-label="Home">
               <img src="https://khoacntp.ctuet.edu.vn/wp-content/uploads/2020/03/%C4%90%E1%BA%A1i_h%E1%BB%8Dc_K%E1%BB%B9_thu%E1%BA%ADt_-_C%C3%B4ng_ngh%E1%BB%87_C%E1%BA%A7n_Th%C6%A1.png" alt="CTUET" />
             </NavLink>
-            <div className="explore-dropdown-auth" ref={exploreRef}
-              onMouseEnter={handleExploreEnter} onMouseLeave={handleExploreLeave}>
-              <button className="explore-trigger-auth" type="button"
-                aria-haspopup="menu" aria-expanded={isExploreOpen}
-                onClick={() => setIsExploreOpen((v) => !v)}>Explore</button>
-              <div className={`explore-menu-auth ${isExploreOpen ? "is-open" : ""}`}
-                role="menu" aria-label="Explore categories">
-                <div className="explore-menu-inner-auth">
-                  {Object.entries(categories).map(([mainCategory, subs]) => (
-                    <div className="explore-col-auth" key={mainCategory}>
-                      <NavLink to="/explore" className="explore-title-auth"
-                        onClick={() => setIsExploreOpen(false)}>{mainCategory}</NavLink>
-                      <div className="explore-items-auth">
-                        {subs.map((sub) => (
-                          <NavLink key={sub} to={`/explore?topic=${encodeURIComponent(sub)}`}
-                            className="explore-item-auth" onClick={() => setIsExploreOpen(false)}>{sub}</NavLink>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+
+            {/* Explore dropdown */}
+            <div
+              className="explore-dropdown-auth"
+              ref={exploreRef}
+              onMouseEnter={handleExploreEnter}
+              onMouseLeave={handleExploreLeave}
+            >
+              <button
+                className="explore-trigger-auth"
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={isExploreOpen}
+                onClick={() => setIsExploreOpen((v) => !v)}
+              >
+                Explore
+              </button>
+
+              <div
+                className={`explore-menu-auth ${isExploreOpen ? "is-open" : ""}`}
+                role="menu"
+                aria-label="Explore categories"
+              >
+                
+                
               </div>
             </div>
           </div>
 
-          {/* CENTER */}
+          {/* ── CENTER ── */}
           <div className="nav-center">
             <div className="nav-search">
               <span className="nav-search-icon" aria-hidden="true"><CiSearch /></span>
@@ -128,7 +121,7 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
             </div>
           </div>
 
-          {/* RIGHT */}
+          {/* ── RIGHT ── */}
           <div className="nav-right">
             <div className="nav-list-item">
               <ul>
@@ -138,14 +131,12 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
                   <li><NavLink to="/authenticated-home">New Learners</NavLink></li>
                 )}
 
-                {/* ✅ Sửa: /learning → /my-courses */}
                 <li><NavLink to="/my-courses">My learning</NavLink></li>
 
-                {/* ── Wishlist ── */}
+                {/* Wishlist */}
                 <li style={{ position: "relative" }}>
                   <NavLink to="/wishlist" aria-label="Danh sách yêu thích"
-                    style={{ display: "flex", alignItems: "center", justifyContent: "center",
-                      position: "relative", padding: "6px 8px" }}>
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "relative", padding: "6px 8px" }}>
                     <span style={{ fontSize: 22, display: "flex" }}>
                       {wishlistTotal > 0 ? <IoHeart style={{ color: "#f43f5e" }} /> : <IoHeartOutline />}
                     </span>
@@ -164,10 +155,9 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
                   </NavLink>
                 </li>
 
-                {/* ── Cart ── */}
+                {/* Cart */}
                 <li className="Cart" style={{ position: "relative" }}>
-                  <NavLink to="/cart" style={{ display: "flex", alignItems: "center",
-                    justifyContent: "center", position: "relative", padding: "6px 8px" }}>
+                  <NavLink to="/cart" style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "relative", padding: "6px 8px" }}>
                     <span style={{ fontSize: 22, display: "flex" }}><IoCartOutline /></span>
                     {cartItems.length > 0 && (
                       <span style={{
@@ -184,12 +174,12 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
                   </NavLink>
                 </li>
 
-                {/* ── Notification bell ── */}
+                {/* Notification bell */}
                 <li style={{ display: "flex", alignItems: "center" }}>
                   <NotificationBell />
                 </li>
 
-                {/* ── Avatar / user menu ── */}
+                {/* Avatar / user menu */}
                 {userInitials && (
                   <li>
                     <div className="user-menu-container" ref={userMenuRef}
@@ -209,12 +199,11 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
                           </div>
                         </div>
                         {[
-                          // ✅ Sửa: My learning → /my-courses
                           { label: "My learning",       action: () => navigate("/my-courses") },
                           { label: "Yêu thích ❤️",      action: () => navigate("/wishlist") },
                           { label: "Thông báo 🔔",       action: () => navigate("/notifications") },
                           { label: "Account settings",  action: () => {} },
-                          { label: "Edit profile",      action: () => {} },
+                          { label: "Edit profile",      action: () => navigate("/edit-profile") },
                           { label: "Help and Support",  action: () => {} },
                         ].map(({ label, action }) => (
                           <div key={label} className="user-menu-section">

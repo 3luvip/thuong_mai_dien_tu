@@ -2,46 +2,16 @@ import { NavLink } from 'react-router-dom';
 import { CiSearch } from "react-icons/ci";
 import { IoCartOutline } from "react-icons/io5";
 import { BsGlobe } from "react-icons/bs";
-import { useEffect, useRef, useState } from "react";
-import "../../style/components/_navbar.scss"
-const categories: Record<string, string[]> = {
-  Development: [
-    "Web Development",
-    "App Development",
-    "Game Development",
-    "Programming Language",
-    "Database Design & Development",
-  ],
-  Business: ["Entrepreneurship", "Leadership", "Strategy"],
-  FinanceAccounting: [
-    "Accounting & Bookkeeping",
-    "CryptoCurrency & Blockchain",
-    "Finance",
-    "Investing & Trading",
-  ],
-  Software: [
-    "IT Certification",
-    "Network & Security",
-    "Hardware",
-    "Operating Systems & Server",
-    "Other IT & Services",
-  ],
-  Productivity: ["Microsoft", "Apple", "Linux", "Google", "Samsung"],
-  PersonalDevelopment: [
-    "Personal Transformation",
-    "Personal Productivity",
-    "Career Development",
-    "Parenting & Relationship",
-  ],
-  Design: ["UX Design", "Graphic Design", "Interior Design"],
-  Marketing: ["Digital Marketing", "SEO", "Content Marketing"],
-  Health: ["Fitness", "Mental Health", "Nutrition"],
-  Music: ["Instruments", "Music Production", "Vocal"],
-};
+import { use, useEffect, useRef, useState } from "react";
+import "../../style/components/_navbar.scss";
+
+
 
 function Navbar() {
   const [isExploreOpen, setIsExploreOpen] = useState(false);
-  const exploreRef = useRef<HTMLDivElement | null>(null);
+  const exploreRef        = useRef<HTMLDivElement | null>(null);
+  const exploreTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
 
   useEffect(() => {
     const onDocMouseDown = (e: MouseEvent) => {
@@ -54,7 +24,7 @@ function Navbar() {
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsExploreOpen(false);
-    }; 
+    };
 
     document.addEventListener("mousedown", onDocMouseDown);
     document.addEventListener("keydown", onKeyDown);
@@ -63,6 +33,14 @@ function Navbar() {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, []);
+
+  const handleExploreEnter = () => {
+    if (exploreTimeoutRef.current) clearTimeout(exploreTimeoutRef.current);
+    setIsExploreOpen(true);
+  };
+  const handleExploreLeave = () => {
+    exploreTimeoutRef.current = setTimeout(() => setIsExploreOpen(false), 150);
+  };
 
   return (
     <header>
@@ -76,11 +54,12 @@ function Navbar() {
           </NavLink>
 
           <div className="nav-list">
+            {/* ── Explore Dropdown ── */}
             <div
               className="explore-dropdown"
               ref={exploreRef}
-              onMouseEnter={() => setIsExploreOpen(true)}
-              onMouseLeave={() => setIsExploreOpen(false)}
+              onMouseEnter={handleExploreEnter}
+              onMouseLeave={handleExploreLeave}
             >
               <button
                 className="explore-trigger"
@@ -97,34 +76,11 @@ function Navbar() {
                 role="menu"
                 aria-label="Explore categories"
               >
-                <div className="explore-menu-inner">
-                  {Object.entries(categories).map(([mainCategory, subs]) => (
-                    <div className="explore-col" key={mainCategory}>
-                      <NavLink
-                        to="/explore"
-                        className="explore-title"
-                        onClick={() => setIsExploreOpen(false)}
-                      >
-                        {mainCategory}
-                      </NavLink>
-                      <div className="explore-items">
-                        {subs.map((sub) => (
-                          <NavLink
-                            key={sub}
-                            to={`/explore?topic=${encodeURIComponent(sub)}`}
-                            className="explore-item"
-                            onClick={() => setIsExploreOpen(false)}
-                          >
-                            {sub}
-                          </NavLink>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                
               </div>
             </div>
 
+            {/* ── Search ── */}
             <div className="search">
               <input
                 type="text"
@@ -132,7 +88,6 @@ function Navbar() {
                 className="user-input"
                 aria-label="Search"
               />
-
               <span className="search-icon" aria-hidden="true">
                 <CiSearch />
               </span>
@@ -156,20 +111,17 @@ function Navbar() {
             <button className="login-btn" type="button">
               <NavLink to="/login">Login</NavLink>
             </button>
-
             <button className="signup-btn" type="button">
               <NavLink to="/signup">Sign Up</NavLink>
             </button>
-
             <button className="lang-btn" type="button" aria-label="Language">
               <BsGlobe />
             </button>
           </div>
-
         </div>
       </nav>
     </header>
-  )
+  );
 }
 
 export default Navbar;
