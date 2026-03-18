@@ -1,5 +1,5 @@
-use axum::{routing::{get, post}, Router};
-use crate::controllers::auth::{get_user_info, login, signup, verify_token};
+use axum::{Router, routing::{get, post, put}};
+use crate::controllers::auth::{change_password, get_user_info, login, signup, update_profile, verify_token};
 use crate::state::AppState;
 
 pub fn auth_routes() -> Router<AppState> {
@@ -8,4 +8,6 @@ pub fn auth_routes() -> Router<AppState> {
         .route("/login",     post(login))
         .route("/verify",    get(verify_token))
         .route("/user-Info", get(get_user_info))
+        .route("/update-profile",  put(update_profile))  
+        .route("/change-password", put(change_password))
 }

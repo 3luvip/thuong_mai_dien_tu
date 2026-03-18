@@ -1,0 +1,762 @@
+$ep-bg:          #020617;
+$ep-surface:     #0d1527;
+$ep-surface-2:   #111c30;
+$ep-border:      rgba(99, 102, 241, 0.15);
+$ep-border-soft: rgba(255, 255, 255, 0.06);
+$ep-text:        #e2e8f0;
+$ep-muted:       #64748b;
+$ep-subtle:      #94a3b8;
+$ep-accent:      #6366f1;
+$ep-accent-2:    #818cf8;
+$ep-purple:      #8b5cf6;
+$ep-success:     #10b981;
+$ep-danger:      #ef4444;
+$ep-warn:        #f59e0b;
+$ep-radius:      16px;
+$ep-radius-sm:   10px;
+$ep-t:           0.2s cubic-bezier(0.4, 0, 0.2, 1);
+$ep-font:        'DM Sans', system-ui, sans-serif;
+$ep-font-display:'Syne', system-ui, sans-serif;
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+.ep-page {
+  min-height: 100vh;
+  background: $ep-bg;
+  font-family: $ep-font;
+  color: $ep-text;
+  position: relative;
+  overflow-x: hidden;
+  padding-bottom: 80px;
+}
+
+// ─── Background decoration ────────────────────────────────────────────────────
+.ep-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+
+  &__orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.07;
+
+    &--1 {
+      width: 600px; height: 600px;
+      background: $ep-accent;
+      top: -200px; left: -200px;
+      animation: ep-float 8s ease-in-out infinite;
+    }
+
+    &--2 {
+      width: 400px; height: 400px;
+      background: $ep-purple;
+      bottom: -100px; right: -100px;
+      animation: ep-float 10s ease-in-out infinite reverse;
+    }
+  }
+
+  &__grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent);
+  }
+}
+
+@keyframes ep-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%       { transform: translateY(-30px) scale(1.05); }
+}
+
+// ─── Container ────────────────────────────────────────────────────────────────
+.ep-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 0;
+}
+
+// ─── Back button ──────────────────────────────────────────────────────────────
+.ep-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid $ep-border-soft;
+  color: $ep-subtle;
+  font-family: $ep-font;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 100px;
+  cursor: pointer;
+  margin-bottom: 32px;
+  transition: all $ep-t;
+
+  &:hover {
+    color: $ep-text;
+    border-color: $ep-border;
+    background: rgba(99,102,241,0.08);
+  }
+}
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
+.ep-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 28px;
+  align-items: start;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ─── Sidebar / Avatar card ────────────────────────────────────────────────────
+.ep-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 24px;
+
+  @media (max-width: 768px) {
+    position: static;
+  }
+}
+
+.ep-avatar-card {
+  background: $ep-surface;
+  border: 1px solid $ep-border;
+  border-radius: $ep-radius;
+  padding: 28px 24px;
+  text-align: center;
+  animation: ep-slide-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  &__name {
+    font-family: $ep-font-display;
+    font-size: 18px;
+    font-weight: 700;
+    color: $ep-text;
+    margin: 16px 0 8px;
+    line-height: 1.2;
+  }
+
+  &__status {
+    font-size: 13px;
+    color: $ep-subtle;
+    line-height: 1.5;
+    margin: 12px 0 0;
+    font-style: normal;
+
+    em { color: $ep-muted; font-style: italic; }
+  }
+
+  &__divider {
+    height: 1px;
+    background: $ep-border-soft;
+    margin: 16px 0;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    color: $ep-muted;
+    word-break: break-all;
+
+    svg { font-size: 15px; flex-shrink: 0; }
+  }
+}
+
+// ─── Avatar circle ────────────────────────────────────────────────────────────
+.ep-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $ep-font-display;
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.2), 0 8px 24px rgba(0,0,0,0.4);
+}
+
+// ─── Role badge ───────────────────────────────────────────────────────────────
+.ep-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 100px;
+
+  &--user {
+    background: rgba(99,102,241,0.15);
+    color: $ep-accent-2;
+    border: 1px solid rgba(99,102,241,0.25);
+  }
+
+  &--instructor {
+    background: rgba(245,158,11,0.15);
+    color: $ep-warn;
+    border: 1px solid rgba(245,158,11,0.25);
+  }
+}
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+.ep-stats {
+  background: $ep-surface;
+  border: 1px solid $ep-border;
+  border-radius: $ep-radius;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-around;
+  animation: ep-slide-up 0.5s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__num {
+    font-family: $ep-font-display;
+    font-size: 22px;
+    font-weight: 800;
+    color: $ep-accent-2;
+  }
+
+  &__lbl {
+    font-size: 11px;
+    color: $ep-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+}
+
+// ─── Main content ─────────────────────────────────────────────────────────────
+.ep-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ─── Section card ─────────────────────────────────────────────────────────────
+.ep-section {
+  background: $ep-surface;
+  border: 1px solid $ep-border;
+  border-radius: $ep-radius;
+  padding: 28px;
+  animation: ep-slide-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  &:nth-child(2) { animation-delay: 0.08s; }
+  &:nth-child(3) { animation-delay: 0.16s; }
+
+  &__head {
+    margin-bottom: 24px;
+  }
+
+  &__title {
+    font-family: $ep-font-display;
+    font-size: 20px;
+    font-weight: 700;
+    color: $ep-text;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+
+  &__sub {
+    font-size: 13px;
+    color: $ep-muted;
+    margin: 0;
+  }
+
+  &--danger {
+    border-color: rgba($ep-danger, 0.2);
+    background: rgba($ep-danger, 0.04);
+  }
+
+  &--password {
+    padding: 0;
+    overflow: hidden;
+  }
+}
+
+// ─── Fields list ──────────────────────────────────────────────────────────────
+.ep-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+// ─── Editable field ───────────────────────────────────────────────────────────
+.ep-field {
+  border-radius: $ep-radius-sm;
+  padding: 14px 16px;
+  transition: background $ep-t;
+
+  &:hover:not(&--readonly) {
+    background: rgba(99,102,241,0.05);
+  }
+
+  &--editing {
+    background: rgba(99,102,241,0.07);
+    border: 1px solid rgba(99,102,241,0.25);
+  }
+
+  &--readonly {
+    opacity: 0.7;
+  }
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: $ep-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
+  &__icon {
+    font-size: 14px;
+    color: $ep-accent-2;
+  }
+
+  &__display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__value {
+    font-size: 15px;
+    color: $ep-text;
+    font-weight: 400;
+    line-height: 1.5;
+    white-space: pre-wrap;
+
+    em {
+      color: $ep-muted;
+      font-style: italic;
+      font-size: 14px;
+    }
+  }
+
+  &__locked {
+    font-size: 11px;
+    color: $ep-muted;
+    white-space: nowrap;
+  }
+
+  &__edit-btn {
+    flex-shrink: 0;
+    background: transparent;
+    border: 1px solid $ep-border-soft;
+    color: $ep-subtle;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all $ep-t;
+    opacity: 0;
+
+    .ep-field:hover & { opacity: 1; }
+
+    &:hover {
+      color: $ep-accent-2;
+      border-color: $ep-accent;
+      background: rgba(99,102,241,0.1);
+    }
+  }
+
+  &__edit-row {
+    position: relative;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
+    background: $ep-bg;
+    border: 1.5px solid rgba(99,102,241,0.4);
+    border-radius: $ep-radius-sm;
+    color: $ep-text;
+    font-family: $ep-font;
+    font-size: 15px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color $ep-t, box-shadow $ep-t;
+
+    &:focus {
+      border-color: $ep-accent;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+
+    &::placeholder { color: $ep-muted; }
+
+    &--area {
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.5;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  &__btn {
+    width: 36px;
+    height: 36px;
+    border-radius: $ep-radius-sm;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all $ep-t;
+
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    &--save {
+      background: $ep-accent;
+      color: #fff;
+      &:hover:not(:disabled) { background: darken($ep-accent, 8%); }
+    }
+
+    &--cancel {
+      background: $ep-surface-2;
+      color: $ep-subtle;
+      border: 1px solid $ep-border-soft;
+      &:hover { color: $ep-text; }
+    }
+  }
+
+  &__counter {
+    position: absolute;
+    bottom: -20px;
+    right: 0;
+    font-size: 11px;
+    color: $ep-muted;
+  }
+}
+
+// ─── Password accordion ───────────────────────────────────────────────────────
+.ep-password {
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 28px;
+    cursor: pointer;
+    transition: background $ep-t;
+    user-select: none;
+
+    &:hover { background: rgba(99,102,241,0.04); }
+  }
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  &__icon {
+    font-size: 22px;
+    color: $ep-accent-2;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    display: block;
+    font-family: $ep-font-display;
+    font-size: 16px;
+    font-weight: 700;
+    color: $ep-text;
+  }
+
+  &__hint {
+    display: block;
+    font-size: 12px;
+    color: $ep-muted;
+    margin-top: 2px;
+  }
+
+  &__chevron {
+    font-size: 22px;
+    color: $ep-muted;
+    transition: transform $ep-t;
+    display: inline-block;
+
+    &--open { transform: rotate(90deg); }
+  }
+
+  &__form {
+    border-top: 1px solid $ep-border-soft;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: ep-expand 0.25s ease both;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 4px;
+  }
+}
+
+@keyframes ep-expand {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ─── Password field ───────────────────────────────────────────────────────────
+.ep-pw-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: $ep-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  &__wrap {
+    position: relative;
+
+    &--error input {
+      border-color: rgba($ep-danger, 0.5) !important;
+      box-shadow: 0 0 0 3px rgba($ep-danger, 0.1) !important;
+    }
+  }
+
+  &__icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 17px;
+    color: $ep-muted;
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    background: $ep-bg;
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: $ep-radius-sm;
+    color: $ep-text;
+    font-family: $ep-font;
+    font-size: 15px;
+    padding: 12px 44px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color $ep-t, box-shadow $ep-t;
+
+    &::placeholder { color: $ep-muted; }
+
+    &:focus {
+      border-color: $ep-accent;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+  }
+
+  &__toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: $ep-muted;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color $ep-t;
+
+    &:hover { color: $ep-subtle; }
+  }
+
+  &__error {
+    font-size: 12px;
+    color: $ep-danger;
+    font-weight: 500;
+  }
+}
+
+// ─── Password strength ────────────────────────────────────────────────────────
+.ep-strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &__bars {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+  }
+
+  &__bar {
+    height: 4px;
+    flex: 1;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.08);
+    transition: background 0.3s;
+
+    &--weak   { background: $ep-danger; }
+    &--fair   { background: $ep-warn; }
+    &--strong { background: #22c55e; }
+    &--great  { background: $ep-success; }
+  }
+
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &--weak   { color: $ep-danger; }
+    &--fair   { color: $ep-warn; }
+    &--strong { color: #22c55e; }
+    &--great  { color: $ep-success; }
+  }
+}
+
+// ─── Buttons ──────────────────────────────────────────────────────────────────
+.ep-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: $ep-radius-sm;
+  font-family: $ep-font;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all $ep-t;
+  border: none;
+  min-height: 40px;
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  &--primary {
+    background: $ep-accent;
+    color: #fff;
+    &:hover:not(:disabled) { background: darken($ep-accent, 8%); }
+  }
+
+  &--ghost {
+    background: transparent;
+    border: 1px solid $ep-border-soft;
+    color: $ep-subtle;
+    &:hover { color: $ep-text; border-color: $ep-border; }
+  }
+
+  &--danger {
+    background: transparent;
+    border: 1px solid rgba($ep-danger, 0.4);
+    color: $ep-danger;
+    &:hover { background: rgba($ep-danger, 0.1); }
+  }
+}
+
+// ─── Danger zone ──────────────────────────────────────────────────────────────
+.ep-danger {
+  &__title {
+    font-family: $ep-font-display;
+    font-size: 16px;
+    font-weight: 700;
+    color: $ep-danger;
+    margin: 0 0 8px;
+  }
+
+  &__desc {
+    font-size: 13px;
+    color: $ep-muted;
+    margin: 0 0 16px;
+    line-height: 1.6;
+  }
+}
+
+// ─── Spinner ──────────────────────────────────────────────────────────────────
+.ep-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ep-spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes ep-spin {
+  to { transform: rotate(360deg); }
+}
+
+// ─── Loading state ────────────────────────────────────────────────────────────
+.ep-loading {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: $ep-muted;
+  font-size: 14px;
+
+  &__ring {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(99,102,241,0.2);
+    border-top-color: $ep-accent;
+    border-radius: 50%;
+    animation: ep-spin 0.8s linear infinite;
+  }
+}
+
+// ─── Slide-up animation ───────────────────────────────────────────────────────
+@keyframes ep-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ─── Responsive ───────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .ep-container { padding: 20px 16px 0; }
+  .ep-section   { padding: 20px; }
+  .ep-password__header { padding: 18px 20px; }
+  .ep-password__form   { padding: 20px; }
+}

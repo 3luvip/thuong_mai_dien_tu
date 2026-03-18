@@ -1,19 +1,15 @@
 use axum::{
-    Json, body,
-    extract::{Multipart, Path, State},
+    Json,
+    extract::{Multipart, State},
     http::StatusCode,
 };
-use bigdecimal::ToPrimitive;
-use serde::{Deserialize, de::value};
 use serde_json::{Value, json};
 use uuid::Uuid;
 
-use crate::{models::{coupon::ConfirmCouponRequest, course_instruction::CreateCourseInstructionRequest}, utils};
-use crate::models::{cart::AddToCartRequest, coupon::ApplyCouponRequest};
+use crate::{models::{course_instruction::CreateCourseInstructionRequest}, utils};
 use crate::state::AppState;
 use crate::{
-    errors::{AppError, AppResult},
-    state,
+    errors::{AppError, AppResult}
 };
 
 

@@ -1,18 +1,13 @@
 use axum::{
     Json,
-    extract::{Path, State},
-    http::StatusCode,
-};
+    extract::{Path, State}};
 use serde::Deserialize;
 use serde_json::{Value, json};
-use sqlx::query;
 use uuid::Uuid;
 
 use crate::state::AppState;
 use crate::{
-    errors::{AppError, AppResult},
-    models::user,
-};
+    errors::{AppError, AppResult}};
 
 #[derive(Deserialize)]
 pub struct WishlistBody {
@@ -104,54 +99,6 @@ pub async fn get_wishlist(
     // Fix: recalculate
 }
 
-pub async fn get_wishlist_fixed(
-    State(state): State<AppState>,
-    Path(user_id): Path<String>,
-) -> AppResult<Json<Value>> {
-    #[derive(sqlx::FromRow)]
-    struct Row {
-        id:            String,
-        title:         String,
-        author:        String,
-        price:         bigdecimal::BigDecimal,
-        current_price: Option<bigdecimal::BigDecimal>,
-        level:         String,
-        category:      String,
-        path:          String,
-        added_at:      chrono::NaiveDateTime,
-    }
- 
-    use bigdecimal::ToPrimitive;
- 
-    let rows: Vec<Row> = sqlx::query_as(
-        r#"SELECT c.id, c.title, c.author, c.price,
-                  cc.current_price, c.level, c.category, c.path, wc.added_at
-           FROM wishlists w
-           JOIN wishlist_courses wc ON wc.wishlist_id = w.id
-           JOIN courses c           ON c.id = wc.course_id
-           LEFT JOIN course_cards cc ON cc.course_detail_id = c.id
-           WHERE w.user_id = ?
-           ORDER BY wc.added_at DESC"#
-    )
-    .bind(&user_id)
-    .fetch_all(&state.db)
-    .await?;
- 
-    let total = rows.len();
-    let courses: Vec<Value> = rows.into_iter().map(|r| json!({
-        "id":           r.id,
-        "title":        r.title,
-        "author":       r.author,
-        "price":        r.price.to_f64().unwrap_or(0.0),
-        "currentPrice": r.current_price.as_ref().and_then(|v| v.to_f64()),
-        "level":        r.level,
-        "category":     r.category,
-        "path":         r.path,
-        "addedAt":      r.added_at.to_string(),
-    })).collect();
- 
-    Ok(Json(json!({ "courses": courses, "total": total })))
-}
 
 pub async fn add_to_wishlist(
     State(state): State<AppState>,

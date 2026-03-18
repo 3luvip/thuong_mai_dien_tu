@@ -81,6 +81,13 @@ function App() {
                 </ProtectedRoute>
               } />
 
+              {/* ── Profile ── */}
+              <Route path="edit-profile" element={
+                <ProtectedRoute isAuthenticated={IsAuthenticated} allowedRoles={["user","instructor"]}>
+                  <EditProfilePage />
+                </ProtectedRoute>
+              } />
+
               {/* ── Learning ── */}
               <Route path="my-courses" element={
                 <ProtectedRoute isAuthenticated={IsAuthenticated} allowedRoles={["user","instructor"]}>

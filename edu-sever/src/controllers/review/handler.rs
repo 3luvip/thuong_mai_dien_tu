@@ -1,25 +1,15 @@
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{State},
     http::StatusCode,
 };
-use bigdecimal::ToPrimitive;
-use serde::Deserialize;
 use serde_json::{Value, json};
 use uuid::Uuid;
 
 use crate::{
-    errors::{AppError, AppResult},
-    state::AppState,
+    errors::{AppError, AppResult}, models::review::CreateReviewRequest, state::AppState
 };
 
-#[derive(Deserialize)]
-pub struct CreateReviewRequest {
-    pub course_id: String,
-    pub user_id: String,
-    pub rating: u8,
-    pub comment: Option<String>,
-}
 
 pub async fn create_review(
     State(state): State<AppState>,

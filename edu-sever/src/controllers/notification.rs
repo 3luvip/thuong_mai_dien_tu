@@ -8,7 +8,6 @@ use axum::{
     Json,
 };
 use serde_json::{json, Value};
-use uuid::Uuid;
 
 use crate::errors::{AppError, AppResult};
 use crate::state::AppState;

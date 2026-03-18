@@ -59,7 +59,7 @@ function Navbar() {
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsExploreOpen(false);
-    }; 
+    };
 
     document.addEventListener("mousedown", onDocMouseDown);
     document.addEventListener("keydown", onKeyDown);
@@ -94,11 +94,12 @@ function Navbar() {
           </NavLink>
 
           <div className="nav-list">
+            {/* ── Explore Dropdown ── */}
             <div
               className="explore-dropdown"
               ref={exploreRef}
-              onMouseEnter={() => setIsExploreOpen(true)}
-              onMouseLeave={() => setIsExploreOpen(false)}
+              onMouseEnter={handleExploreEnter}
+              onMouseLeave={handleExploreLeave}
             >
               <button
                 className="explore-trigger"
@@ -143,6 +144,7 @@ function Navbar() {
               </div>
             </div>
 
+            {/* ── Search ── */}
             <div className="search">
               <input
                 type="text"
@@ -154,7 +156,6 @@ function Navbar() {
                 onFocus={() => setShowSuggest(true)}
                 onBlur={() => setTimeout(() => setShowSuggest(false), 120)}
               />
-
               <span className="search-icon" aria-hidden="true">
                 <CiSearch />
               </span>
@@ -212,20 +213,17 @@ function Navbar() {
             <button className="login-btn" type="button">
               <NavLink to="/login">Login</NavLink>
             </button>
-
             <button className="signup-btn" type="button">
               <NavLink to="/signup">Sign Up</NavLink>
             </button>
-
             <button className="lang-btn" type="button" aria-label="Language">
               <BsGlobe />
             </button>
           </div>
-
         </div>
       </nav>
     </header>
-  )
+  );
 }
 
 export default Navbar;

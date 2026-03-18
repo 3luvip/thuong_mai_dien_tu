@@ -1,21 +1,13 @@
 use axum::{
-    Json, body,
-    extract::{Multipart, Path, State},
-    http::StatusCode,
+    Json,
+    extract::{Path, State}
 };
 use bigdecimal::ToPrimitive;
-use serde::{Deserialize, de::value};
+use serde::Serialize;
 use serde_json::{Value, json};
-use uuid::Uuid;
-
-use crate::models::{cart::AddToCartRequest, coupon::ApplyCouponRequest};
-use crate::models::{
-    coupon::ConfirmCouponRequest, course_instruction::CreateCourseInstructionRequest,
-};
-use crate::state::AppState;
+use crate::{models::course::{AllCourseRow, CourseCardRow, CourseRow}, state::AppState};
 use crate::{
-    errors::{AppError, AppResult},
-    state,
+    errors::{AppError, AppResult}
 };
 
 const FOOTER_ROW1: [&str; 4] = [
@@ -31,57 +23,6 @@ const FOOTER_ROW2: [&str; 4] = [
     "Communication",
     "Business Analytics",
 ];
-
-#[derive(sqlx::FromRow)]
-struct CourseRow {
-    id: String,
-    title: String,
-    course_sub: String,
-    description: String,
-    price: bigdecimal::BigDecimal,
-    language: String,
-    level: String,
-    category: String,
-    path: String,
-    filename: String,
-    instructor_id: String,
-    course_instruction_id: Option<String>,
-    instructor_name: Option<String>,
-    instructor_email: Option<String>,
-}
-#[derive(sqlx::FromRow)]
-struct CourseCardRow {
-    id: String,
-    title: String,
-    author: String,
-    price: bigdecimal::BigDecimal,
-    current_price: bigdecimal::BigDecimal,
-    path: String,
-    filename: String,
-    instructor_id: String,
-    course_detail_id: String,
-    instructor_name: Option<String>,
-    instructor_email: Option<String>,
-}
-
-#[derive(sqlx::FromRow)]
-struct AllCourseRow {
-    id: String,
-    title: String,
-    author: String,
-    course_sub: String,
-    price: bigdecimal::BigDecimal,
-    language: String,
-    level: String,
-    category: String,
-    path: String,
-    filename: String,
-    instructor_id: String,
-    instructor_name: Option<String>,
-    // Lấy thông tin card tương ứng (current_price sau giảm giá)
-    current_price: Option<bigdecimal::BigDecimal>,
-    card_id: Option<String>,
-}
 
 pub async fn get_course(
     State(state): State<AppState>,
@@ -285,4 +226,49 @@ pub async fn get_footer(State(state): State<AppState>) -> AppResult<Json<Value>>
         "row1": row1,
         "row2": row2,
     })))
+}
+
+
+// --- Categories ---
+
+#[derive(Debug, Serialize)]
+pub struct CategoryItem {
+    pub category: String,
+    pub subcategories: Vec<String>,
+}
+
+pub async fn get_categories(
+    State(state): State<AppState>,
+) -> Result<Json<Vec<CategoryItem>>, AppError> {
+    // Lấy tất cả (category, course_sub) distinct từ bảng courses
+    let rows = sqlx::query!(
+        r#"
+        SELECT DISTINCT category, course_sub
+        FROM courses
+        ORDER BY category, course_sub
+        "#
+    )
+    .fetch_all(&state.db)
+    .await
+    .map_err(|e| AppError::Validation(e.to_string()))?;
+
+    // Gom nhóm: category -> Vec<course_sub>
+    let mut map: std::collections::BTreeMap<String, Vec<String>> =
+        std::collections::BTreeMap::new();
+
+    for row in rows {
+        map.entry(row.category)
+            .or_default()
+            .push(row.course_sub);
+    }
+
+    let result: Vec<CategoryItem> = map
+        .into_iter()
+        .map(|(category, subcategories)| CategoryItem {
+            category,
+            subcategories,
+        })
+        .collect();
+
+    Ok(Json(result))
 }
