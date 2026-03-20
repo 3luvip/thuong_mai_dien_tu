@@ -182,7 +182,6 @@ function CourseItem({
     ? Math.round(((course.price - course.currentPrice) / course.price) * 100)
     : 0;
   const to = course.cardId ? `/course-detail/${course.cardId}` : "#";
-  console.log(to)
 
   return (
     <div
@@ -306,7 +305,6 @@ function TabComponent() {
       .get("/courseCreation/all-courses")
       .then((res) => {
         const courses: Course[] = res.data.courses ?? [];
-        console.log(courses)
         const map = new Map<string, Course[]>();
         courses.forEach((c) => {
           if (!map.has(c.category)) map.set(c.category, []);
@@ -355,7 +353,6 @@ function TabComponent() {
       );
       return;
     }
-    console.log("Tabs.tsx", userId, course.id)
     addToCart(userId, course.id);
   };
 

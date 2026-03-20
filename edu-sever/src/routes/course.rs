@@ -1,4 +1,3 @@
-
 use crate::controllers::cart::handler::{add_to_cart, clear_cart, get_cart, remove_from_cart};
 use crate::controllers::coupon::handler::{apply_coupon, confirm_coupon};
 use crate::controllers::course::{create_course, create_course_card, create_course_instruction, get_all_courses, get_categories, get_course, get_course_cards, get_course_detail_full, get_footer};
@@ -38,5 +37,5 @@ pub fn order_routes() -> Router<AppState> {
         .route("/my-orders/{user_id}", get(get_my_orders))
 }
 pub fn review_routes() -> Router<AppState> {
-    Router::new().route("/", post(create_review))
+    Router::new().route("/", post(create_review)).route("", post(create_review))
 }

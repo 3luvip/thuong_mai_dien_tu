@@ -73,8 +73,8 @@ function Login({ setIsAuthenticated, setRole }: LoginProps) {
       safeSetRole(role);
 
       toast.success(
-        "Đăng nhập thành công!",
-        `Chào mừng bạn trở lại 👋`
+        "Login Successfully!",
+        `Welcome Back 👋`
       );
 
       setEmail(""); setPassword("");
@@ -86,13 +86,13 @@ function Login({ setIsAuthenticated, setRole }: LoginProps) {
 
       
       if (status === 401) {
-        toast.error("Sai mật khẩu", "Mật khẩu bạn nhập không đúng. Vui lòng thử lại.");
+        toast.error("Failed Login", "Wrong password. PLease try again");
       } else if (status === 404) {
-        toast.error("Tài khoản không tồn tại", "Email này chưa được đăng ký.");
+        toast.error("Account does not exist", "This email has not signed up yet");
       } else if (status === 403) {
-        toast.error("Tài khoản bị khóa", "Liên hệ admin để được hỗ trợ.");
+        toast.error("You have been banned", "Seeking for help from admin");
       } else {
-        toast.error("Đăng nhập thất bại", msg);
+        toast.error("lOGIN FAILED", msg);
       }
       setError(msg);
     } finally {

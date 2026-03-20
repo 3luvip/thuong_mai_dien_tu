@@ -137,10 +137,10 @@ const COLORS: Record<ToastType, { border: string; icon: string; progress: string
 };
 
 const LABELS: Record<ToastType, string> = {
-  success: "Thành công",
-  error:   "Lỗi",
-  info:    "Thông tin",
-  warning: "Cảnh báo",
+  success: "Success",
+  error:   "Error",
+  info:    "Notification",
+  warning: "Warning",
 };
 
 function ToastItem({

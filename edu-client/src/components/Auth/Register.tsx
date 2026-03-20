@@ -28,20 +28,20 @@ function Register() {
 
     // ── Validate với toast ──────────────────────────────────────
     if (!name.trim()) {
-      toast.warning("Vui lòng nhập họ và tên");
+      toast.warning("Please enter your full name ");
       return;
     }
     if (!email.trim() || !email.includes("@")) {
-      toast.warning("Email không hợp lệ", "Vui lòng nhập đúng định dạng email.");
+      toast.warning("Invalid Email Address", "PLease enter the right form of email");
       return;
     }
     if (password.length < 6) {
-      toast.warning("Mật khẩu quá ngắn", "Mật khẩu phải có ít nhất 6 ký tự.");
+      toast.warning("Password is too short", "Password must be at least 6 characters");
       return;
     }
     if (!role) {
-      toast.warning("Vui lòng chọn vai trò", "Chọn Học viên hoặc Giảng viên để tiếp tục.");
-      setError("Vui lòng chọn vai trò của bạn.");
+      toast.warning("Choose your role", "Choose student or instructor to continue");
+      setError("PLease choose your role");
       return;
     }
 
@@ -51,8 +51,8 @@ function Register() {
 
       // ✅ Thành công → toast rồi chuyển trang
       toast.success(
-        "Đăng ký thành công! 🎉",
-        "Tài khoản của bạn đã được tạo. Hãy đăng nhập để bắt đầu."
+        "Sign up successfully. 🎉",
+        "Your account is created. Sign in to continue the action."
       );
 
       setName(""); setEmail(""); setPassword(""); setRole("");
@@ -63,11 +63,11 @@ function Register() {
                        ?.response?.data?.message ?? "Đăng ký thất bại, vui lòng thử lại.";
 
       if (status === 409) {
-        toast.error("Email đã được sử dụng", "Thử đăng nhập hoặc dùng email khác.");
+        toast.error("Email has been used", "Try log in again or use another email.");
       } else if (status === 400) {
-        toast.error("Thông tin không hợp lệ", msg);
+        toast.error("Invalid information", msg);
       } else {
-        toast.error("Đăng ký thất bại", msg);
+        toast.error("Sign up FAILED", msg);
       }
       setError(msg);
     } finally {
@@ -82,15 +82,15 @@ function Register() {
           <div className="register-brand__inner">
             <span className="register-brand__badge">CTUET</span>
             <h2 className="register-brand__headline">Start your<br />journey today.</h2>
-            <p className="register-brand__sub">Chọn vai trò của bạn và bắt đầu hành trình học tập hoặc giảng dạy ngay hôm nay.</p>
+            <p className="register-brand__sub">Choose your role and start studying or teaching journey today.</p>
             <div className="register-brand__roles">
               <div className="register-brand__role-card">
                 <HiOutlineUserGroup className="register-brand__role-icon" />
-                <div><strong>Học viên</strong><span>Tiếp cận hàng trăm khóa học thực chiến</span></div>
+                <div><strong>Learner</strong><span>Approaching hundred of practical courses</span></div>
               </div>
               <div className="register-brand__role-card">
                 <HiOutlineAcademicCap className="register-brand__role-icon" />
-                <div><strong>Giảng viên</strong><span>Chia sẻ kiến thức, xây dựng thu nhập</span></div>
+                <div><strong>Instructor</strong><span>Share knowledge, generate income</span></div>
               </div>
             </div>
           </div>
@@ -100,16 +100,16 @@ function Register() {
         <div className="register-form-panel">
           <div className="register-card">
             <div className="register-card__header">
-              <h1>Tạo tài khoản</h1>
-              <p>Miễn phí — chỉ mất 30 giây</p>
+              <h1>Create an account</h1>
+              <p>FREE — Only 30 second</p>
             </div>
             {error && <div className="register-card__error" role="alert">{error}</div>}
             <form className="register-card__form" onSubmit={handleSubmit} noValidate>
               <div className="reg-field">
-                <label htmlFor="reg-name">Họ và tên</label>
+                <label htmlFor="reg-name">Full Name</label>
                 <div className="reg-field__wrap">
                   <MdPersonOutline className="reg-field__icon" aria-hidden="true" />
-                  <input id="reg-name" type="text" placeholder="Nguyễn Văn A"
+                  <input id="reg-name" type="text" placeholder="Jonh Cena"
                     autoComplete="name" required value={name}
                     onChange={(e) => setName(e.target.value)} />
                 </div>
@@ -124,39 +124,39 @@ function Register() {
                 </div>
               </div>
               <div className="reg-field">
-                <label htmlFor="reg-password">Mật khẩu</label>
+                <label htmlFor="reg-password">Password</label>
                 <div className="reg-field__wrap">
                   <MdLockOutline className="reg-field__icon" aria-hidden="true" />
-                  <input id="reg-password" type="password" placeholder="Tối thiểu 6 ký tự"
+                  <input id="reg-password" type="password" placeholder="Atleast 6 characters"
                     autoComplete="new-password" required minLength={6} value={password}
                     onChange={(e) => setPassword(e.target.value)} />
                 </div>
               </div>
               <div className="reg-field">
-                <label>Vai trò</label>
+                <label>Role</label>
                 <div className="reg-role-group">
                   <button type="button"
                     className={`reg-role-btn ${role === "user" ? "reg-role-btn--active" : ""}`}
                     onClick={() => setRole("user")}>
-                    <HiOutlineUserGroup /> Học viên
+                    <HiOutlineUserGroup /> Learner
                   </button>
                   <button type="button"
                     className={`reg-role-btn ${role === "instructor" ? "reg-role-btn--active" : ""}`}
                     onClick={() => setRole("instructor")}>
-                    <HiOutlineAcademicCap /> Giảng viên
+                    <HiOutlineAcademicCap /> Instructor
                   </button>
                 </div>
               </div>
               <label className="reg-checkbox">
                 <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
-                <span>Gửi cho tôi các ưu đãi đặc biệt và đề xuất cá nhân hóa.</span>
+                <span>Send more special deals and personalize suggestion.</span>
               </label>
               <button className={`register-card__submit ${loading ? "register-card__submit--loading" : ""}`}
                 type="submit" disabled={loading}>
-                {loading ? <span className="register-card__spinner" /> : "Tạo tài khoản"}
+                {loading ? <span className="register-card__spinner" /> : "Create an account"}
               </button>
             </form>
-            <div className="register-card__divider"><span>hoặc đăng ký với</span></div>
+            <div className="register-card__divider"><span>Or sign up with</span></div>
             <div className="register-card__social">
               {[
                 { src: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png", alt: "Google" },
@@ -169,13 +169,13 @@ function Register() {
               ))}
             </div>
             <p className="register-card__terms">
-              Bằng cách đăng ký, bạn đồng ý với{" "}
-              <NavLink to="/terms">Điều khoản sử dụng</NavLink> và{" "}
-              <NavLink to="/privacy">Chính sách riêng tư</NavLink>.
+              By signing up, please agreed with{" "}
+              <NavLink to="/terms">Term of use</NavLink> và{" "}
+              <NavLink to="/privacy">Privacy policy</NavLink>.
             </p>
             <div className="register-card__divider"><span>đã có tài khoản?</span></div>
             <p className="register-card__login">
-              <NavLink to="/login">Đăng nhập tại đây →</NavLink>
+              <NavLink to="/login">Sign in here→</NavLink>
             </p>
           </div>
         </div>

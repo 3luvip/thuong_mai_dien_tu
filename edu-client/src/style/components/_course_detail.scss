@@ -767,3 +767,208 @@ $shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.8);
   padding: 0.85rem !important;
   &:hover:not(:disabled) { background: #059669 !important; }
 }
+// ─── Review Form ──────────────────────────────────────────────────────────────
+.cd-review-form {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: $border-radius-lg;
+  animation: cd-form-in 0.3s ease both;
+
+  @keyframes cd-form-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  &__title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: $text-light;
+    margin: 0 0 1.2rem;
+  }
+
+  // ── Star picker ──────────────────────────────────────────────────────────────
+  &__stars { margin-bottom: 1.1rem; }
+
+  &__stars-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.5rem;
+  }
+
+  &__star-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__star {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    font-size: 1.8rem;
+    color: $border-dark;
+    transition: color 0.12s ease, transform 0.12s ease;
+    line-height: 1;
+
+    &--on { color: #f59e0b; }
+
+    &:hover { transform: scale(1.2); }
+  }
+
+  &__rating-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #f59e0b;
+    margin-left: 6px;
+    animation: cd-label-pop 0.2s ease;
+
+    @keyframes cd-label-pop {
+      from { opacity: 0; transform: scale(0.8); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+  }
+
+  // ── Comment ──────────────────────────────────────────────────────────────────
+  &__comment {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  &__label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+
+  &__textarea {
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(2, 6, 23, 0.6);
+    border: 1px solid $border-dark;
+    border-radius: $border-radius-md;
+    color: $text-light;
+    font-size: 0.9rem;
+    font-family: inherit;
+    padding: 0.75rem 1rem;
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+    transition: border-color 0.15s;
+    line-height: 1.6;
+
+    &::placeholder { color: lighten($border-dark, 10%); }
+
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.12);
+    }
+  }
+
+  &__counter {
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    font-size: 0.72rem;
+    color: $border-dark;
+    pointer-events: none;
+  }
+
+  // ── Submit ───────────────────────────────────────────────────────────────────
+  &__submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: $primary;
+    color: #fff;
+    border: none;
+    border-radius: $border-radius-md;
+    padding: 0.7rem 1.6rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, transform 0.1s, opacity 0.15s;
+
+    &:hover:not(:disabled) {
+      background: $primary-dark;
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  &__spinner {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: cd-spin 0.7s linear infinite;
+
+    @keyframes cd-spin { to { transform: rotate(360deg); } }
+  }
+
+  // ── Done state ───────────────────────────────────────────────────────────────
+  &__done {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    p {
+      font-size: 0.88rem;
+      color: $text-muted;
+      margin: 0;
+      line-height: 1.6;
+    }
+  }
+
+  &__edit-btn {
+    align-self: flex-start;
+    background: transparent;
+    border: 1px solid $border-dark;
+    color: $text-muted;
+    padding: 6px 14px;
+    border-radius: $border-radius-md;
+    font-size: 0.82rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+
+    &:hover {
+      border-color: $primary;
+      color: $primary;
+    }
+  }
+
+  // ── Locked state ─────────────────────────────────────────────────────────────
+  &--locked {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(148, 163, 184, 0.04);
+    border-color: rgba(148, 163, 184, 0.12);
+    padding: 1rem 1.2rem;
+
+    p {
+      font-size: 0.88rem;
+      color: $text-muted;
+      margin: 0;
+    }
+  }
+
+  &__lock-icon { font-size: 1.4rem; flex-shrink: 0; }
+}

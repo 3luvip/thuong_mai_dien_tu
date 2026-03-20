@@ -534,3 +534,160 @@ $warning:       #f59e0b;
     opacity: 1;
   }
 }
+// ─── Summary redesign ─────────────────────────────────────────────────────────
+
+.cart-summary {
+  &__checkout-btn {
+    background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px !important;
+    border-radius: 12px !important;
+    letter-spacing: 0.01em;
+    box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+
+    &:hover {
+      background: linear-gradient(135deg, #4f46e5, #4338ca) !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 8px 28px rgba(99,102,241,0.5) !important;
+    }
+  }
+
+  &__checkout-price {
+    font-weight: 800;
+    font-size: 15px;
+    background: rgba(255,255,255,0.16);
+    padding: 3px 12px;
+    border-radius: 20px;
+    letter-spacing: 0;
+  }
+
+  &__methods {
+    margin: 14px 0 4px;
+    padding: 12px 14px;
+    background: rgba(148,163,184,0.04);
+    border: 1px solid rgba(148,163,184,0.1);
+    border-radius: 10px;
+  }
+
+  &__methods-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 9px;
+  }
+
+  &__methods-icons {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  &__method-chip {
+    width: 38px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    cursor: default;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    transition: transform 0.15s, box-shadow 0.15s;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+  }
+
+  &__guarantee {
+    font-size: 11px !important;
+    color: #475569 !important;
+    margin: 10px 0 16px !important;
+    text-align: center;
+  }
+
+  &__saved {
+    font-size: 13px;
+    color: #4ade80;
+    background: rgba(34,197,94,0.08);
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 8px;
+    padding: 6px 12px;
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  &__final-price {
+    color: #f97316 !important;
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+}
+
+// ─── Coupon applied / hints ───────────────────────────────────────────────────
+
+.coupon-applied {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(34,197,94,0.07);
+  border: 1px solid rgba(34,197,94,0.22);
+  border-radius: 10px;
+  padding: 10px 12px;
+  flex-wrap: wrap;
+
+  &__info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+
+  &__tag {
+    font-size: 11px; font-weight: 700; color: #4ade80;
+    background: rgba(34,197,94,0.15);
+    padding: 2px 8px; border-radius: 5px; width: fit-content;
+    letter-spacing: 0.04em;
+  }
+
+  &__desc  { font-size: 12px; color: #64748b; }
+  &__remaining { font-size: 11px; color: #64748b; white-space: nowrap; }
+
+  &__remove {
+    background: transparent; border: none; color: #64748b;
+    cursor: pointer; font-size: 18px; line-height: 1;
+    transition: color 0.15s; padding: 0;
+    &:hover { color: #ef4444; }
+  }
+}
+
+.coupon-error {
+  font-size: 12px; color: #f87171; margin: 6px 0 0;
+}
+
+.coupon-hint {
+  font-size: 12px; color: #475569; margin: 8px 0 0;
+
+  button {
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.2);
+    color: #818cf8; font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 5px;
+    cursor: pointer; margin-left: 5px; font-family: inherit;
+    transition: all 0.15s;
+
+    &:hover {
+      background: rgba(99,102,241,0.18);
+      border-color: rgba(99,102,241,0.4);
+    }
+  }
+}
+
+.coupon-spinner {
+  display: inline-block; width: 14px; height: 14px;
+  border: 2px solid rgba(99,102,241,0.3);
+  border-top-color: #6366f1; border-radius: 50%;
+  animation: couponSpin 0.7s linear infinite;
+}
+@keyframes couponSpin { to { transform: rotate(360deg); } }

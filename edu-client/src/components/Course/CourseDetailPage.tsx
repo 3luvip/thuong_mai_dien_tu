@@ -134,8 +134,15 @@ export default function CourseDetailPage() {
   const [addingCart, setAddingCart] = useState(false);
 
   // ── Trạng thái đã mua ───────────────────────────────────────────────────────
-  const [isPurchased, setIsPurchased] = useState(false);
+  const [isPurchased,      setIsPurchased]      = useState(false);
   const [checkingPurchase, setCheckingPurchase] = useState(false);
+
+  // ── Review form state ────────────────────────────────────────────────────────
+  const [myRating,       setMyRating]       = useState(0);
+  const [hoverRating,    setHoverRating]    = useState(0);
+  const [myComment,      setMyComment]      = useState("");
+  const [submittingRev,  setSubmittingRev]  = useState(false);
+  const [myReviewDone,   setMyReviewDone]   = useState(false);
 
   const userId = localStorage.getItem("userId");
   const isInCart = cartItems.some((c) => c.id === courseCardId);
@@ -161,11 +168,13 @@ export default function CourseDetailPage() {
       .get(`/learning/my-courses/${userId}`)
       .then((res) => {
         const courses: Array<{ courseId: string }> = res.data.courses ?? [];
-        const bought = courses.some((c) => c.courseId === data.course.id);
+        // So sánh cả course.id lẫn courseCardId để chắc chắn
+        const bought = courses.some(
+          (c) => c.courseId === data.course.id || c.courseId === courseCardId
+        );
         setIsPurchased(bought);
       })
       .catch(() => {
-        // Lỗi khi check → mặc định chưa mua (hiện nút giỏ hàng)
         setIsPurchased(false);
       })
       .finally(() => setCheckingPurchase(false));
@@ -210,6 +219,35 @@ export default function CourseDetailPage() {
       addToWishlist(userId, courseCardId!, course?.title);
     }
   }
+
+  // ── Submit review ────────────────────────────────────────────────────────────
+  const handleSubmitReview = async () => {
+    if (!userId)       { navigate("/login"); return; }
+    if (!isPurchased)  { toast.error("Bạn cần mua khóa học trước khi đánh giá"); return; }
+    if (myRating === 0){ toast.warning("Vui lòng chọn số sao"); return; }
+    if (!data?.course?.id) return;
+
+    setSubmittingRev(true);
+    try {
+      await axiosInstance.post("/reviews", {
+        course_id: data.course.id,
+        user_id:   userId,
+        rating:    myRating,
+        comment:   myComment.trim() || null,
+      });
+      toast.success("Cảm ơn bạn đã đánh giá! ⭐", "Đánh giá của bạn đã được ghi nhận.");
+      setMyReviewDone(true);
+      // Refetch để cập nhật rating mới
+      axiosInstance.get(`/courseCreation/course-detail-full/${courseCardId}`)
+        .then((res) => setData(res.data))
+        .catch(() => {});
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error("Không thể gửi đánh giá", msg ?? "Vui lòng thử lại.");
+    } finally {
+      setSubmittingRev(false);
+    }
+  };
 
   // ─── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
@@ -442,6 +480,90 @@ export default function CourseDetailPage() {
                 <p className="cd-no-reviews">Chưa có đánh giá nào.</p>
               )}
             </div>
+
+            {/* ── Form viết đánh giá ── */}
+            {userId && isPurchased && (
+              <div className="cd-review-form">
+                <h3 className="cd-review-form__title">
+                  {myReviewDone ? "✅ Cảm ơn bạn đã đánh giá!" : "Viết đánh giá của bạn"}
+                </h3>
+
+                {myReviewDone ? (
+                  <div className="cd-review-form__done">
+                    <p>Đánh giá của bạn đã được ghi nhận và sẽ hiển thị sau khi được duyệt.</p>
+                    <button
+                      className="cd-review-form__edit-btn"
+                      onClick={() => setMyReviewDone(false)}
+                    >
+                      Chỉnh sửa đánh giá
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Star picker */}
+                    <div className="cd-review-form__stars">
+                      <p className="cd-review-form__stars-label">Đánh giá của bạn</p>
+                      <div className="cd-review-form__star-row">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            className={`cd-review-form__star ${(hoverRating || myRating) >= s ? "cd-review-form__star--on" : ""}`}
+                            onMouseEnter={() => setHoverRating(s)}
+                            onMouseLeave={() => setHoverRating(0)}
+                            onClick={() => setMyRating(s)}
+                            aria-label={`${s} sao`}
+                          >
+                            <FaStar />
+                          </button>
+                        ))}
+                        {myRating > 0 && (
+                          <span className="cd-review-form__rating-label">
+                            {["", "Rất tệ", "Tệ", "Bình thường", "Tốt", "Xuất sắc"][myRating]}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Comment */}
+                    <div className="cd-review-form__comment">
+                      <label className="cd-review-form__label">
+                        Nhận xét <span style={{ color: "#64748b", fontWeight: 400 }}>(tuỳ chọn)</span>
+                      </label>
+                      <textarea
+                        className="cd-review-form__textarea"
+                        placeholder="Chia sẻ trải nghiệm của bạn về khóa học này..."
+                        value={myComment}
+                        onChange={(e) => setMyComment(e.target.value)}
+                        maxLength={500}
+                        rows={4}
+                      />
+                      <span className="cd-review-form__counter">{myComment.length}/500</span>
+                    </div>
+
+                    <button
+                      className="cd-review-form__submit"
+                      onClick={handleSubmitReview}
+                      disabled={submittingRev || myRating === 0}
+                    >
+                      {submittingRev ? (
+                        <><span className="cd-review-form__spinner" /> Đang gửi...</>
+                      ) : (
+                        "Gửi đánh giá"
+                      )}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Gợi ý mua nếu chưa có */}
+            {userId && !isPurchased && (
+              <div className="cd-review-form cd-review-form--locked">
+                <span className="cd-review-form__lock-icon">🔒</span>
+                <p>Mua khóa học để có thể đánh giá và chia sẻ trải nghiệm của bạn.</p>
+              </div>
+            )}
           </section>
 
           {/* TAGS */}

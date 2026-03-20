@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { MdOutlineVerified } from "react-icons/md";
-import { FiHeart } from "react-icons/fi";
 import { BsCheck2 } from "react-icons/bs";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
@@ -15,6 +14,7 @@ import axiosInstance from "../../lib/axios";
 import "../../style/components/_top_course.scss";
 import "../../style/components/_tabs.scss";
 import { useToast } from "../../context/toast";
+import HeartButton from "../Wishlist/HeartButton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Course {
@@ -97,6 +97,7 @@ function CoursePopup({
     Math.max(anchorRect.top + window.scrollY, 8),
     window.scrollY + window.innerHeight - 440,
   );
+  const userId = localStorage.getItem("userId");
   const { value, review } = getMockRating(course.id);
   const hasDiscount = course.currentPrice > 0 && course.currentPrice < course.price;
 
@@ -124,9 +125,12 @@ function CoursePopup({
         <button className="tabs-popup__cart" type="button" onClick={() => onAddToCart(course)}>
           Add to cart
         </button>
-        <button className="tabs-popup__wish" type="button" aria-label="Wishlist">
-          <FiHeart />
-        </button>
+        <HeartButton
+          courseId={course.id}
+          userId={userId}
+          courseTitle={course.title}
+          size={18}
+        />
       </div>
       <div className="tabs-popup__price">
         {hasDiscount ? (
