@@ -50,17 +50,18 @@ function Login({ setIsAuthenticated, setRole }: LoginProps) {
 
     // Client-side validation với toast
     if (!email.trim()) {
-      toast.warning("Vui lòng nhập email");
+      toast.warning("Please enter your email!");
       return;
     }
     if (!password) {
-      toast.warning("Vui lòng nhập mật khẩu");
+      toast.warning("Please enter your password");
       return;
     }
 
     setLoading(true);
     try {
       const res = await axiosInstance.post<LoginResponse>("/auth/login", { email, password });
+      console.log(res)
       const { token, role, userId } = res.data;
 
       localStorage.setItem("token",  token);
@@ -71,7 +72,6 @@ function Login({ setIsAuthenticated, setRole }: LoginProps) {
       safeSetIsAuthenticated(true);
       safeSetRole(role);
 
-      // ✅ Toast đăng nhập thành công
       toast.success(
         "Đăng nhập thành công!",
         `Chào mừng bạn trở lại 👋`
@@ -84,7 +84,7 @@ function Login({ setIsAuthenticated, setRole }: LoginProps) {
       const msg    = (err as { response?: { data?: { message?: string } } })
                        ?.response?.data?.message ?? "Đăng nhập thất bại";
 
-      // ❌ Toast lỗi cụ thể theo status
+      
       if (status === 401) {
         toast.error("Sai mật khẩu", "Mật khẩu bạn nhập không đúng. Vui lòng thử lại.");
       } else if (status === 404) {

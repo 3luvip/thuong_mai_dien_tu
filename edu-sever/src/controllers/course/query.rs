@@ -1,9 +1,9 @@
 use axum::{
     Json,
-    extract::{Path, State}
+    extract::{Path, Query, State}
 };
 use bigdecimal::ToPrimitive;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use crate::{models::course::{AllCourseRow, CourseCardRow, CourseRow}, state::AppState};
 use crate::{
@@ -11,7 +11,7 @@ use crate::{
 };
 
 const FOOTER_ROW1: [&str; 4] = [
-    "In-demand Careers", // sẽ bị override bằng static data ở frontend
+    "In-demand Careers",
     "Web Development",
     "IT Certifications",
     "Leadership",
@@ -70,9 +70,85 @@ pub async fn get_course(
     })))
 }
 
-pub async fn get_all_courses(State(state): State<AppState>) -> AppResult<Json<Value>> {
-    // JOIN với course_cards để lấy current_price (giá sau giảm giá) và card_id
-    let rows: Vec<AllCourseRow> = sqlx::query_as(
+// ─── Query params cho all-courses ────────────────────────────────────────────
+
+#[derive(Debug, Deserialize)]
+pub struct CourseListParams {
+    pub page:     Option<u64>,
+    pub limit:    Option<u64>,
+    pub category: Option<String>,
+    pub keyword:  Option<String>,
+    pub level:    Option<String>,
+}
+
+pub async fn get_all_courses(
+    State(state): State<AppState>,
+    Query(params): Query<CourseListParams>,
+) -> AppResult<Json<Value>> {
+    let page  = params.page.unwrap_or(1).max(1);
+    let limit = params.limit.unwrap_or(20).clamp(1, 100);
+    let offset = (page - 1) * limit;
+
+    // Build WHERE clause
+    let mut conditions: Vec<String> = Vec::new();
+    let mut bind_category = false;
+    let mut bind_keyword  = false;
+    let mut bind_level    = false;
+
+    if let Some(ref cat) = params.category {
+        if !cat.is_empty() {
+            conditions.push("c.category = ?".to_string());
+            bind_category = true;
+        }
+    }
+
+    if let Some(ref kw) = params.keyword {
+        if !kw.is_empty() {
+            conditions.push("(c.title LIKE ? OR c.author LIKE ? OR c.course_sub LIKE ?)".to_string());
+            bind_keyword = true;
+        }
+    }
+
+    if let Some(ref lv) = params.level {
+        if !lv.is_empty() {
+            conditions.push("c.level = ?".to_string());
+            bind_level = true;
+        }
+    }
+
+    let where_clause = if conditions.is_empty() {
+        String::new()
+    } else {
+        format!("WHERE {}", conditions.join(" AND "))
+    };
+
+    // Tạo owned strings trước để tránh borrow checker lỗi "does not live long enough"
+    let category_val = params.category.as_deref().unwrap_or("").to_string();
+    let level_val    = params.level.as_deref().unwrap_or("").to_string();
+    let like_val     = if bind_keyword {
+        format!("%{}%", params.keyword.as_deref().unwrap_or(""))
+    } else {
+        String::new()
+    };
+
+    // Count total
+    let count_sql = format!(
+        r#"SELECT COUNT(DISTINCT c.id)
+           FROM courses c
+           LEFT JOIN users u         ON u.id  = c.instructor_id
+           LEFT JOIN course_cards cc ON cc.course_detail_id = c.id
+           {where_clause}"#
+    );
+
+    let mut count_q = sqlx::query_as::<_, (i64,)>(&count_sql);
+    if bind_category { count_q = count_q.bind(&category_val); }
+    if bind_keyword  { count_q = count_q.bind(&like_val).bind(&like_val).bind(&like_val); }
+    if bind_level    { count_q = count_q.bind(&level_val); }
+
+    let (total,): (i64,) = count_q.fetch_one(&state.db).await?;
+
+    // Fetch page
+    let data_sql = format!(
         r#"SELECT
                c.id, c.title, c.author, c.course_sub, c.price,
                c.language, c.level, c.category, c.path, c.filename,
@@ -81,12 +157,20 @@ pub async fn get_all_courses(State(state): State<AppState>) -> AppResult<Json<Va
                cc.current_price,
                cc.id   AS card_id
            FROM courses c
-           LEFT JOIN users u        ON u.id  = c.instructor_id
+           LEFT JOIN users u         ON u.id  = c.instructor_id
            LEFT JOIN course_cards cc ON cc.course_detail_id = c.id
-           ORDER BY c.created_at DESC"#,
-    )
-    .fetch_all(&state.db)
-    .await?;
+           {where_clause}
+           ORDER BY c.created_at DESC
+           LIMIT ? OFFSET ?"#
+    );
+
+    let mut data_q = sqlx::query_as::<_, AllCourseRow>(&data_sql);
+    if bind_category { data_q = data_q.bind(&category_val); }
+    if bind_keyword  { data_q = data_q.bind(&like_val).bind(&like_val).bind(&like_val); }
+    if bind_level    { data_q = data_q.bind(&level_val); }
+    data_q = data_q.bind(limit as i64).bind(offset as i64);
+
+    let rows: Vec<AllCourseRow> = data_q.fetch_all(&state.db).await?;
 
     let courses: Vec<Value> = rows
         .into_iter()
@@ -117,9 +201,17 @@ pub async fn get_all_courses(State(state): State<AppState>) -> AppResult<Json<Va
         })
         .collect();
 
+    let total_pages = ((total as f64) / (limit as f64)).ceil() as u64;
+
     Ok(Json(json!({
-        "message": "Fetched all courses",
-        "courses": courses
+        "message":    "Fetched all courses",
+        "courses":    courses,
+        "pagination": {
+            "page":       page,
+            "limit":      limit,
+            "total":      total,
+            "totalPages": total_pages,
+        }
     })))
 }
 
@@ -195,7 +287,6 @@ async fn fetch_footer_links(
         })
         .collect();
 
-    // "See all" link cuối mỗi cột
     links.push(json!({
         "id":       format!("see-all-{}", category.to_lowercase().replace([' ', '/'], "-")),
         "label":    format!("See all {} courses", category),
@@ -207,14 +298,12 @@ async fn fetch_footer_links(
 }
 
 pub async fn get_footer(State(state): State<AppState>) -> AppResult<Json<Value>> {
-    // Xây row1
     let mut row1: Vec<Value> = Vec::new();
     for cat in FOOTER_ROW1 {
         let links = fetch_footer_links(&state.db, cat).await?;
         row1.push(json!({ "category": cat, "links": links }));
     }
 
-    // Xây row2
     let mut row2: Vec<Value> = Vec::new();
     for cat in FOOTER_ROW2 {
         let links = fetch_footer_links(&state.db, cat).await?;
@@ -228,9 +317,6 @@ pub async fn get_footer(State(state): State<AppState>) -> AppResult<Json<Value>>
     })))
 }
 
-
-// --- Categories ---
-
 #[derive(Debug, Serialize)]
 pub struct CategoryItem {
     pub category: String,
@@ -240,7 +326,6 @@ pub struct CategoryItem {
 pub async fn get_categories(
     State(state): State<AppState>,
 ) -> Result<Json<Vec<CategoryItem>>, AppError> {
-    // Lấy tất cả (category, course_sub) distinct từ bảng courses
     let rows = sqlx::query!(
         r#"
         SELECT DISTINCT category, course_sub
@@ -252,7 +337,6 @@ pub async fn get_categories(
     .await
     .map_err(|e| AppError::Validation(e.to_string()))?;
 
-    // Gom nhóm: category -> Vec<course_sub>
     let mut map: std::collections::BTreeMap<String, Vec<String>> =
         std::collections::BTreeMap::new();
 

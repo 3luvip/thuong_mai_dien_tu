@@ -32,23 +32,24 @@ interface Course {
   instructorName: string | null;
 }
 
-// ─── Props ────────────────────────────────────────────────────────────────────
 interface CourseCardSliderProps {
-  /** Tiêu đề section. Ví dụ: "Short and sweet courses for you" */
   title: string;
-  /** Mô tả nhỏ bên dưới tiêu đề (tuỳ chọn) */
   subtitle?: string;
-  /** Filter theo category. Ví dụ: "AI", "Web Development", "BlockChain"
-   *  Nếu không truyền → lấy tất cả courses */
+  /** Filter theo category — nếu không truyền thì lấy tất cả */
   category?: string;
   /** Số card tối đa (mặc định 10) */
   limit?: number;
-  /** Đường dẫn nút "Xem tất cả" — không truyền thì ẩn nút */
-  viewAllLink?: string;
+  /**
+   * Đường dẫn nút "Xem tất cả":
+   *   - string  → dùng path đó
+   *   - false   → ẩn nút
+   *   - không truyền → tự tính: /courses?category=<category>
+   */
+  viewAllLink?: string | false;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-function getMockRating(id: string): { value: number; review: number } {
+function getMockRating(id: string) {
   const hash = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
   return {
     value: Math.min(3.5 + (hash % 15) / 10, 4.9),
@@ -69,14 +70,22 @@ const MOCK_HIGHLIGHTS = [
   "Access on mobile and desktop",
 ];
 
-// ─── Hover Popup ──────────────────────────────────────────────────────────────
-interface PopupProps {
-  course: Course;
-  anchorRect: DOMRect;
-  onAddToCart: (course: Course) => void;
+/** Tạo link "Xem tất cả" từ category */
+function buildViewAllLink(category?: string): string {
+  if (!category) return "/courses";
+  return `/courses?category=${encodeURIComponent(category)}`;
 }
 
-function CoursePopup({ course, anchorRect, onAddToCart }: PopupProps) {
+// ─── Hover Popup ──────────────────────────────────────────────────────────────
+function CoursePopup({
+  course,
+  anchorRect,
+  onAddToCart,
+}: {
+  course: Course;
+  anchorRect: DOMRect;
+  onAddToCart: (c: Course) => void;
+}) {
   const POPUP_WIDTH = 320;
   const GAP = 8;
   const spaceRight = window.innerWidth - anchorRect.right;
@@ -89,18 +98,13 @@ function CoursePopup({ course, anchorRect, onAddToCart }: PopupProps) {
     window.scrollY + window.innerHeight - 440,
   );
   const { value, review } = getMockRating(course.id);
-  const hasDiscount =
-    course.currentPrice > 0 && course.currentPrice < course.price;
+  const hasDiscount = course.currentPrice > 0 && course.currentPrice < course.price;
 
   return createPortal(
     <div className="tabs-popup" style={{ top, left }}>
       <div className="tabs-popup__header">
-        <span className="tabs-popup__updated">
-          Updated <strong>2025</strong>
-        </span>
-        <span className="tabs-popup__meta">
-          {course.level} · {course.language} · Subtitles
-        </span>
+        <span className="tabs-popup__updated">Updated <strong>2025</strong></span>
+        <span className="tabs-popup__meta">{course.level} · {course.language} · Subtitles</span>
       </div>
       <h3 className="tabs-popup__title">{course.title}</h3>
       <p className="tabs-popup__sub">{course.courseSub}</p>
@@ -109,48 +113,29 @@ function CoursePopup({ course, anchorRect, onAddToCart }: PopupProps) {
       </div>
       <ul className="tabs-popup__highlights">
         {MOCK_HIGHLIGHTS.map((h) => (
-          <li key={h}>
-            <BsCheck2 className="tabs-popup__check" />
-            <span>{h}</span>
-          </li>
+          <li key={h}><BsCheck2 className="tabs-popup__check" /><span>{h}</span></li>
         ))}
       </ul>
       <div className="tabs-popup__tags">
-        <span className="tabs-popup__tag tabs-popup__tag--premium">
-          <MdOutlineVerified /> Premium
-        </span>
+        <span className="tabs-popup__tag tabs-popup__tag--premium"><MdOutlineVerified /> Premium</span>
         <span className="tabs-popup__tag tabs-popup__tag--new">New</span>
       </div>
       <div className="tabs-popup__actions">
-        <button
-          className="tabs-popup__cart"
-          type="button"
-          onClick={() => onAddToCart(course)}
-        >
+        <button className="tabs-popup__cart" type="button" onClick={() => onAddToCart(course)}>
           Add to cart
         </button>
-        <button
-          className="tabs-popup__wish"
-          type="button"
-          aria-label="Wishlist"
-        >
+        <button className="tabs-popup__wish" type="button" aria-label="Wishlist">
           <FiHeart />
         </button>
       </div>
       <div className="tabs-popup__price">
         {hasDiscount ? (
           <>
-            <span className="tabs-popup__price--now">
-              {formatVnd(course.currentPrice)} ₫
-            </span>
-            <span className="tabs-popup__price--was">
-              {formatVnd(course.price)} ₫
-            </span>
+            <span className="tabs-popup__price--now">{formatVnd(course.currentPrice)} ₫</span>
+            <span className="tabs-popup__price--was">{formatVnd(course.price)} ₫</span>
           </>
         ) : (
-          <span className="tabs-popup__price--now">
-            {formatVnd(course.price)} ₫
-          </span>
+          <span className="tabs-popup__price--now">{formatVnd(course.price)} ₫</span>
         )}
       </div>
     </div>,
@@ -158,18 +143,19 @@ function CoursePopup({ course, anchorRect, onAddToCart }: PopupProps) {
   );
 }
 
-// ─── Single Card (không có rank) ─────────────────────────────────────────────
-interface CardProps {
+// ─── Single Card ──────────────────────────────────────────────────────────────
+function CourseCard({
+  course,
+  onMouseEnter,
+  onMouseLeave,
+}: {
   course: Course;
   onMouseEnter: (id: string, el: HTMLDivElement) => void;
   onMouseLeave: () => void;
-}
-
-function CourseCard({ course, onMouseEnter, onMouseLeave }: CardProps) {
+}) {
   const { value, review } = getMockRating(course.id);
   const badge = getBadge(course.id);
-  const hasDiscount =
-    course.currentPrice > 0 && course.currentPrice < course.price;
+  const hasDiscount = course.currentPrice > 0 && course.currentPrice < course.price;
   const discountPct = hasDiscount
     ? Math.round(((course.price - course.currentPrice) / course.price) * 100)
     : 0;
@@ -180,11 +166,7 @@ function CourseCard({ course, onMouseEnter, onMouseLeave }: CardProps) {
       onMouseEnter={(e) => onMouseEnter(course.id, e.currentTarget)}
       onMouseLeave={onMouseLeave}
     >
-      {/* Thumbnail — không có rank badge */}
-      <Link
-        to={`/course-detail/${course.cardId ?? course.id}`}
-        className="trending-card__img-wrap"
-      >
+      <Link to={`/course-detail/${course.cardId ?? course.id}`} className="trending-card__img-wrap">
         <img
           className="trending-card__img"
           src={getCourseImageUrl(course.path)}
@@ -194,34 +176,22 @@ function CourseCard({ course, onMouseEnter, onMouseLeave }: CardProps) {
               "https://s.udemycdn.com/course/750x422/placeholder.jpg";
           }}
         />
-        {hasDiscount && (
-          <span className="trending-card__discount">-{discountPct}%</span>
-        )}
+        {hasDiscount && <span className="trending-card__discount">-{discountPct}%</span>}
       </Link>
 
-      {/* Info */}
       <div className="trending-card__info">
-        <Link
-          to={`/course-detail/${course.cardId ?? course.id}`}
-          className="trending-card__title-link"
-        >
+        <Link to={`/course-detail/${course.cardId ?? course.id}`} className="trending-card__title-link">
           <h3 className="trending-card__title">{course.title}</h3>
         </Link>
-        <p className="trending-card__author">
-          {course.instructorName ?? course.author}
-        </p>
+        <p className="trending-card__author">{course.instructorName ?? course.author}</p>
         <div className="trending-card__rating">
           <Rating value={value} totalstar={5} review={review} />
         </div>
         <div className="trending-card__price-row">
           {hasDiscount ? (
             <>
-              <span className="tabs-price--now">
-                {formatVnd(course.currentPrice)} ₫
-              </span>
-              <span className="tabs-price--was">
-                {formatVnd(course.price)} ₫
-              </span>
+              <span className="tabs-price--now">{formatVnd(course.currentPrice)} ₫</span>
+              <span className="tabs-price--was">{formatVnd(course.price)} ₫</span>
             </>
           ) : (
             <span className="tabs-price--now">{formatVnd(course.price)} ₫</span>
@@ -229,11 +199,9 @@ function CourseCard({ course, onMouseEnter, onMouseLeave }: CardProps) {
         </div>
         {badge && (
           <div className="trending-card__tags">
-            {badge === "bestseller" ? (
-              <span className="tabs-tag tabs-tag--premium">Bán chạy nhất</span>
-            ) : (
-              <span className="tabs-tag tabs-tag--new">Mới</span>
-            )}
+            {badge === "bestseller"
+              ? <span className="tabs-tag tabs-tag--premium">Bán chạy nhất</span>
+              : <span className="tabs-tag tabs-tag--new">Mới</span>}
           </div>
         )}
       </div>
@@ -245,9 +213,7 @@ function CourseCard({ course, onMouseEnter, onMouseLeave }: CardProps) {
 function CardSkeleton() {
   return (
     <div className="trending-card trending-card--skeleton">
-      <div className="trending-card__img-wrap">
-        <div className="sk-img" />
-      </div>
+      <div className="trending-card__img-wrap"><div className="sk-img" /></div>
       <div className="trending-card__info" style={{ flex: 1 }}>
         <div className="sk sk--title" />
         <div className="sk sk--title" style={{ width: "70%" }} />
@@ -259,18 +225,12 @@ function CardSkeleton() {
   );
 }
 
-// ─── Main reusable component ──────────────────────────────────────────────────
-function CourseCardSlider({
-  title,
-  subtitle,
-  category,
-  limit = 10,
-  viewAllLink,
-}: CourseCardSliderProps) {
+// ─── Main Component ───────────────────────────────────────────────────────────
+function CourseCardSlider({ title, subtitle, category, limit = 10, viewAllLink }: CourseCardSliderProps) {
   const toast = useToast();
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [courses, setCourses]     = useState<Course[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -278,18 +238,16 @@ function CourseCardSlider({
   useEffect(() => {
     setLoading(true);
     setError(null);
+
+    // Chỉ fetch đúng số lượng cần thiết, không load toàn bộ
+    const qp = new URLSearchParams();
+    qp.set("page",  "1");
+    qp.set("limit", String(limit));
+    if (category) qp.set("category", category);
+
     axiosInstance
-      .get("/courseCreation/all-courses")
-      .then((res) => {
-        let data: Course[] = res.data.courses || [];
-        // Filter theo category nếu có
-        if (category) {
-          data = data.filter(
-            (c) => c.category.toLowerCase() === category.toLowerCase(),
-          );
-        }
-        setCourses(data.slice(0, limit));
-      })
+      .get(`/courseCreation/all-courses?${qp.toString()}`)
+      .then((res) => setCourses(res.data.courses ?? []))
       .catch(() => setError("Không thể tải khóa học."))
       .finally(() => setLoading(false));
   }, [category, limit]);
@@ -313,33 +271,36 @@ function CourseCardSlider({
   const handleAddToCart = async (course: Course) => {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
-
     try {
       await axiosInstance.post("/courseCreation/add-cart", {
         user_id: userId,
         course_id: course.id,
       });
-
       toast.success(`Đã thêm "${course.title}" vào giỏ hàng!`);
-    } catch (error: any) {
-      console.error(error);
-
-      if (error.response) {
-        toast.error(
-          error.response.data.message || "Thêm vào giỏ hàng thất bại!",
-        );
-      } else {
-        toast.error("Không thể kết nối server!");
-      }
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+        "Thêm vào giỏ thất bại";
+      toast.error(msg);
     }
   };
 
   const hoveredCourse = courses.find((c) => c.id === hoveredId) ?? null;
 
+  // Tính link "Xem tất cả"
+  //   false            → ẩn nút
+  //   string           → dùng path đó
+  //   undefined        → tự tính từ category → /courses?category=...
+  const resolvedLink: string | false =
+    viewAllLink === false
+      ? false
+      : typeof viewAllLink === "string"
+        ? viewAllLink
+        : buildViewAllLink(category);
+
   return (
     <section className="Tabs-box">
       <div className="Tabs-container">
-        {/* Header */}
         <h1>{title}</h1>
         {subtitle && <p>{subtitle}</p>}
         {error && <p className="tabs-error">{error}</p>}
@@ -347,9 +308,7 @@ function CourseCardSlider({
         <div className="Tabs-content">
           {loading ? (
             <div className="trending-row">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <CardSkeleton key={i} />
-              ))}
+              {Array.from({ length: 5 }).map((_, i) => <CardSkeleton key={i} />)}
             </div>
           ) : courses.length === 0 ? (
             <p style={{ color: "#475569", fontSize: "0.9rem" }}>
@@ -383,20 +342,17 @@ function CourseCardSlider({
           )}
         </div>
 
-        {/* View all */}
-        {viewAllLink && !loading && courses.length > 0 && (
-          <Link to={viewAllLink} className="All-Data-science-course">
-            Xem tất cả →
+        {/* Nút Xem tất cả → /courses?category=... */}
+        {resolvedLink !== false && !loading && courses.length > 0 && (
+          <Link to={resolvedLink} className="All-Data-science-course">
+            Xem tất cả {category ? `"${category}"` : ""} →
           </Link>
         )}
       </div>
 
-      {/* Popup portal */}
       {hoveredCourse && anchorRect && (
         <div
-          onMouseEnter={() => {
-            if (hoverTimer.current) clearTimeout(hoverTimer.current);
-          }}
+          onMouseEnter={() => { if (hoverTimer.current) clearTimeout(hoverTimer.current); }}
           onMouseLeave={handleMouseLeave}
         >
           <CoursePopup

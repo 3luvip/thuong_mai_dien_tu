@@ -8,56 +8,58 @@ function AuthenticatedHome() {
     <>
       <main>
         <HomeBannerAuth />
+
+        {/* Không có category → link "Xem tất cả" → /courses */}
         <CourseCardSlider
           title="What to learn next"
           subtitle="Based on your recent activity"
-          viewAllLink="/courses"
+          limit={10}
         />
+
+        {/* Có category → link tự động: /courses?category=AI */}
         <CourseCardSlider
           title="Top courses in Artificial Intelligence (AI)"
           category="AI"
           limit={8}
-          viewAllLink="/courses/ai"
         />
         <CourseCardSlider
           title="Top courses in Cybersecurity"
           category="Cybersecurity"
           limit={10}
-          viewAllLink="/courses/cybersecurity"
         />
         <CourseCardSlider
           title="Top courses in Cloud Computing"
           category="Cloud Computing"
           limit={10}
-          viewAllLink="/courses/cloud-computing"
         />
         <CourseCardSlider
           title="Top courses in Game Development"
           category="Game Development"
           limit={10}
-          viewAllLink="/courses/game-development"
         />
         <CourseCardSlider
           title="Top courses in Data Science"
           category="Data Science"
           limit={10}
-          viewAllLink="/courses/data-science"
         />
         <CourseCardSlider
           title="Top courses in Web Development"
           category="Web Development"
           limit={10}
-          viewAllLink="/courses/web-development"
         />
+
+        {/* Ẩn nút "Xem tất cả" cho section ngắn này */}
         <CourseCardSlider
           title="Short and sweet courses for you"
           category="Web Development"
           limit={6}
+          viewAllLink={false}
         />
-        <TopicSlider></TopicSlider>
+
+        <TopicSlider />
       </main>
       <footer>
-        <Footer/>
+        <Footer />
       </footer>
     </>
   );

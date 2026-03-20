@@ -17,7 +17,7 @@ function HomeBanner() {
 
       {/* Content */}
       <div className="hero__content">
-        <span className="hero__eyebrow">✦ Nền tảng học tập #1</span>
+        <span className="hero__eyebrow">✦ LEARNING FLATFORM</span>
 
         <h1 className="hero__heading">
           Skills that drive<br />

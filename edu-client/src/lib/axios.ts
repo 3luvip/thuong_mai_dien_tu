@@ -27,12 +27,18 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.error("Unauthorized");
+      const isAuthRoute =
+        window.location.hash.includes("/login") ||
+        window.location.hash.includes("/signup") ||
+        window.location.pathname.includes("/login") ||
+        window.location.pathname.includes("/signup");
 
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-
-      window.location.href = "/login";
+      if (!isAuthRoute) {
+        console.error("Unauthorized");
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        window.location.href = "/login";
+      }
     }
 
     return Promise.reject(error);

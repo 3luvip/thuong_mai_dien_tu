@@ -15,13 +15,12 @@ import WishlistPage from "./components/Wishlist/WishlistPage";
 import InstructorDashboard from "./components/pages/InstructorDashBoard";
 import CreateCoursePage from "./components/Instructor/CreateCoursePage";
 import CourseDetailPage from "./components/Course/CourseDetailPage";
+import CourseCategoryPage from "./components/Course/CourseCategoryPage"; // ← MỚI
 import MyCoursesPage from "./components/Learning/MyCoursesPage";
 import LearnPage from "./components/Learning/LearnPage";
-import CoursesPage from "./components/pages/CoursesPage";
 import { CartProvider } from "./context/CartProvider";
 import { ToastProvider } from "./context/toast";
 import { WishlistProvider } from "./context/wishlistContext";
-import EditProfilePage from "./components/pages/EditProfilePage";
 
 function App() {
   const [IsAuthenticated, setIsAuthenticated] = useState(false);
@@ -57,8 +56,8 @@ function App() {
               <Route path="signup" element={<Register />} />
               <Route path="login"  element={<Login setIsAuthenticated={setIsAuthenticated} />} />
               <Route path="course-detail/:courseCardId" element={<CourseDetailPage />} />
-              <Route path="courses" element={<CoursesPage />} />
-              <Route path="explore" element={<CoursesPage />} />
+
+              <Route path="courses" element={<CourseCategoryPage />} />
 
               {/* ── User ── */}
               <Route path="authenticated-home" element={
@@ -79,13 +78,6 @@ function App() {
               <Route path="wishlist" element={
                 <ProtectedRoute isAuthenticated={IsAuthenticated} allowedRoles={["user","instructor"]}>
                   <WishlistPage />
-                </ProtectedRoute>
-              } />
-
-              {/* ── Profile ── */}
-              <Route path="edit-profile" element={
-                <ProtectedRoute isAuthenticated={IsAuthenticated} allowedRoles={["user","instructor"]}>
-                  <EditProfilePage />
                 </ProtectedRoute>
               } />
 
