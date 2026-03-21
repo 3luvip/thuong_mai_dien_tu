@@ -37,5 +37,5 @@ pub fn order_routes() -> Router<AppState> {
         .route("/my-orders/{user_id}", get(get_my_orders))
 }
 pub fn review_routes() -> Router<AppState> {
-    Router::new().route("/", post(create_review)).route("", post(create_review))
+    Router::new().route("/", post(create_review))
 }
