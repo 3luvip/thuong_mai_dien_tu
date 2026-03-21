@@ -9,3 +9,5 @@ pub mod coupon;
 pub mod order;
 pub mod review;
 pub mod ai;
+pub mod admin;
+pub mod withdrawal;

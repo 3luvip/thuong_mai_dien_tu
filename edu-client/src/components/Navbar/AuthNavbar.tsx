@@ -385,8 +385,8 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
 
                         {[
                           { label: "My learning",      action: () => navigate("/my-courses")    },
-                          { label: "Wishlist ❤️",     action: () => navigate("/wishlist")      },
-                          { label: "Notifications 🔔", action: () => navigate("/notifications") },
+                          { label: "Wishlist",     action: () => navigate("/wishlist")      },
+                          { label: "Notifications", action: () => navigate("/notifications") },
                           { label: "Account settings", action: () => {}                         },
                           { label: "Edit profile",     action: () => navigate("/edit-profile")  },
                           { label: "Help and Support", action: () => {}                         },

@@ -225,7 +225,7 @@ pub async fn suggest(
     let api_key = std::env::var("GROQ_API_KEY").ok();
     if api_key.is_none() {
         return Ok(Json(json!({
-            "answer": "Minh da tim mot so khoa hoc lien quan den noi dung ban hoi.",
+            "answer": "We found some courses related to your query.",
             "suggestions": pick_top(&candidates, limit)
         })));
     }
@@ -284,8 +284,7 @@ pub async fn suggest(
     }
 
     Ok(Json(json!({
-        "answer": "Minh da tim mot so khoa hoc lien quan den noi dung ban hoi.",
+        "answer": "We found some courses related to your query.",
         "suggestions": pick_top(&candidates, limit)
     })))
 }
-

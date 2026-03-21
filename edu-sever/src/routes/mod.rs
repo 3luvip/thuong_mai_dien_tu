@@ -6,6 +6,8 @@ mod wishlist;
 mod instructor;
 mod learning;
 mod ai;
+mod admin;
+mod withdrawal;
 
 pub use auth::auth_routes;
 pub use course::course_routes;
@@ -17,3 +19,5 @@ pub use course::review_routes;
 pub use instructor::instructor_routes;
 pub use learning::learning_routes;
 pub use ai::ai_routes;
+pub use admin::admin_routes;
+pub use withdrawal::withdrawal_routes;

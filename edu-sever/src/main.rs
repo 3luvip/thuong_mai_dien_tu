@@ -19,9 +19,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use state::AppState;
 use crate::routes::{
-    auth_routes, course_routes, instructor_routes,
-    learning_routes, notification_routes, order_routes,
-    review_routes, user_routes, wishlist_routes, ai_routes,
+    admin_routes, ai_routes, auth_routes, course_routes, instructor_routes, learning_routes, notification_routes, order_routes, review_routes, user_routes, wishlist_routes, withdrawal_routes
 };
 use crate::services::cron::start_discount_cron;
 
@@ -66,6 +64,8 @@ async fn main() {
         .nest("/reviews",        review_routes())
         .nest("/instructor",     instructor_routes())
         .nest("/learning",       learning_routes())
+        .nest("/withdrawal",     withdrawal_routes())
+        .nest("/admin",          admin_routes())
         .nest_service("/uploads", ServeDir::new(&upload_dir))
         .nest_service("/images",  ServeDir::new(&upload_dir))
         .with_state(state)

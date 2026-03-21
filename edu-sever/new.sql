@@ -275,3 +275,94 @@ CREATE TABLE IF NOT EXISTS lecture_progress (
 );
 
 CREATE INDEX idx_progress_user_course ON lecture_progress (user_id, course_id);
+
+use edu_update
+
+ALTER TABLE users
+  MODIFY COLUMN role ENUM('instructor', 'user', 'admin') NOT NULL;
+
+ALTER TABLE users
+  ADD COLUMN is_banned TINYINT(1) NOT NULL DEFAULT 0 AFTER status,
+  ADD COLUMN ban_reason VARCHAR(255) NULL AFTER is_banned;
+ 
+
+ALTER TABLE notifications
+  MODIFY COLUMN type ENUM(
+    'course_added',
+    'discount',
+    'coupon',
+    'system',
+    'reminder',
+    'broadcast'
+  ) NOT NULL DEFAULT 'system';
+
+INSERT INTO users (id, email, password, name, role, status)
+VALUES (
+  UUID(),
+  'admin@ctuet.edu.vn',
+  '$2b$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+  'Platform Admin',
+  'admin',
+  'System Administrator'
+) ON DUPLICATE KEY UPDATE role = 'admin';
+
+DELIMITER $$
+$$
+CREATE DEFINER=`root`@`%` TRIGGER `trg_welcome_user` AFTER INSERT ON `users` FOR EACH ROW BEGIN
+	INSERT INTO wishlists (id, user_id)
+    VALUES (UUID(), NEW.id);
+
+	INSERT INTO carts (id, user_id)
+    VALUES (UUID(), NEW.id);
+	
+	INSERT INTO notifications (
+        id, user_id, type, title, body
+    )
+    VALUES (
+        UUID(), 
+        NEW.id,
+        'system',
+        '🎉 Chào mừng bạn!',
+        CONCAT('Xin chào ', NEW.name, '! Chào mừng bạn đến với hệ thống E-learning 🚀')
+    );
+END$$
+DELIMITER ;
+
+
+CREATE TABLE IF NOT EXISTS bank_accounts (
+    id             VARCHAR(36)  NOT NULL DEFAULT (UUID()) PRIMARY KEY,
+    instructor_id  VARCHAR(36)  NOT NULL UNIQUE,        -- one active account per instructor
+    bank_name      VARCHAR(100) NOT NULL,               -- e.g. "Vietcombank"
+    bank_branch    VARCHAR(255) NULL,                   -- optional branch
+    account_number VARCHAR(50)  NOT NULL,
+    account_holder VARCHAR(255) NOT NULL,               -- full name on account
+    created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS withdrawal_requests (
+    id              VARCHAR(36)    NOT NULL DEFAULT (UUID()) PRIMARY KEY,
+    instructor_id   VARCHAR(36)    NOT NULL,
+    amount          DECIMAL(12,2)  NOT NULL,             -- amount requested
+    platform_fee    DECIMAL(12,2)  NOT NULL DEFAULT 0,   -- platform cut (stored for audit)
+    net_amount      DECIMAL(12,2)  NOT NULL,             -- amount actually paid out
+    status          ENUM(
+                        'pending',    -- waiting for admin
+                        'approved',   -- admin approved, money sent
+                        'rejected',   -- admin rejected
+                        'cancelled'   -- instructor cancelled before review
+                    ) NOT NULL DEFAULT 'pending',
+    note            TEXT           NULL,                 -- admin note on approve/reject
+    bank_snapshot   JSON           NOT NULL,             -- snapshot of bank info at request time
+    created_at      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_withdrawal_instructor ON withdrawal_requests (instructor_id, created_at DESC);
+CREATE INDEX idx_withdrawal_status     ON withdrawal_requests (status, created_at DESC);
+ 
+
+select * from users
