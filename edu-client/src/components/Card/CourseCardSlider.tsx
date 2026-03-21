@@ -66,7 +66,7 @@ function getBadge(id: string): "bestseller" | "new" | null {
 
 const MOCK_HIGHLIGHTS = [
   "Lifetime access · Certificate of completion",
-  "Thực hành với dự án thực tế",
+  "Practice with real-world projects",
   "Access on mobile and desktop",
 ];
 
@@ -204,8 +204,8 @@ function CourseCard({
         {badge && (
           <div className="trending-card__tags">
             {badge === "bestseller"
-              ? <span className="tabs-tag tabs-tag--premium">Bán chạy nhất</span>
-              : <span className="tabs-tag tabs-tag--new">Mới</span>}
+              ? <span className="tabs-tag tabs-tag--premium">Best sellers</span>
+              : <span className="tabs-tag tabs-tag--new">New</span>}
           </div>
         )}
       </div>
@@ -252,7 +252,7 @@ function CourseCardSlider({ title, subtitle, category, limit = 10, viewAllLink }
     axiosInstance
       .get(`/courseCreation/all-courses?${qp.toString()}`)
       .then((res) => setCourses(res.data.courses ?? []))
-      .catch(() => setError("Không thể tải khóa học."))
+      .catch(() => setError("Unable to load courses."))
       .finally(() => setLoading(false));
   }, [category, limit]);
 
@@ -280,11 +280,11 @@ function CourseCardSlider({ title, subtitle, category, limit = 10, viewAllLink }
         user_id: userId,
         course_id: course.id,
       });
-      toast.success(`Đã thêm "${course.title}" vào giỏ hàng!`);
+      toast.success(`Added "${course.title}" to cart!`);
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        "Thêm vào giỏ thất bại";
+        "Failed to add to cart";
       toast.error(msg);
     }
   };
@@ -316,7 +316,7 @@ function CourseCardSlider({ title, subtitle, category, limit = 10, viewAllLink }
             </div>
           ) : courses.length === 0 ? (
             <p style={{ color: "#475569", fontSize: "0.9rem" }}>
-              Chưa có khóa học nào{category ? ` trong "${category}"` : ""}.
+              No courses available{category ? ` in "${category}"` : ""}.
             </p>
           ) : (
             <Swiper
@@ -349,7 +349,7 @@ function CourseCardSlider({ title, subtitle, category, limit = 10, viewAllLink }
         {/* Nút Xem tất cả → /courses?category=... */}
         {resolvedLink !== false && !loading && courses.length > 0 && (
           <Link to={resolvedLink} className="All-Data-science-course">
-            Xem tất cả {category ? `"${category}"` : ""} →
+            View all {category ? `"${category}"` : ""} →
           </Link>
         )}
       </div>

@@ -54,15 +54,15 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     setIds((prev) => new Set(prev).add(courseId));
     try {
       await axiosInstance.post("/wishlist/add", { user_id: userId, course_id: courseId });
-      toast.success("Đã thêm vào yêu thích ❤️", title);
+      toast.success("Added to wishlist ❤️", title);
       // Refetch để lấy full data
       await fetchWishlist(userId);
     } catch (err: unknown) {
       // Rollback
       setIds((prev) => { const s = new Set(prev); s.delete(courseId); return s; });
       const msg = (err as { response?: { data?: { message?: string } } })
-                    ?.response?.data?.message ?? "Không thể thêm vào yêu thích.";
-      toast.error("Thêm thất bại", msg);
+                    ?.response?.data?.message ?? "Unable to add to wishlist.";
+      toast.error("Add failed", msg);
     }
   }, [fetchWishlist, toast]);
 
@@ -72,13 +72,13 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) => prev.filter((c) => c.id !== courseId));
     try {
       await axiosInstance.delete("/wishlist/remove", { data: { user_id: userId, course_id: courseId } });
-      toast.info("Đã xóa khỏi yêu thích", title);
+      toast.info("Removed from wishlist", title);
     } catch (err: unknown) {
       // Rollback
       await fetchWishlist(userId);
       const msg = (err as { response?: { data?: { message?: string } } })
-                    ?.response?.data?.message ?? "Không thể xóa.";
-      toast.error("Xóa thất bại", msg);
+                    ?.response?.data?.message ?? "Unable to remove from wishlist.";
+      toast.error("Remove failed", msg);
     }
   }, [fetchWishlist, toast]);
 

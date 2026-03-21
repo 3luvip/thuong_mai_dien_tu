@@ -49,7 +49,7 @@ const PAGE_SIZE = 18;
 
 const MOCK_HIGHLIGHTS = [
   "Lifetime access · Certificate of completion",
-  "Thực hành với dự án thực tế",
+  "Practice with real-world projects",
   "Access on mobile and desktop",
 ];
 
@@ -261,10 +261,10 @@ export default function CourseCategoryPage() {
         user_id:   userId,
         course_id: course.cardId ?? course.id,
       });
-      toast.success("Đã thêm vào giỏ hàng!", course.title);
+      toast.success("Added to cart!", course.title);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      toast.error("Thêm thất bại", msg ?? "Vui lòng thử lại.");
+      toast.error("Failed to add to cart", msg ?? "Please try again.");
     }
   };
 
@@ -283,22 +283,22 @@ export default function CourseCategoryPage() {
       <div style={pg.hero}>
         <div style={pg.inner}>
           <nav style={pg.breadcrumb}>
-            <span style={pg.bcBtn} onClick={() => navigate("/")}>Trang chủ</span>
+            <span style={pg.bcBtn} onClick={() => navigate("/")}>Home</span>
             <span style={pg.bcSep}>›</span>
-            <span style={pg.bcBtn} onClick={() => navigate("/courses")}>Khóa học</span>
+            <span style={pg.bcBtn} onClick={() => navigate("/courses")}>Courses</span>
             {categoryParam && (<><span style={pg.bcSep}>›</span><span style={pg.bcCur}>{categoryParam}</span></>)}
             {!categoryParam && keywordParam && (<><span style={pg.bcSep}>›</span><span style={pg.bcCur}>"{keywordParam}"</span></>)}
           </nav>
           <h1 style={pg.heroTitle}>
-            {categoryParam ? `Khóa học ${categoryParam}` : keywordParam ? `Kết quả cho "${keywordParam}"` : "Tất cả khóa học"}
+            {categoryParam ? `Courses ${categoryParam}` : keywordParam ? `Results for "${keywordParam}"` : "All courses"}
           </h1>
           <p style={pg.heroSub}>
-            <strong style={{ color: "#e5e7eb" }}>{pagination.total.toLocaleString("vi-VN")}</strong>{" "}khóa học
-            {categoryParam && ` trong "${categoryParam}"`}
-            {!categoryParam && keywordParam && ` khớp với "${keywordParam}"`}
+            <strong style={{ color: "#e5e7eb" }}>{pagination.total.toLocaleString("vi-VN")}</strong>{" "}courses
+            {categoryParam && ` in "${categoryParam}"`}
+            {!categoryParam && keywordParam && ` matching "${keywordParam}"`}
           </p>
           <div style={pg.searchBar}>
-            <input style={pg.searchInput} placeholder="Tìm kiếm khóa học..."
+            <input style={pg.searchInput} placeholder="Search courses..."
               value={keyword} onChange={(e) => setKeyword(e.target.value)} />
             {keyword && (
               <button style={pg.searchClear} onClick={() => { setKeyword(""); setDebouncedKeyword(""); }}>
@@ -317,25 +317,25 @@ export default function CourseCategoryPage() {
             {/* Sidebar */}
             <aside style={pg.sidebar}>
               <div style={pg.sbHead}>
-                <span style={pg.sbTitle}>Bộ lọc</span>
+                <span style={pg.sbTitle}>Filters</span>
                 {hasFilters && (
                   <button type="button" style={pg.clearBtn} onClick={clearFilters}>
-                    <FiX size={11} /> Xóa tất cả
+                    <FiX size={11} /> Clear all
                   </button>
                 )}
               </div>
-              <Accordion title="Xếp hạng" open={open.rating} onToggle={() => toggleOpen("rating")}>
+              <Accordion title="Rating" open={open.rating} onToggle={() => toggleOpen("rating")}>
                 {RATINGS.map((r) => (
                   <label key={r} style={pg.row}>
                     <input type="radio" name="rating" style={pg.radio}
                       checked={filterRating === r}
                       onChange={() => setFilterRating(filterRating === r ? null : r)} />
                     <StarRow value={r} />
-                    <span style={pg.rowLabel}>Từ {r} trở lên</span>
+                    <span style={pg.rowLabel}>From {r} and up</span>
                   </label>
                 ))}
               </Accordion>
-              <Accordion title="Cấp độ" open={open.level} onToggle={() => toggleOpen("level")}>
+              <Accordion title="Level" open={open.level} onToggle={() => toggleOpen("level")}>
                 {LEVELS.map((lv) => (
                   <label key={lv} style={pg.row}>
                     <input type="checkbox" style={pg.checkbox}
@@ -350,16 +350,16 @@ export default function CourseCategoryPage() {
             {/* Course list */}
             <div style={pg.courseList}>
               <div style={pg.listHead}>
-                <h2 style={pg.listTitle}>{categoryParam || keywordParam || "Tất cả"}</h2>
+                <h2 style={pg.listTitle}>{categoryParam || keywordParam || "All"}</h2>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ color: "#9ca3af", fontSize: 13 }}>Sắp xếp theo</span>
+                  <span style={{ color: "#9ca3af", fontSize: 13 }}>Sort by</span>
                   <select style={pg.sortSel} value={sort}
                     onChange={(e) => { setSort(e.target.value as SortKey); setPage(1); }}>
-                    <option value="popular">Phổ biến nhất</option>
-                    <option value="newest">Mới nhất</option>
-                    <option value="price_asc">Giá tăng dần</option>
-                    <option value="price_desc">Giá giảm dần</option>
-                    <option value="rating">Đánh giá cao nhất</option>
+                    <option value="popular">Most popular</option>
+                    <option value="newest">Newest</option>
+                    <option value="price_asc">Price: low to high</option>
+                    <option value="price_desc">Price: high to low</option>
+                    <option value="rating">Top rated</option>
                   </select>
                 </div>
               </div>
@@ -374,7 +374,7 @@ export default function CourseCategoryPage() {
                   ))}
                   {filterRating && (
                     <span style={pg.chip}>
-                      Từ {filterRating}★
+                      From {filterRating}★
                       <button type="button" style={pg.chipX} onClick={() => setFilterRating(null)}>×</button>
                     </span>
                   )}
@@ -382,9 +382,9 @@ export default function CourseCategoryPage() {
               )}
 
               <p style={{ fontSize: 13, color: "#9ca3af", margin: "0 0 12px" }}>
-                Hiển thị <strong style={{ color: "#e5e7eb" }}>{courses.length}</strong>{" "}/{" "}
-                <strong style={{ color: "#e5e7eb" }}>{pagination.total.toLocaleString("vi-VN")}</strong>{" "}khóa học
-                {pagination.totalPages > 1 && ` — Trang ${pagination.page}/${pagination.totalPages}`}
+                Showing <strong style={{ color: "#e5e7eb" }}>{courses.length}</strong>{" "}/{" "}
+                <strong style={{ color: "#e5e7eb" }}>{pagination.total.toLocaleString("vi-VN")}</strong>{" "}courses
+                {pagination.totalPages > 1 && ` — Page ${pagination.page}/${pagination.totalPages}`}
               </p>
 
               {loading
@@ -393,10 +393,10 @@ export default function CourseCategoryPage() {
                   ? (
                     <div style={pg.empty}>
                       <span style={{ fontSize: 36 }}>🔍</span>
-                      <p style={{ margin: 0, fontWeight: 600, color: "#e5e7eb" }}>Không tìm thấy khóa học</p>
-                      <p style={{ margin: 0, fontSize: 13, color: "#64748b" }}>Thử điều chỉnh bộ lọc hoặc từ khóa.</p>
+                      <p style={{ margin: 0, fontWeight: 600, color: "#e5e7eb" }}>No courses found</p>
+                      <p style={{ margin: 0, fontSize: 13, color: "#64748b" }}>Try adjusting your filters or search keyword.</p>
                       <button type="button" style={pg.clearBtn2}
-                        onClick={() => { clearFilters(); setKeyword(""); }}>Xóa bộ lọc</button>
+                        onClick={() => { clearFilters(); setKeyword(""); }}>Clear filters</button>
                     </div>
                   )
                   : courses.map((c) => (
@@ -541,14 +541,14 @@ function ListItem({ course, onMouseEnter, onMouseLeave }: {
           <span style={{ fontSize: 11, color: "#9ca3af" }}>({review.toLocaleString()})</span>
           <span style={{ color: "#334155" }}>·</span>
           <FiClock size={11} style={{ color: "#9ca3af" }} />
-          <span style={{ fontSize: 11, color: "#9ca3af" }}>{hours} giờ</span>
+          <span style={{ fontSize: 11, color: "#9ca3af" }}>{hours} hours</span>
           <span style={{ color: "#334155" }}>·</span>
           <span style={{ fontSize: 11, color: "#9ca3af" }}>{course.level}</span>
         </div>
         <div style={{ display: "flex", gap: 6 }}>
           <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4,
             background: "rgba(234,179,8,0.12)", border: "1px solid rgba(234,179,8,0.3)", color: "#fbbf24" }}>
-            Bán chạy nhất
+            Best seller
           </span>
         </div>
       </Link>

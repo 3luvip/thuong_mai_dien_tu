@@ -55,16 +55,16 @@ function parseMySQLDate(dateStr: string): Date {
 function timeAgo(dateStr: string): string {
   const date = parseMySQLDate(dateStr);
   const diff = Date.now() - date.getTime();
-  if (diff < 0) return "Vừa xong";
+  if (diff < 0) return "Just now";
   const m = Math.floor(diff / 60_000);
-  if (m < 1)   return "Vừa xong";
-  if (m < 60)  return `${m} phút trước`;
+  if (m < 1)   return "Just now";
+  if (m < 60)  return `${m} minutes ago`;
   const h = Math.floor(m / 60);
-  if (h < 24)  return `${h} giờ trước`;
+  if (h < 24)  return `${h} hours ago`;
   const d = Math.floor(h / 24);
-  if (d === 1) return "Hôm qua";
-  if (d < 7)   return `${d} ngày trước`;
-  if (d < 30)  return `${Math.floor(d / 7)} tuần trước`;
+  if (d === 1) return "Yesterday";
+  if (d < 7)   return `${d} days ago`;
+  if (d < 30)  return `${Math.floor(d / 7)} weeks ago`;
   return date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
@@ -316,7 +316,7 @@ export default function NotificationBell() {
         type="button"
         style={S.bell(open)}
         onClick={handleToggle}
-        aria-label={`Thông báo${unread > 0 ? ` (${unread} chưa đọc)` : ""}`}
+      aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ""}`}
       >
         <CiBellOn style={animating ? { animation: "notif-ring 0.5s ease" } : {}} />
         {unread > 0 && (
@@ -332,13 +332,13 @@ export default function NotificationBell() {
           <div style={S.header}>
             <div style={S.titleRow}>
               <div style={S.titleLeft}>
-                <h3 style={S.title}>Thông báo</h3>
-                {unread > 0 && <span style={S.chip}>{unread} mới</span>}
+                <h3 style={S.title}>Notifications</h3>
+                {unread > 0 && <span style={S.chip}>{unread} new</span>}
               </div>
               {unread > 0 && (
                 <button type="button" style={S.readAllBtn} onClick={handleMarkAllRead}>
                   <IoCheckmarkDoneOutline />
-                  Đọc tất cả
+                  Read all
                 </button>
               )}
             </div>
@@ -363,13 +363,13 @@ export default function NotificationBell() {
             ) : notifs.length === 0 ? (
               <div style={S.empty}>
                 <span style={{ fontSize: "2.5rem" }}>🔔</span>
-                <p style={{ margin: 0 }}>Không có thông báo nào</p>
+                <p style={{ margin: 0 }}>No notifications</p>
               </div>
             ) : (
               <>
                 {unreadNotifs.length > 0 && (
                   <div>
-                    <p style={S.sectionLabel}>Chưa đọc</p>
+                    <p style={S.sectionLabel}>Unread</p>
                     {unreadNotifs.map((n) => (
                       <NotifItem key={n.id} notif={n} hovered={hoveredId === n.id}
                         onHover={setHoveredId} onClick={handleClickNotif} onDelete={handleDelete} />
@@ -378,7 +378,7 @@ export default function NotificationBell() {
                 )}
                 {readNotifs.length > 0 && (
                   <div>
-                    {unreadNotifs.length > 0 && <p style={S.sectionLabel}>Đã đọc</p>}
+                    {unreadNotifs.length > 0 && <p style={S.sectionLabel}>Read</p>}
                     {readNotifs.map((n) => (
                       <NotifItem key={n.id} notif={n} hovered={hoveredId === n.id}
                         onHover={setHoveredId} onClick={handleClickNotif} onDelete={handleDelete} />
@@ -397,7 +397,7 @@ export default function NotificationBell() {
                 style={S.viewAllBtn}
                 onClick={() => { setOpen(false); navigate("/notifications"); }}
               >
-                Xem tất cả thông báo →
+                View all notifications →
               </button>
             </div>
           )}
@@ -505,7 +505,7 @@ function NotifItem({
       <button
         type="button"
         onClick={(e) => onDelete(e, notif.id)}
-        aria-label="Xóa thông báo"
+      aria-label="Delete notification"
         style={{
           flexShrink: 0, background: "transparent", border: "none",
           color: "#64748b", fontSize: "16px", cursor: "pointer",

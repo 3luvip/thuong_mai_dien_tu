@@ -124,14 +124,14 @@ function EditableField({
               className="ep-field__btn ep-field__btn--save"
               onClick={handleSave}
               disabled={saving}
-              aria-label="Lưu"
+              aria-label="Save"
             >
               {saving ? <span className="ep-spinner" /> : <MdCheck />}
             </button>
             <button
               className="ep-field__btn ep-field__btn--cancel"
               onClick={() => { setDraft(value); setEditing(false); }}
-              aria-label="Hủy"
+              aria-label="Cancel"
             >
               <MdClose />
             </button>
@@ -146,7 +146,7 @@ function EditableField({
           <button
             className="ep-field__edit-btn"
             onClick={() => setEditing(true)}
-            aria-label={`Chỉnh sửa ${label}`}
+            aria-label={`Edit ${label}`}
           >
             <MdOutlineEdit />
           </button>
@@ -172,26 +172,26 @@ function PasswordSection({ toast }: { toast: ReturnType<typeof useToast> }) {
     : /[A-Z]/.test(next) && /[0-9]/.test(next) && /[^A-Za-z0-9]/.test(next) ? 4
     : 3;
 
-  const strengthLabel = ["", "Yếu", "Trung bình", "Mạnh", "Rất mạnh"][strength];
+  const strengthLabel = ["", "Weak", "Fair", "Strong", "Very strong"][strength];
   const strengthClass = ["", "weak", "fair", "strong", "great"][strength];
 
   const reset = () => { setCurrent(""); setNext(""); setConfirm(""); setOpen(false); };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (next !== confirm) { toast.error("Không khớp", "Mật khẩu xác nhận không đúng."); return; }
-    if (next.length < 6)  { toast.warning("Quá ngắn", "Mật khẩu phải ít nhất 6 ký tự."); return; }
+    if (next !== confirm) { toast.error("No match", "The confirmation password does not match."); return; }
+    if (next.length < 6)  { toast.warning("Too short", "Password must be at least 6 characters."); return; }
     setLoading(true);
     try {
       await axiosInstance.put("/auth/change-password", {
         current_password: current,
         new_password:     next,
       });
-      toast.success("Đổi mật khẩu thành công!", "Hãy dùng mật khẩu mới ở lần đăng nhập tiếp theo.");
+      toast.success("Password updated successfully!", "Use your new password on your next login.");
       reset();
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      toast.error("Thất bại", msg ?? "Kiểm tra lại mật khẩu hiện tại.");
+      toast.error("Failed", msg ?? "Please check your current password.");
     } finally {
       setLoading(false);
     }
@@ -204,8 +204,8 @@ function PasswordSection({ toast }: { toast: ReturnType<typeof useToast> }) {
         <div className="ep-password__label">
           <RiShieldKeyholeLine className="ep-password__icon" />
           <div>
-            <span className="ep-password__title">Đổi mật khẩu</span>
-            <span className="ep-password__hint">Bảo mật tài khoản của bạn</span>
+            <span className="ep-password__title">Change password</span>
+            <span className="ep-password__hint">Secure your account</span>
           </div>
         </div>
         <span className={`ep-password__chevron ${open ? "ep-password__chevron--open" : ""}`}>›</span>
@@ -215,7 +215,7 @@ function PasswordSection({ toast }: { toast: ReturnType<typeof useToast> }) {
         <form className="ep-password__form" onSubmit={handleSubmit} noValidate>
           {/* Current password */}
           <div className="ep-pw-field">
-            <label>Mật khẩu hiện tại</label>
+            <label>Current password</label>
             <div className="ep-pw-field__wrap">
               <MdLockOutline className="ep-pw-field__icon" />
               <input
@@ -235,14 +235,14 @@ function PasswordSection({ toast }: { toast: ReturnType<typeof useToast> }) {
 
           {/* New password */}
           <div className="ep-pw-field">
-            <label>Mật khẩu mới</label>
+            <label>New password</label>
             <div className="ep-pw-field__wrap">
               <MdLockOutline className="ep-pw-field__icon" />
               <input
                 type={showNew ? "text" : "password"}
                 value={next}
                 onChange={e => setNext(e.target.value)}
-                placeholder="Ít nhất 6 ký tự"
+                placeholder="At least 6 characters"
                 autoComplete="new-password"
                 required
               />
@@ -265,27 +265,27 @@ function PasswordSection({ toast }: { toast: ReturnType<typeof useToast> }) {
 
           {/* Confirm */}
           <div className="ep-pw-field">
-            <label>Xác nhận mật khẩu mới</label>
+            <label>Confirm new password</label>
             <div className={`ep-pw-field__wrap ${confirm && confirm !== next ? "ep-pw-field__wrap--error" : ""}`}>
               <MdLockOutline className="ep-pw-field__icon" />
               <input
                 type="password"
                 value={confirm}
                 onChange={e => setConfirm(e.target.value)}
-                placeholder="Nhập lại mật khẩu mới"
+                placeholder="Re-enter new password"
                 autoComplete="new-password"
                 required
               />
             </div>
             {confirm && confirm !== next && (
-              <span className="ep-pw-field__error">Mật khẩu không khớp</span>
+              <span className="ep-pw-field__error">Passwords do not match</span>
             )}
           </div>
 
           <div className="ep-password__footer">
-            <button type="button" className="ep-btn ep-btn--ghost" onClick={reset}>Hủy</button>
+            <button type="button" className="ep-btn ep-btn--ghost" onClick={reset}>Cancel</button>
             <button type="submit" className="ep-btn ep-btn--primary" disabled={loading}>
-              {loading ? <span className="ep-spinner" /> : "Cập nhật mật khẩu"}
+              {loading ? <span className="ep-spinner" /> : "Update password"}
             </button>
           </div>
         </form>
@@ -306,7 +306,7 @@ export default function EditProfilePage() {
   useEffect(() => {
     axiosInstance.get<UserInfo>("/auth/user-Info")
       .then(res => setUser(res.data))
-      .catch(() => toast.error("Lỗi", "Không thể tải thông tin người dùng."))
+      .catch(() => toast.error("Error", "Unable to load user information."))
       .finally(() => setLoading(false));
   }, []);
 
@@ -317,10 +317,10 @@ export default function EditProfilePage() {
         [field]: value,
       });
       setUser(prev => prev ? { ...prev, ...res.data } : prev);
-      toast.success("Đã lưu!", `${field === "name" ? "Tên" : "Giới thiệu"} đã được cập nhật.`);
+      toast.success("Saved!", `${field === "name" ? "Name" : "About"} was updated.`);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      toast.error("Cập nhật thất bại", msg ?? "Vui lòng thử lại.");
+      toast.error("Update failed", msg ?? "Please try again.");
       throw err; // re-throw để EditableField biết lỗi
     }
   };
@@ -329,7 +329,7 @@ export default function EditProfilePage() {
     return (
       <div className="ep-loading">
         <div className="ep-loading__ring" />
-        <span>Đang tải...</span>
+        <span>Loading...</span>
       </div>
     );
   }
@@ -351,7 +351,7 @@ export default function EditProfilePage() {
       <div className="ep-container">
         {/* ── Back button ── */}
         <button className="ep-back" onClick={() => navigate(-1)}>
-          ← Quay lại
+          ← Back
         </button>
 
         <div className="ep-layout">
@@ -365,7 +365,7 @@ export default function EditProfilePage() {
               <h2 className="ep-avatar-card__name">{user.name}</h2>
               <span className={`ep-badge ep-badge--${user.role}`}>{user.role}</span>
               <p className="ep-avatar-card__status">
-                {user.status || <em>Chưa có giới thiệu</em>}
+                {user.status || <em>No bio yet</em>}
               </p>
               <div className="ep-avatar-card__divider" />
               <div className="ep-avatar-card__meta">
@@ -378,7 +378,7 @@ export default function EditProfilePage() {
             <div className="ep-stats">
               <div className="ep-stats__item">
                 <span className="ep-stats__num">∞</span>
-                <span className="ep-stats__lbl">Khóa học</span>
+                  <span className="ep-stats__lbl">Courses</span>
               </div>
               <div className="ep-stats__item">
                 <span className="ep-stats__num">★</span>
@@ -391,18 +391,18 @@ export default function EditProfilePage() {
           <main className="ep-main">
             <div className="ep-section">
               <div className="ep-section__head">
-                <h1 className="ep-section__title">Thông tin cá nhân</h1>
-                <p className="ep-section__sub">Nhấn vào biểu tượng ✏️ để chỉnh sửa từng trường</p>
+                <h1 className="ep-section__title">Personal information</h1>
+                <p className="ep-section__sub">Click the ✏️ icon to edit each field</p>
               </div>
 
               <div className="ep-fields">
                 {/* Name */}
                 <EditableField
-                  label="Họ và tên"
+                  label="Full name"
                   value={user.name}
                   onSave={v => handleSaveField("name", v)}
                   icon={<MdOutlinePerson />}
-                  placeholder="Nhập tên của bạn"
+                  placeholder="Enter your name"
                   maxLength={80}
                 />
 
@@ -414,17 +414,17 @@ export default function EditProfilePage() {
                   </div>
                   <div className="ep-field__display">
                     <span className="ep-field__value">{user.email}</span>
-                    <span className="ep-field__locked">🔒 Không thể đổi</span>
+                    <span className="ep-field__locked">🔒 Can't change</span>
                   </div>
                 </div>
 
                 {/* Status / bio */}
                 <EditableField
-                  label="Giới thiệu bản thân"
+                  label="About you"
                   value={user.status}
                   onSave={v => handleSaveField("status", v)}
                   icon={<MdOutlineEdit />}
-                  placeholder="Viết vài dòng về bạn..."
+                  placeholder="Write a few lines about yourself..."
                   maxLength={160}
                   multiline
                 />
@@ -438,15 +438,15 @@ export default function EditProfilePage() {
 
             {/* ── Danger zone ── */}
             <div className="ep-section ep-section--danger">
-              <h3 className="ep-danger__title">Vùng nguy hiểm</h3>
+              <h3 className="ep-danger__title">Danger zone</h3>
               <p className="ep-danger__desc">
-                Xóa tài khoản sẽ xóa tất cả dữ liệu của bạn vĩnh viễn và không thể khôi phục.
+                Deleting your account will permanently erase all your data and cannot be undone.
               </p>
               <button
                 className="ep-btn ep-btn--danger"
-                onClick={() => toast.warning("Chức năng này chưa được hỗ trợ", "Vui lòng liên hệ admin.")}
+                onClick={() => toast.warning("This feature isn't supported yet", "Please contact the admin.")}
               >
-                Xóa tài khoản
+                Delete account
               </button>
             </div>
           </main>

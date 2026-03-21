@@ -46,7 +46,7 @@ export default function MyCoursesPage() {
     <div className="mc-page">
       <div className="mc-loading">
         <div className="mc-loading__spinner" />
-        <p>Đang tải khóa học...</p>
+        <p>Loading your courses...</p>
       </div>
     </div>
   );
@@ -56,14 +56,14 @@ export default function MyCoursesPage() {
       {/* Header */}
       <div className="mc-header">
         <div className="mc-header__text">
-          <h1>Khóa học của tôi</h1>
-          <p>{courses.length} khóa học đã mua</p>
+          <h1>My courses</h1>
+          <p>{courses.length} purchased courses</p>
         </div>
         {courses.length > 0 && (
           <div className="mc-search">
             <FiSearch />
             <input
-              placeholder="Tìm khóa học..."
+              placeholder="Search courses..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -75,15 +75,15 @@ export default function MyCoursesPage() {
       {courses.length === 0 ? (
         <div className="mc-empty">
           <FiBook />
-          <h3>Bạn chưa có khóa học nào</h3>
-          <p>Khám phá và mua khóa học để bắt đầu học tập</p>
-          <button onClick={() => navigate("/")}>Khám phá khóa học</button>
+          <h3>You haven't purchased any courses yet</h3>
+          <p>Explore and buy courses to start learning</p>
+          <button onClick={() => navigate("/")}>Explore courses</button>
         </div>
       ) : filtered.length === 0 ? (
         <div className="mc-empty">
           <FiSearch />
-          <h3>Không tìm thấy khóa học</h3>
-          <p>Thử tìm với từ khóa khác</p>
+          <h3>No courses found</h3>
+          <p>Try searching with a different keyword</p>
         </div>
       ) : (
         <div className="mc-grid">
@@ -108,7 +108,7 @@ export default function MyCoursesPage() {
                 </div>
                 {course.progressPct === 100 && (
                   <div className="mc-card__completed-badge">
-                    <FiAward /> Hoàn thành
+                    <FiAward /> Completed
                   </div>
                 )}
               </div>
@@ -120,7 +120,7 @@ export default function MyCoursesPage() {
 
                 {/* Progress */}
                 <div className="mc-card__stats">
-                  <span><FiBook /> {course.completedLectures}/{course.totalLectures} bài</span>
+                  <span><FiBook /> {course.completedLectures}/{course.totalLectures} lectures</span>
                   <span className={`mc-card__pct ${course.progressPct === 100 ? "mc-card__pct--done" : ""}`}>
                     {course.progressPct}%
                   </span>
@@ -129,7 +129,7 @@ export default function MyCoursesPage() {
                 {/* Last lecture */}
                 {course.lastLecture && course.progressPct < 100 && (
                   <p className="mc-card__last">
-                    <FiClock /> Đang học: <em>{course.lastLecture.title}</em>
+                    <FiClock /> Currently learning: <em>{course.lastLecture.title}</em>
                   </p>
                 )}
 
@@ -139,10 +139,10 @@ export default function MyCoursesPage() {
                 >
                   <FiPlay />
                   {course.progressPct === 0
-                    ? "Bắt đầu học"
+                    ? "Start learning"
                     : course.progressPct === 100
-                    ? "Xem lại"
-                    : "Tiếp tục học"}
+                    ? "Review"
+                    : "Continue learning"}
                 </button>
               </div>
             </div>

@@ -38,11 +38,11 @@ const TYPE_ICON: Record<NotifType, React.ReactElement> = {
 };
 
 const TYPE_LABEL: Record<NotifType, string> = {
-  course_added: "Khóa học",
-  discount:     "Khuyến mãi",
-  coupon:       "Mã giảm giá",
-  system:       "Hệ thống",
-  reminder:     "Nhắc nhở",
+  course_added: "Course",
+  discount:     "Discount",
+  coupon:       "Coupon",
+  system:       "System",
+  reminder:     "Reminder",
 };
 
 const TYPE_COLORS: Record<NotifType, { bg: string; color: string; accent: string }> = {
@@ -54,13 +54,13 @@ const TYPE_COLORS: Record<NotifType, { bg: string; color: string; accent: string
 };
 
 const FILTER_TABS: { key: FilterTab; label: string }[] = [
-  { key: "all",          label: "Tất cả"      },
-  { key: "unread",       label: "Chưa đọc"    },
-  { key: "course_added", label: "Khóa học"    },
-  { key: "discount",     label: "Khuyến mãi"  },
-  { key: "coupon",       label: "Mã giảm giá" },
-  { key: "system",       label: "Hệ thống"    },
-  { key: "reminder",     label: "Nhắc nhở"    },
+  { key: "all",          label: "All"      },
+  { key: "unread",       label: "Unread"    },
+  { key: "course_added", label: "Courses"    },
+  { key: "discount",     label: "Discounts"  },
+  { key: "coupon",       label: "Coupons" },
+  { key: "system",       label: "System"    },
+  { key: "reminder",     label: "Reminders"    },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -72,16 +72,16 @@ function parseMySQLDate(s: string): Date {
 function timeAgo(dateStr: string): string {
   const date = parseMySQLDate(dateStr);
   const diff = Date.now() - date.getTime();
-  if (diff < 0) return "Vừa xong";
+  if (diff < 0) return "Just now";
   const m = Math.floor(diff / 60_000);
-  if (m < 1)   return "Vừa xong";
-  if (m < 60)  return `${m} phút trước`;
+  if (m < 1)   return "Just now";
+  if (m < 60)  return `${m} minutes ago`;
   const h = Math.floor(m / 60);
-  if (h < 24)  return `${h} giờ trước`;
+  if (h < 24)  return `${h} hours ago`;
   const d = Math.floor(h / 24);
-  if (d === 1) return "Hôm qua";
-  if (d < 7)   return `${d} ngày trước`;
-  if (d < 30)  return `${Math.floor(d / 7)} tuần trước`;
+  if (d === 1) return "Yesterday";
+  if (d < 7)   return `${d} days ago`;
+  if (d < 30)  return `${Math.floor(d / 7)} weeks ago`;
   return date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
@@ -102,10 +102,10 @@ function groupByDate(notifs: Notification[]): { label: string; items: Notificati
     const d = parseMySQLDate(n.createdAt);
     const diffDays = Math.floor((now.getTime() - d.getTime()) / 86_400_000);
     let label: string;
-    if (diffDays === 0) label = "Hôm nay";
-    else if (diffDays === 1) label = "Hôm qua";
-    else if (diffDays < 7)  label = "Tuần này";
-    else if (diffDays < 30) label = "Tháng này";
+    if (diffDays === 0) label = "Today";
+    else if (diffDays === 1) label = "Yesterday";
+    else if (diffDays < 7)  label = "This week";
+    else if (diffDays < 30) label = "This month";
     else label = d.toLocaleDateString("vi-VN", { month: "long", year: "numeric" });
 
     if (!groups[label]) groups[label] = [];
@@ -204,21 +204,21 @@ export default function NotificationsPage() {
         {/* ── Page header ── */}
         <div style={ps.pageHeader}>
           <div>
-            <h1 style={ps.pageTitle}>Thông báo</h1>
+            <h1 style={ps.pageTitle}>Notifications</h1>
             <p style={ps.pageSubtitle}>
               {unread > 0
-                ? <><strong style={{ color: "#6366f1" }}>{unread}</strong> thông báo chưa đọc</>
-                : "Tất cả đã được đọc"}
+                ? <><strong style={{ color: "#6366f1" }}>{unread}</strong> unread notifications</>
+                : "All read"}
             </p>
           </div>
           <div style={ps.headerActions}>
-            <button type="button" style={ps.iconBtn} onClick={() => fetchNotifs(false)} title="Làm mới">
+            <button type="button" style={ps.iconBtn} onClick={() => fetchNotifs(false)} title="Refresh">
               <IoRefreshOutline />
             </button>
             {unread > 0 && (
               <button type="button" style={ps.actionBtn} onClick={markAllRead}>
                 <IoCheckmarkDoneOutline />
-                Đọc tất cả
+                Read all
               </button>
             )}
           </div>
@@ -260,7 +260,7 @@ export default function NotificationsPage() {
               <div key={label} style={ps.group}>
                 <div style={ps.groupHeader}>
                   <span style={ps.groupLabel}>{label}</span>
-                  <span style={ps.groupCount}>{items.length} thông báo</span>
+                  <span style={ps.groupCount}>{items.length} notifications</span>
                 </div>
                 <div style={ps.groupList}>
                   {items.map((n) => (
@@ -342,7 +342,7 @@ function NotifCard({
 
         <div style={cs.bottomRow}>
           {notif.link && (
-            <span style={cs.link}>Xem chi tiết →</span>
+            <span style={cs.link}>View details →</span>
           )}
           <div style={{ ...cs.actions, opacity: hovered ? 1 : 0 }}>
             {!notif.isRead && (
@@ -350,20 +350,20 @@ function NotifCard({
                 type="button"
                 style={cs.actionBtn}
                 onClick={(e) => { e.stopPropagation(); onMarkRead(notif); }}
-                title="Đánh dấu đã đọc"
+                title="Mark as read"
               >
                 <IoCheckmarkDoneOutline />
-                <span>Đã đọc</span>
+                <span>Read</span>
               </button>
             )}
             <button
               type="button"
               style={{ ...cs.actionBtn, ...cs.deleteBtn }}
               onClick={(e) => onDelete(e, notif.id)}
-              title="Xóa thông báo"
+              title="Delete notification"
             >
               <IoTrashOutline />
-              <span>Xóa</span>
+              <span>Delete</span>
             </button>
           </div>
         </div>
@@ -404,13 +404,13 @@ function SkeletonList() {
 // ─── Empty State ──────────────────────────────────────────────────────────────
 function EmptyState({ filter }: { filter: FilterTab }) {
   const msgs: Record<FilterTab, { icon: string; title: string; sub: string }> = {
-    all:          { icon: "🔔", title: "Chưa có thông báo nào",     sub: "Các thông báo mới sẽ xuất hiện tại đây." },
-    unread:       { icon: "✅", title: "Tất cả đã được đọc!",       sub: "Bạn đã xem hết thông báo rồi." },
-    course_added: { icon: "📚", title: "Không có thông báo khóa học", sub: "Khi có khóa học mới, bạn sẽ được thông báo." },
-    discount:     { icon: "🏷️", title: "Không có khuyến mãi",       sub: "Chúng tôi sẽ thông báo khi có ưu đãi mới." },
-    coupon:       { icon: "🎟️", title: "Không có mã giảm giá",      sub: "Theo dõi để nhận mã ưu đãi độc quyền." },
-    system:       { icon: "ℹ️",  title: "Không có thông báo hệ thống", sub: "Mọi thứ đang hoạt động tốt." },
-    reminder:     { icon: "⏰",  title: "Không có nhắc nhở",         sub: "Bắt đầu học để nhận nhắc nhở tiến độ." },
+    all:          { icon: "🔔", title: "No notifications",     sub: "New notifications will appear here." },
+    unread:       { icon: "✅", title: "All read!",       sub: "You've read all notifications." },
+    course_added: { icon: "📚", title: "No course notifications", sub: "We'll notify you when new courses are available." },
+    discount:     { icon: "🏷️", title: "No discounts",       sub: "We'll let you know when there are new offers." },
+    coupon:       { icon: "🎟️", title: "No coupon codes",      sub: "Follow along to get exclusive coupon codes." },
+    system:       { icon: "ℹ️",  title: "No system notifications", sub: "Everything is running smoothly." },
+    reminder:     { icon: "⏰",  title: "No reminders",         sub: "Start learning to receive progress reminders." },
   };
   const m = msgs[filter] ?? msgs.all;
 

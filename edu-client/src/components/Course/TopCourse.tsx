@@ -46,7 +46,7 @@ function getBadge(id: string): "bestseller" | "new" | null {
 
 const MOCK_HIGHLIGHTS = [
   "Lifetime access · Certificate of completion",
-  "Thực hành với dự án thực tế",
+  "Practice with real-world projects",
   "Access on mobile and desktop",
 ];
 
@@ -229,9 +229,9 @@ function TrendingCard({
         {badge && (
           <div className="trending-card__tags">
             {badge === "bestseller" ? (
-              <span className="tabs-tag tabs-tag--premium">Bán chạy nhất</span>
+              <span className="tabs-tag tabs-tag--premium">Best sellers</span>
             ) : (
-              <span className="tabs-tag tabs-tag--new">Mới</span>
+              <span className="tabs-tag tabs-tag--new">New</span>
             )}
           </div>
         )}
@@ -275,7 +275,7 @@ function TrendingCourse() {
     axiosInstance
       .get("/courseCreation/all-courses")
       .then((res) => setCourses(res.data.courses || []))
-      .catch(() => setError("Không thể tải khóa học. Vui lòng thử lại."))
+      .catch(() => setError("Unable to load courses. Please try again."))
       .finally(() => setLoading(false));
   }, []);
 
@@ -299,8 +299,8 @@ function TrendingCourse() {
     const userId = localStorage.getItem("userId");
     if (!userId) {
       toast.warning(
-        "Vui lòng đăng nhập",
-        "Bạn cần đăng nhập để thêm vào giỏ hàng.",
+        "Please log in",
+        "You need to log in to add this to your cart.",
       );
       return;
     }
@@ -311,7 +311,7 @@ function TrendingCourse() {
         user_id: userId,
         course_id: courseId,
       })
-      .then(() => alert(`Đã thêm "${course.title}" vào giỏ hàng!`))
+      .then(() => alert(`Added "${course.title}" to cart!`))
       .catch(console.error);
   };
 
@@ -350,7 +350,7 @@ function TrendingCourse() {
 
         {!loading && courses.length > 5 && (
           <Link to="/courses" className="All-Data-science-course">
-            Xem tất cả khóa học →
+            View all courses →
           </Link>
         )}
       </div>

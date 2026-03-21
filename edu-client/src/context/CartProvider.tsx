@@ -23,19 +23,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addToCart = useCallback(async (userId: string, courseId: string) => {
     // Đã có trong giỏ
     if (cartItems.some((c) => c.id === courseId)) {
-      toast.info("Đã có trong giỏ hàng", "Khóa học này đã được thêm trước đó.");
+      toast.info("Already in cart", "This course was added earlier.");
       return;
     }
     try {
       const res = await axiosInstance.post("/courseCreation/add-cart", { user_id: userId, course_id: courseId });
       if (res.status === 200 || res.status === 201) {
         await fetchCart(userId);
-        toast.success("Thêm vào giỏ hàng!", "Khóa học đã được thêm vào giỏ hàng của bạn.");
+        toast.success("Added to cart!", "The course has been added to your cart.");
       }
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })
-                    ?.response?.data?.message ?? "Không thể thêm vào giỏ hàng.";
-      toast.error("Thêm thất bại", msg);
+                    ?.response?.data?.message ?? "Unable to add to cart.";
+      toast.error("Add failed", msg);
     }
   }, [cartItems, fetchCart, toast]);
 
@@ -45,11 +45,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         data: { user_id: userId, course_id: courseId },
       });
       setCartItems((prev) => prev.filter((c) => c.id !== courseId));
-      toast.info("Đã xóa khỏi giỏ hàng");
+      toast.info("Removed from cart");
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })
-                    ?.response?.data?.message ?? "Không thể xóa khỏi giỏ hàng.";
-      toast.error("Xóa thất bại", msg);
+                    ?.response?.data?.message ?? "Unable to remove from cart.";
+      toast.error("Remove failed", msg);
     }
   }, [toast]);
 
@@ -57,9 +57,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await axiosInstance.delete(`/courseCreation/clear-cart/${userId}`);
       setCartItems([]);
-      toast.info("Đã xóa toàn bộ giỏ hàng");
+      toast.info("Cart cleared");
     } catch (err: unknown) {
-      toast.error("Không thể xóa giỏ hàng");
+      toast.error("Unable to clear cart");
     }
   }, [toast]);
 

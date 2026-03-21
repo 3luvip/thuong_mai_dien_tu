@@ -108,15 +108,15 @@ export default function WishlistPage() {
         {/* ── Header ── */}
         <div style={S.header}>
           <div>
-            <h1 style={S.title}>Khóa học yêu thích</h1>
+            <h1 style={S.title}>Wishlist</h1>
             <p style={S.subtitle}>
               {total > 0 ? (
                 <>
-                  <strong style={{ color: "#f43f5e" }}>{total}</strong> khóa học
-                  đã lưu
+                  <strong style={{ color: "#f43f5e" }}>{total}</strong> saved
+                  courses
                 </>
               ) : (
-                "Chưa có khóa học nào được lưu"
+                "No saved courses yet"
               )}
             </p>
           </div>
@@ -130,7 +130,7 @@ export default function WishlistPage() {
               <IoSearchOutline style={S.searchIcon} />
               <input
                 style={S.searchInput}
-                placeholder="Tìm khóa học..."
+                placeholder="Search courses..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -144,7 +144,7 @@ export default function WishlistPage() {
             >
               {categories.map((c) => (
                 <option key={c} value={c}>
-                  {c === "all" ? "Tất cả danh mục" : c}
+                  {c === "all" ? "All categories" : c}
                 </option>
               ))}
             </select>
@@ -155,11 +155,11 @@ export default function WishlistPage() {
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
             >
-              <option value="newest">Mới thêm nhất</option>
-              <option value="oldest">Cũ nhất</option>
-              <option value="price_asc">Giá tăng dần</option>
-              <option value="price_desc">Giá giảm dần</option>
-              <option value="name">Tên A–Z</option>
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="price_asc">Price: low to high</option>
+              <option value="price_desc">Price: high to low</option>
+              <option value="name">Name A–Z</option>
             </select>
 
             {/* View toggle */}
@@ -171,7 +171,7 @@ export default function WishlistPage() {
                   ...(view === "grid" ? S.viewBtnActive : {}),
                 }}
                 onClick={() => setView("grid")}
-                title="Dạng lưới"
+                title="Grid"
               >
                 <IoGridOutline />
               </button>
@@ -182,7 +182,7 @@ export default function WishlistPage() {
                   ...(view === "list" ? S.viewBtnActive : {}),
                 }}
                 onClick={() => setView("list")}
-                title="Dạng danh sách"
+                title="List"
               >
                 <IoListOutline />
               </button>
@@ -200,7 +200,7 @@ export default function WishlistPage() {
             style={{ textAlign: "center", padding: "60px 0", color: "#64748b" }}
           >
             <IoSearchOutline style={{ fontSize: "3rem", marginBottom: 12 }} />
-            <p>Không tìm thấy khóa học phù hợp.</p>
+            <p>No matching courses found.</p>
           </div>
         ) : view === "grid" ? (
           <div style={S.grid}>
@@ -324,13 +324,13 @@ function CourseGridCard({
           disabled={inCart}
         >
           <IoCartOutline />
-          {inCart ? "Đã trong giỏ" : "Thêm vào giỏ"}
+          {inCart ? "In cart" : "Add to cart"}
         </button>
         <button
           type="button"
           style={GS.btnRemove}
           onClick={() => onRemove(course)}
-          title="Xóa khỏi yêu thích"
+          title="Remove from wishlist"
         >
           <IoHeartDislike />
         </button>
@@ -409,7 +409,7 @@ function CourseListCard({
             onClick={() => onMoveToCart(course)}
             disabled={inCart}
           >
-            <IoCartOutline /> {inCart ? "Đã trong giỏ" : "Thêm vào giỏ"}
+            <IoCartOutline /> {inCart ? "In cart" : "Add to cart"}
           </button>
           <HeartButton
             courseId={course.id}
@@ -487,7 +487,7 @@ function EmptyState() {
           margin: 0,
         }}
       >
-        Chưa có khóa học yêu thích
+        No saved courses
       </h2>
       <p
         style={{
@@ -497,7 +497,7 @@ function EmptyState() {
           textAlign: "center",
         }}
       >
-        Nhấn vào biểu tượng ❤️ trên bất kỳ khóa học nào để lưu vào đây.
+        Click the ❤️ icon on any course to save it here.
       </p>
       <Link
         to="/"
@@ -512,7 +512,7 @@ function EmptyState() {
           textDecoration: "none",
         }}
       >
-        Khám phá khóa học
+        Explore courses
       </Link>
     </div>
   );

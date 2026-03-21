@@ -112,7 +112,7 @@ function ToastContainer({
   return (
     <>
       <style>{TOAST_CSS}</style>
-      <div className="toast-container" role="region" aria-label="Thông báo">
+      <div className="toast-container" role="region" aria-label="Notifications">
         {toasts.map((t) => (
           <ToastItem key={t.id} toast={t} onDismiss={onDismiss} />
         ))}
@@ -185,7 +185,7 @@ function ToastItem({
         type="button"
         className="toast-close"
         onClick={() => onDismiss(toast.id)}
-        aria-label="Đóng thông báo"
+        aria-label="Close notification"
       >
         <IoClose />
       </button>

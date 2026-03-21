@@ -58,8 +58,9 @@ function getMockRating(id: string) {
 }
 
 const MOCK_HIGHLIGHTS = [
-  "Lifetime access · Certificate of completion",
-  "Thực hành với dự án thực tế",
+  "Lifetime access",
+  "Certificate of completion",
+  "Hands-on projects",
   "Access on mobile and desktop",
 ];
 
@@ -196,7 +197,6 @@ function CourseItem({
         onMouseLeave();
       }}
     >
-      {/* ❤️ Heart button góc trên phải — chỉ hiện khi hover */}
       {userId && (
         <div
           style={{
@@ -348,8 +348,8 @@ function TabComponent() {
   const handleAddToCart = (course: Course) => {
     if (!userId) {
       toast.warning(
-        "Vui lòng đăng nhập",
-        "Bạn cần đăng nhập để thêm vào giỏ hàng.",
+        "Please log in",
+        "You need to log in to add this to your cart.",
       );
       return;
     }
@@ -371,7 +371,7 @@ function TabComponent() {
 
         {error && (
           <p className="tabs-error">
-            Không thể tải dữ liệu. Vui lòng thử lại sau.
+            Unable to load data. Please try again later.
           </p>
         )}
 

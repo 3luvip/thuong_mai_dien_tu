@@ -60,7 +60,7 @@ function fmtDur(sec: number) {
   if (!sec) return "—";
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
-  return h > 0 ? `${h}g ${m}p` : `${m} phút`;
+  return h > 0 ? `${h}h ${m}m` : `${m} min`;
 }
 
 // ─── VideoUploadCell ──────────────────────────────────────────────────────────
@@ -101,7 +101,7 @@ function VideoUploadCell({
       );
       onUploaded(lecture.id, res.data.videoUrl, res.data.durationSec);
     } catch (e: any) {
-      setError(e?.response?.data?.message ?? "Upload thất bại");
+      setError(e?.response?.data?.message ?? "Upload failed");
     } finally {
       setUploading(false);
       setProgress(0);
@@ -109,7 +109,7 @@ function VideoUploadCell({
   }
 
   async function handleDelete() {
-    if (!confirm("Xóa video này?")) return;
+    if (!confirm("Delete this video?")) return;
     await axiosInstance.delete(`/instructor/lectures/${lecture.id}/video`);
     onDeleted(lecture.id);
   }
@@ -122,7 +122,7 @@ function VideoUploadCell({
         <button
           className="id-icon-btn id-icon-btn--danger"
           onClick={handleDelete}
-          title="Xóa video"
+          title="Delete video"
         >
           <FiTrash2 />
         </button>
@@ -232,7 +232,7 @@ function CurriculumEditor({ courseId }: { courseId: string }) {
   }
 
   async function handleDeleteSection(sectionId: string) {
-    if (!confirm("Xóa chương này và tất cả bài giảng bên trong?")) return;
+    if (!confirm("Delete this section and all lectures inside?")) return;
     await axiosInstance.delete(`/instructor/sections/${sectionId}`);
     setCurriculum((prev) => prev.filter((s) => s.id !== sectionId));
   }
@@ -282,7 +282,7 @@ function CurriculumEditor({ courseId }: { courseId: string }) {
   }
 
   async function handleDeleteLecture(lectureId: string, sectionId: string) {
-    if (!confirm("Xóa bài giảng này?")) return;
+    if (!confirm("Delete this lecture?")) return;
     await axiosInstance.delete(`/instructor/lectures/${lectureId}`);
     setCurriculum((prev) =>
       prev.map((s) =>
@@ -339,14 +339,14 @@ function CurriculumEditor({ courseId }: { courseId: string }) {
     );
   }
 
-  if (loading) return <div className="id-loading-spin"><FiLoader className="spin" /> Đang tải...</div>;
+  if (loading) return <div className="id-loading-spin"><FiLoader className="spin" /> Loading...</div>;
 
   return (
     <div className="id-curriculum">
       <div className="id-curriculum__header">
-        <h3>Nội dung khóa học</h3>
+        <h3>Course content</h3>
         <button className="id-btn id-btn--sm id-btn--primary" onClick={() => setAddingSection(true)}>
-          <FiPlus /> Thêm chương
+          <FiPlus /> Add section
         </button>
       </div>
 
@@ -356,7 +356,7 @@ function CurriculumEditor({ courseId }: { courseId: string }) {
           <input
             autoFocus
             className="id-input"
-            placeholder="Tên chương mới..."
+            placeholder="New section title..."
             value={newSectionTitle}
             onChange={(e) => setNewSectionTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAddSection()}
@@ -369,7 +369,7 @@ function CurriculumEditor({ courseId }: { courseId: string }) {
       {curriculum.length === 0 && !addingSection && (
         <div className="id-empty">
           <FiBookOpen />
-          <p>Chưa có chương nào. Nhấn "Thêm chương" để bắt đầu.</p>
+          <p>No sections yet. Click "Add section" to get started.</p>
         </div>
       )}
 
@@ -398,14 +398,14 @@ function CurriculumEditor({ courseId }: { courseId: string }) {
             )}
 
             <span className="id-section__meta">
-              {sec.lectureCount} bài · {fmtDur(sec.totalDurationSec)}
+              {sec.lectureCount} lectures · {fmtDur(sec.totalDurationSec)}
             </span>
 
             <div className="id-section__actions">
-              <button className="id-icon-btn" onClick={() => { setEditingSectionId(sec.id); setEditingSectionTitle(sec.title); }} title="Sửa">
+              <button className="id-icon-btn" onClick={() => { setEditingSectionId(sec.id); setEditingSectionTitle(sec.title); }} title="Edit">
                 <FiEdit2 />
               </button>
-              <button className="id-icon-btn id-icon-btn--danger" onClick={() => handleDeleteSection(sec.id)} title="Xóa">
+              <button className="id-icon-btn id-icon-btn--danger" onClick={() => handleDeleteSection(sec.id)} title="Delete">
                 <FiTrash2 />
               </button>
             </div>
@@ -438,10 +438,10 @@ function CurriculumEditor({ courseId }: { courseId: string }) {
                   <button
                     className={`id-preview-badge ${lec.isPreview ? "id-preview-badge--on" : ""}`}
                     onClick={() => handleTogglePreview(lec, sec.id)}
-                    title={lec.isPreview ? "Đang xem trước - click để tắt" : "Click để bật xem trước"}
+                    title={lec.isPreview ? "Currently previewing - click to turn off" : "Click to enable preview"}
                   >
                     {lec.isPreview ? <FiEye /> : <FiEyeOff />}
-                    {lec.isPreview ? "Preview" : "Riêng tư"}
+                    {lec.isPreview ? "Preview" : "Private"}
                   </button>
 
                   {/* Video upload */}
@@ -452,10 +452,10 @@ function CurriculumEditor({ courseId }: { courseId: string }) {
                   />
 
                   <div className="id-lecture__actions">
-                    <button className="id-icon-btn" onClick={() => { setEditingLectureId(lec.id); setEditingLectureTitle(lec.title); }} title="Sửa">
+                    <button className="id-icon-btn" onClick={() => { setEditingLectureId(lec.id); setEditingLectureTitle(lec.title); }} title="Edit">
                       <FiEdit2 />
                     </button>
-                    <button className="id-icon-btn id-icon-btn--danger" onClick={() => handleDeleteLecture(lec.id, sec.id)} title="Xóa">
+                    <button className="id-icon-btn id-icon-btn--danger" onClick={() => handleDeleteLecture(lec.id, sec.id)} title="Delete">
                       <FiTrash2 />
                     </button>
                   </div>
@@ -468,7 +468,7 @@ function CurriculumEditor({ courseId }: { courseId: string }) {
                   <input
                     autoFocus
                     className="id-input id-input--sm"
-                    placeholder="Tên bài giảng mới..."
+                    placeholder="New lecture title..."
                     value={newLectureTitle}
                     onChange={(e) => setNewLectureTitle(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleAddLecture(sec.id)}
@@ -481,7 +481,7 @@ function CurriculumEditor({ courseId }: { courseId: string }) {
                   className="id-add-lecture-btn"
                   onClick={() => { setAddingLectureToSection(sec.id); setNewLectureTitle(""); }}
                 >
-                  <FiPlus /> Thêm bài giảng
+                  <FiPlus /> Add lecture
                 </button>
               )}
             </div>
@@ -534,10 +534,10 @@ export default function InstructorDashboard() {
       <div className="id-page">
         <div className="id-topbar">
           <button className="id-back-btn" onClick={() => setView("list")}>
-            ← Quay lại
+            ← Back
           </button>
           <div className="id-topbar__info">
-            <span className="id-topbar__label">Chỉnh sửa khóa học</span>
+            <span className="id-topbar__label">Edit course</span>
             <h2 className="id-topbar__title">{selectedCourse.title}</h2>
           </div>
         </div>
@@ -554,13 +554,13 @@ export default function InstructorDashboard() {
       <div className="id-header">
         <div className="id-header__left">
           <h1 className="id-header__title">Instructor Dashboard</h1>
-          <p className="id-header__sub">Quản lý khóa học của bạn</p>
+          <p className="id-header__sub">Manage your courses</p>
         </div>
         <button
           className="id-btn id-btn--primary"
           onClick={() => navigate("/create-course")}
         >
-          <FiPlus /> Tạo khóa học mới
+          <FiPlus /> Create a new course
         </button>
       </div>
 
@@ -571,7 +571,7 @@ export default function InstructorDashboard() {
             <FiBookOpen className="id-stat-card__icon" />
             <div>
               <span className="id-stat-card__num">{courses.length}</span>
-              <span className="id-stat-card__label">Khóa học</span>
+              <span className="id-stat-card__label">Courses</span>
             </div>
           </div>
           <div className="id-stat-card">
@@ -580,7 +580,7 @@ export default function InstructorDashboard() {
               <span className="id-stat-card__num">
                 {courses.reduce((a, c) => a + c.stats.students, 0)}
               </span>
-              <span className="id-stat-card__label">Học viên</span>
+              <span className="id-stat-card__label">Students</span>
             </div>
           </div>
           <div className="id-stat-card">
@@ -591,7 +591,7 @@ export default function InstructorDashboard() {
                   ? (courses.reduce((a, c) => a + c.stats.avgRating, 0) / courses.length).toFixed(1)
                   : "—"}
               </span>
-              <span className="id-stat-card__label">Rating TB</span>
+              <span className="id-stat-card__label">Average rating</span>
             </div>
           </div>
           <div className="id-stat-card">
@@ -600,7 +600,7 @@ export default function InstructorDashboard() {
               <span className="id-stat-card__num">
                 {courses.reduce((a, c) => a + c.stats.lectures, 0)}
               </span>
-              <span className="id-stat-card__label">Bài giảng</span>
+              <span className="id-stat-card__label">Lectures</span>
             </div>
           </div>
         </div>
@@ -609,17 +609,17 @@ export default function InstructorDashboard() {
       {/* Course list */}
       <div className="id-content">
         {loading ? (
-          <div className="id-loading-spin"><FiLoader className="spin" /> Đang tải...</div>
+          <div className="id-loading-spin"><FiLoader className="spin" /> Loading...</div>
         ) : courses.length === 0 ? (
           <div className="id-empty id-empty--page">
             <FiBookOpen />
-            <h3>Bạn chưa có khóa học nào</h3>
-            <p>Bắt đầu bằng cách tạo khóa học đầu tiên của bạn.</p>
+            <h3>You don't have any courses yet</h3>
+            <p>Get started by creating your first course.</p>
             <button
               className="id-btn id-btn--primary"
               onClick={() => navigate("/create-course")}
             >
-              <FiPlus /> Tạo khóa học
+              <FiPlus /> Create a course
             </button>
           </div>
         ) : (
@@ -644,9 +644,9 @@ export default function InstructorDashboard() {
                   <p className="id-course-card__sub">{course.courseSub}</p>
 
                   <div className="id-course-card__stats">
-                    <span><FiUsers /> {course.stats.students} học viên</span>
+                    <span><FiUsers /> {course.stats.students} students</span>
                     <span><FiStar /> {course.stats.avgRating.toFixed(1)}</span>
-                    <span><MdOutlineOndemandVideo /> {course.stats.lectures} bài</span>
+                    <span><MdOutlineOndemandVideo /> {course.stats.lectures} lectures</span>
                   </div>
 
                   <div className="id-course-card__price">
@@ -658,13 +658,13 @@ export default function InstructorDashboard() {
                       className="id-btn id-btn--primary id-btn--sm"
                       onClick={() => openCurriculum(course)}
                     >
-                      <FiEdit2 /> Chỉnh sửa nội dung
+                      <FiEdit2 /> Edit content
                     </button>
                     <button
                       className="id-btn id-btn--ghost id-btn--sm"
                       onClick={() => navigate(`/course-detail/${course.id}`)}
                     >
-                      <FiEye /> Xem trang
+                      <FiEye /> View page
                     </button>
                   </div>
                 </div>

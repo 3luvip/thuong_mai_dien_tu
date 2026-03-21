@@ -32,7 +32,7 @@ function Register() {
       return;
     }
     if (!email.trim() || !email.includes("@")) {
-      toast.warning("Invalid Email Address", "PLease enter the right form of email");
+      toast.warning("Invalid email address", "Please enter a valid email format.");
       return;
     }
     if (password.length < 6) {
@@ -40,7 +40,7 @@ function Register() {
       return;
     }
     if (!role) {
-      toast.warning("Choose your role", "Choose student or instructor to continue");
+      toast.warning("Select your role", "Please choose learner or instructor to continue.");
       setError("PLease choose your role");
       return;
     }
@@ -51,8 +51,8 @@ function Register() {
 
       // ✅ Thành công → toast rồi chuyển trang
       toast.success(
-        "Sign up successfully. 🎉",
-        "Your account is created. Sign in to continue the action."
+        "Sign up successful. 🎉",
+        "Your account has been created. Please sign in to continue."
       );
 
       setName(""); setEmail(""); setPassword(""); setRole("");
@@ -60,14 +60,14 @@ function Register() {
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
       const msg    = (err as { response?: { data?: { message?: string } } })
-                       ?.response?.data?.message ?? "Đăng ký thất bại, vui lòng thử lại.";
+                       ?.response?.data?.message ?? "Sign up failed, please try again.";
 
       if (status === 409) {
         toast.error("Email has been used", "Try log in again or use another email.");
       } else if (status === 400) {
         toast.error("Invalid information", msg);
       } else {
-        toast.error("Sign up FAILED", msg);
+        toast.error("Sign up failed", msg);
       }
       setError(msg);
     } finally {
@@ -170,10 +170,10 @@ function Register() {
             </div>
             <p className="register-card__terms">
               By signing up, please agreed with{" "}
-              <NavLink to="/terms">Term of use</NavLink> và{" "}
+              <NavLink to="/terms">Term of use</NavLink> and{" "}
               <NavLink to="/privacy">Privacy policy</NavLink>.
             </p>
-            <div className="register-card__divider"><span>đã có tài khoản?</span></div>
+            <div className="register-card__divider"><span>Already have an account?</span></div>
             <p className="register-card__login">
               <NavLink to="/login">Sign in here→</NavLink>
             </p>

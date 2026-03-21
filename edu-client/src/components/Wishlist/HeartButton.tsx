@@ -34,8 +34,8 @@ export default function HeartButton({
         type="button"
         onClick={handleClick}
         disabled={!userId}
-        aria-label={wishlisted ? "Xóa khỏi yêu thích" : "Thêm vào yêu thích"}
-        title={wishlisted ? "Xóa khỏi yêu thích" : "Thêm vào yêu thích"}
+        aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        title={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
         style={{
           background:    wishlisted ? "rgba(244,63,94,0.15)" : "rgba(15,23,42,0.7)",
           border:        wishlisted ? "1px solid rgba(244,63,94,0.35)" : "1px solid rgba(148,163,184,0.2)",

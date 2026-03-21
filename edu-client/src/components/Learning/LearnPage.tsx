@@ -99,7 +99,7 @@ export default function LearnPage() {
         const resume = allLectures.find((l: Lecture) => !l.isCompleted) ?? allLectures[0];
         if (resume) setActiveLecture(resume);
       })
-      .catch(() => setError("Bạn chưa mua khóa học này hoặc có lỗi xảy ra."))
+      .catch(() => setError("You haven't purchased this course or something went wrong."))
       .finally(() => setLoading(false));
   }, [courseId]);
 
@@ -208,7 +208,7 @@ export default function LearnPage() {
 
   if (loading) return (
     <div className="lp-page">
-      <div className="lp-loading"><div className="lp-spinner" /><p>Đang tải...</p></div>
+      <div className="lp-loading"><div className="lp-spinner" /><p>Loading...</p></div>
     </div>
   );
 
@@ -217,7 +217,7 @@ export default function LearnPage() {
       <div className="lp-error">
         <FiLock />
         <h3>{error}</h3>
-        <button onClick={() => navigate("/")}>Về trang chủ</button>
+        <button onClick={() => navigate("/")}>Back to home</button>
       </div>
     </div>
   );
@@ -239,10 +239,10 @@ export default function LearnPage() {
           <div className="lp-topbar__progress-track">
             <div className="lp-topbar__progress-fill" style={{ width: `${progressPct}%` }} />
           </div>
-          <span className="lp-topbar__pct">{progressPct}% hoàn thành</span>
+          <span className="lp-topbar__pct">{progressPct}% completed</span>
         </div>
         {progressPct === 100 && (
-          <div className="lp-topbar__badge"><FiAward /> Hoàn thành!</div>
+          <div className="lp-topbar__badge"><FiAward /> Completed!</div>
         )}
       </div>
 
@@ -261,15 +261,15 @@ export default function LearnPage() {
                 onEnded={handleVideoEnded}
               >
                 <source src={videoSrc} />
-                Trình duyệt không hỗ trợ video.
+                Your browser does not support video.
               </video>
             ) : (
               <div className="lp-video-placeholder">
                 <MdOutlineOndemandVideo />
                 <p>
                   {activeLecture
-                    ? "Bài giảng này chưa có video"
-                    : "Chọn một bài giảng để bắt đầu"}
+                    ? "This lecture has no video"
+                    : "Select a lecture to begin"}
                 </p>
               </div>
             )}
@@ -285,7 +285,7 @@ export default function LearnPage() {
                   onClick={() => handleMarkComplete(activeLecture)}
                 >
                   <FiCheck />
-                  {activeLecture.isCompleted ? "Đã hoàn thành" : "Đánh dấu hoàn thành"}
+                  {activeLecture.isCompleted ? "Completed" : "Mark as completed"}
                 </button>
                 {activeLecture.durationSec > 0 && (
                   <span className="lp-duration">
@@ -300,9 +300,9 @@ export default function LearnPage() {
         {/* ── Curriculum sidebar ── */}
         <aside className="lp-sidebar">
           <div className="lp-sidebar__header">
-            <span>Nội dung khóa học</span>
+            <span>Course content</span>
             <span className="lp-sidebar__count">
-              {completedLectures}/{totalLectures} bài
+              {completedLectures}/{totalLectures} lectures
             </span>
           </div>
 
@@ -344,7 +344,7 @@ export default function LearnPage() {
                           )}
                         </div>
                         {!lec.videoUrl && (
-                          <FiLock className="lp-lecture__no-video" title="Chưa có video" />
+                          <FiLock className="lp-lecture__no-video" title="No video" />
                         )}
                       </button>
                     );

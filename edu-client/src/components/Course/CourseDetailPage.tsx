@@ -102,8 +102,8 @@ interface CourseDetail {
 function formatDuration(sec: number): string {
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
-  if (h > 0) return `${h}g ${m}p`;
-  return `${m} phút`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m} min`;
 }
 
 function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
@@ -154,7 +154,7 @@ export default function CourseDetailPage() {
     axiosInstance
       .get(`/courseCreation/course-detail-full/${courseCardId}`)
       .then((res) => setData(res.data))
-      .catch(() => toast.error("Không thể tải thông tin khóa học"))
+      .catch(() => toast.error("Unable to load course information"))
       .finally(() => setLoading(false));
   }, [courseCardId]);
 
@@ -203,9 +203,9 @@ export default function CourseDetailPage() {
     setAddingCart(true);
     try {
       await addToCart(userId, courseCardId!);
-      toast.success("Đã thêm vào giỏ hàng!");
+      toast.success("Added to cart!");
     } catch {
-      toast.error("Thêm vào giỏ hàng thất bại");
+      toast.error("Failed to add to cart");
     } finally {
       setAddingCart(false);
     }
@@ -223,8 +223,8 @@ export default function CourseDetailPage() {
   // ── Submit review ────────────────────────────────────────────────────────────
   const handleSubmitReview = async () => {
     if (!userId)       { navigate("/login"); return; }
-    if (!isPurchased)  { toast.error("Bạn cần mua khóa học trước khi đánh giá"); return; }
-    if (myRating === 0){ toast.warning("Vui lòng chọn số sao"); return; }
+    if (!isPurchased)  { toast.error("You need to purchase the course before leaving a review"); return; }
+    if (myRating === 0){ toast.warning("Please select a star rating"); return; }
     if (!data?.course?.id) return;
 
     setSubmittingRev(true);
@@ -235,7 +235,7 @@ export default function CourseDetailPage() {
         rating:    myRating,
         comment:   myComment.trim() || null,
       });
-      toast.success("Cảm ơn bạn đã đánh giá! ⭐", "Đánh giá của bạn đã được ghi nhận.");
+      toast.success("Thank you for your review! ⭐", "Your review has been received.");
       setMyReviewDone(true);
       // Refetch để cập nhật rating mới
       axiosInstance.get(`/courseCreation/course-detail-full/${courseCardId}`)
@@ -243,7 +243,7 @@ export default function CourseDetailPage() {
         .catch(() => {});
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      toast.error("Không thể gửi đánh giá", msg ?? "Vui lòng thử lại.");
+      toast.error("Unable to submit review", msg ?? "Please try again.");
     } finally {
       setSubmittingRev(false);
     }
@@ -259,7 +259,7 @@ export default function CourseDetailPage() {
     );
   }
 
-  if (!data) return <div className="cd-error">Không tìm thấy khóa học</div>;
+  if (!data) return <div className="cd-error">Course not found</div>;
 
   const { course, instructor, learnings, tags, curriculum, reviews } = data;
 
@@ -289,15 +289,15 @@ export default function CourseDetailPage() {
             </span>
             <StarRating rating={reviews.avgRating} size={13} />
             <span className="cd-meta-light">
-              ({reviews.totalReviews.toLocaleString()} đánh giá)
+              ({reviews.totalReviews.toLocaleString()} reviews)
             </span>
             <span className="cd-meta-light">
-              {course.totalStudents.toLocaleString()} học viên
+              {course.totalStudents.toLocaleString()} students
             </span>
           </div>
 
           <div className="cd-hero__instructor">
-            Tạo bởi{" "}
+            Created by{" "}
             <span className="cd-link">{instructor.name}</span>
           </div>
 
@@ -306,10 +306,10 @@ export default function CourseDetailPage() {
             <span><FaLayerGroup /> {course.level}</span>
             <span>
               <FaClock />{" "}
-              {formatDuration(course.totalDurationSec)} tổng thời lượng
+              {formatDuration(course.totalDurationSec)} total duration
             </span>
             <span>
-              <MdOutlineOndemandVideo /> {course.totalLectures} bài giảng
+              <MdOutlineOndemandVideo /> {course.totalLectures} lectures
             </span>
           </div>
         </div>
@@ -322,7 +322,7 @@ export default function CourseDetailPage() {
           {/* WHAT YOU'LL LEARN */}
           {learnings.length > 0 && (
             <section className="cd-section cd-learnings">
-              <h2 className="cd-section__title">Bạn sẽ học được gì</h2>
+              <h2 className="cd-section__title">What you'll learn</h2>
               <div className="cd-learnings__grid">
                 {learnings.map((item, i) => (
                   <div key={i} className="cd-learning-item">
@@ -336,13 +336,13 @@ export default function CourseDetailPage() {
 
           {/* CURRICULUM */}
           <section className="cd-section cd-curriculum">
-            <h2 className="cd-section__title">Nội dung khóa học</h2>
+            <h2 className="cd-section__title">Course content</h2>
             <div className="cd-curriculum__stats">
-              <span>{course.totalSections} chương</span>
+              <span>{course.totalSections} sections</span>
               <span>•</span>
-              <span>{course.totalLectures} bài giảng</span>
+              <span>{course.totalLectures} lectures</span>
               <span>•</span>
-              <span>{formatDuration(course.totalDurationSec)} tổng thời lượng</span>
+              <span>{formatDuration(course.totalDurationSec)} total duration</span>
             </div>
 
             <div className="cd-sections">
@@ -359,7 +359,7 @@ export default function CourseDetailPage() {
                       </span>
                       <span className="cd-sec__title">{sec.title}</span>
                       <span className="cd-sec__info">
-                        {sec.lectureCount} bài •{" "}
+                        {sec.lectureCount} lectures •{" "}
                         {formatDuration(sec.totalDurationSec)}
                       </span>
                     </button>
@@ -398,8 +398,8 @@ export default function CourseDetailPage() {
                 onClick={() => setShowAllSections((v) => !v)}
               >
                 {showAllSections
-                  ? "Thu gọn"
-                  : `Xem thêm ${curriculum.length - 5} chương`}
+                  ? "Collapse"
+                  : `View more ${curriculum.length - 5} sections`}
                 {showAllSections ? <FaChevronUp /> : <FaChevronDown />}
               </button>
             )}
@@ -407,13 +407,13 @@ export default function CourseDetailPage() {
 
           {/* DESCRIPTION */}
           <section className="cd-section">
-            <h2 className="cd-section__title">Mô tả khóa học</h2>
+            <h2 className="cd-section__title">Course description</h2>
             <p className="cd-description">{course.description}</p>
           </section>
 
           {/* INSTRUCTOR */}
           <section className="cd-section cd-instructor-sec">
-            <h2 className="cd-section__title">Giảng viên</h2>
+            <h2 className="cd-section__title">Instructor</h2>
             <div className="cd-instructor-card">
               <div className="cd-instructor-card__avatar">
                 {instructor.name?.charAt(0).toUpperCase()}
@@ -428,7 +428,7 @@ export default function CourseDetailPage() {
 
           {/* REVIEWS */}
           <section className="cd-section cd-reviews-sec">
-            <h2 className="cd-section__title">Đánh giá học viên</h2>
+            <h2 className="cd-section__title">Student reviews</h2>
 
             <div className="cd-rating-overview">
               <div className="cd-rating-big">
@@ -437,7 +437,7 @@ export default function CourseDetailPage() {
                 </span>
                 <StarRating rating={reviews.avgRating} size={20} />
                 <span className="cd-rating-big__label">
-                  Đánh giá khóa học
+                  Course reviews
                 </span>
               </div>
 
@@ -477,7 +477,7 @@ export default function CourseDetailPage() {
               ))}
 
               {reviews.totalReviews === 0 && (
-                <p className="cd-no-reviews">Chưa có đánh giá nào.</p>
+                <p className="cd-no-reviews">No reviews yet.</p>
               )}
             </div>
 
@@ -485,24 +485,24 @@ export default function CourseDetailPage() {
             {userId && isPurchased && (
               <div className="cd-review-form">
                 <h3 className="cd-review-form__title">
-                  {myReviewDone ? "✅ Cảm ơn bạn đã đánh giá!" : "Viết đánh giá của bạn"}
+                  {myReviewDone ? "✅ Thank you for your review!" : "Write your review"}
                 </h3>
 
                 {myReviewDone ? (
                   <div className="cd-review-form__done">
-                    <p>Đánh giá của bạn đã được ghi nhận và sẽ hiển thị sau khi được duyệt.</p>
+                    <p>Your review has been received and will be shown after moderation.</p>
                     <button
                       className="cd-review-form__edit-btn"
                       onClick={() => setMyReviewDone(false)}
                     >
-                      Chỉnh sửa đánh giá
+                      Edit review
                     </button>
                   </div>
                 ) : (
                   <>
                     {/* Star picker */}
                     <div className="cd-review-form__stars">
-                      <p className="cd-review-form__stars-label">Đánh giá của bạn</p>
+                      <p className="cd-review-form__stars-label">Your rating</p>
                       <div className="cd-review-form__star-row">
                         {[1, 2, 3, 4, 5].map((s) => (
                           <button
@@ -512,14 +512,14 @@ export default function CourseDetailPage() {
                             onMouseEnter={() => setHoverRating(s)}
                             onMouseLeave={() => setHoverRating(0)}
                             onClick={() => setMyRating(s)}
-                            aria-label={`${s} sao`}
+                            aria-label={`${s} stars`}
                           >
                             <FaStar />
                           </button>
                         ))}
                         {myRating > 0 && (
                           <span className="cd-review-form__rating-label">
-                            {["", "Rất tệ", "Tệ", "Bình thường", "Tốt", "Xuất sắc"][myRating]}
+                            {["", "Very bad", "Bad", "Okay", "Good", "Excellent"][myRating]}
                           </span>
                         )}
                       </div>
@@ -528,11 +528,11 @@ export default function CourseDetailPage() {
                     {/* Comment */}
                     <div className="cd-review-form__comment">
                       <label className="cd-review-form__label">
-                        Nhận xét <span style={{ color: "#64748b", fontWeight: 400 }}>(tuỳ chọn)</span>
+                        Comment <span style={{ color: "#64748b", fontWeight: 400 }}>(optional)</span>
                       </label>
                       <textarea
                         className="cd-review-form__textarea"
-                        placeholder="Chia sẻ trải nghiệm của bạn về khóa học này..."
+                        placeholder="Share your experience with this course..."
                         value={myComment}
                         onChange={(e) => setMyComment(e.target.value)}
                         maxLength={500}
@@ -547,9 +547,9 @@ export default function CourseDetailPage() {
                       disabled={submittingRev || myRating === 0}
                     >
                       {submittingRev ? (
-                        <><span className="cd-review-form__spinner" /> Đang gửi...</>
+                        <><span className="cd-review-form__spinner" /> Sending...</>
                       ) : (
-                        "Gửi đánh giá"
+                        "Submit review"
                       )}
                     </button>
                   </>
@@ -561,7 +561,7 @@ export default function CourseDetailPage() {
             {userId && !isPurchased && (
               <div className="cd-review-form cd-review-form--locked">
                 <span className="cd-review-form__lock-icon">🔒</span>
-                <p>Mua khóa học để có thể đánh giá và chia sẻ trải nghiệm của bạn.</p>
+                <p>Purchase the course to review and share your experience.</p>
               </div>
             )}
           </section>
@@ -598,7 +598,7 @@ export default function CourseDetailPage() {
             {isPurchased ? (
               <>
                 <div className="cd-card__purchased-badge">
-                  <FaCheck /> Bạn đã sở hữu khóa học này
+                  <FaCheck /> You own this course
                 </div>
 
                 <button
@@ -606,7 +606,7 @@ export default function CourseDetailPage() {
                   onClick={() => navigate(`/learn/${course.id}`)}
                 >
                   <FaBookOpen />
-                  Vào học ngay
+                  Start learning
                 </button>
               </>
             ) : (
@@ -630,10 +630,10 @@ export default function CourseDetailPage() {
                 >
                   <FaShoppingCart />
                   {addingCart
-                    ? "Đang thêm..."
+                    ? "Adding..."
                     : isInCart
-                    ? "Xem giỏ hàng"
-                    : "Thêm vào giỏ hàng"}
+                    ? "View cart"
+                    : "Add to cart"}
                 </button>
               </>
             )}
@@ -644,15 +644,15 @@ export default function CourseDetailPage() {
               onClick={handleWishlist}
             >
               {isInWishlist ? (
-                <><FaHeart className="icon-heart" /> Đã lưu</>
+                <><FaHeart className="icon-heart" /> Saved</>
               ) : (
-                <><FaRegHeart /> Lưu vào yêu thích</>
+                <><FaRegHeart /> Save to wishlist</>
               )}
             </button>
 
             {!isPurchased && (
               <p className="cd-card__guarantee">
-                Đảm bảo hoàn tiền trong 30 ngày
+                30-day money-back guarantee
               </p>
             )}
 
@@ -660,24 +660,24 @@ export default function CourseDetailPage() {
               <li>
                 <MdOutlineOndemandVideo />
                 <span>
-                  {formatDuration(course.totalDurationSec)} video theo yêu cầu
+                  {formatDuration(course.totalDurationSec)} on-demand videos
                 </span>
               </li>
               <li>
                 <MdOutlineArticle />
-                <span>{course.totalLectures} bài giảng</span>
+                <span>{course.totalLectures} lectures</span>
               </li>
               <li>
                 <FaMobileAlt />
-                <span>Truy cập trên thiết bị di động & TV</span>
+                <span>Access on mobile & TV</span>
               </li>
               <li>
                 <FaInfinity />
-                <span>Truy cập trọn đời</span>
+                <span>Lifetime access</span>
               </li>
               <li>
                 <FaTrophy />
-                <span>Chứng chỉ hoàn thành</span>
+                <span>Certificate of completion</span>
               </li>
             </ul>
           </div>

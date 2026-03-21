@@ -142,7 +142,7 @@ export default function CoursesPage() {
     <section className="Tabs-box">
       <div className="Tabs-container">
         <h1>Browse Courses</h1>
-        <p>Khám phá khóa học theo danh mục hoặc từ khóa.</p>
+        <p>Explore courses by category or keyword.</p>
 
         <div
           style={{

@@ -82,7 +82,7 @@ function Login({ setIsAuthenticated, setRole }: LoginProps) {
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
       const msg    = (err as { response?: { data?: { message?: string } } })
-                       ?.response?.data?.message ?? "Đăng nhập thất bại";
+                       ?.response?.data?.message ?? "Login failed";
 
       
       if (status === 401) {
