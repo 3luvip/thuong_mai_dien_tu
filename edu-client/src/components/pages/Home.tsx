@@ -6,6 +6,7 @@ import HomeReview from "../Extra/Homereview";
 import SubScription from "../Extra/SubScription";
 import BrandCompany from "../Home/BrandCompany";
 import HomeBanner from "../Home/HomeBanner";
+import SupportChat from "../Chat/SupportChat";
 
 function Home() {
     return(
@@ -18,6 +19,7 @@ function Home() {
             <HomeReview/>
             <BusinessLeader/>
             <Footer/>
+            <SupportChat/>
         </main>
     )
 }
