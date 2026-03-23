@@ -11,6 +11,21 @@ use crate::state::AppState;
 pub struct SuggestRequest {
     pub query: String,
     pub limit: Option<usize>,
+    pub history: Option<Vec<ChatMessage>>,
+    pub user: Option<UserContext>,
+    pub style: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct ChatMessage {
+    pub role: String,
+    pub text: String,
+}
+
+#[derive(Deserialize)]
+pub struct UserContext {
+    pub is_authenticated: Option<bool>,
+    pub role: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -238,10 +253,48 @@ pub async fn suggest(
         .map(|c| format!("{} | {} | {}", c.title, c.category, c.course_sub))
         .collect();
 
-    let developer = "You are a Vietnamese course advisor. Answer the user's question briefly in 1-2 sentences. Do not invent course names. The answer should be plain text (no JSON).";
+    let style = payload.style.unwrap_or_else(|| "detailed".to_string());
+    let user_ctx = payload.user;
+    let history = payload.history.unwrap_or_default();
+
+    let role_text = user_ctx
+        .as_ref()
+        .and_then(|u| u.role.clone())
+        .unwrap_or_else(|| "guest".to_string());
+    let auth_text = user_ctx
+        .as_ref()
+        .and_then(|u| u.is_authenticated)
+        .unwrap_or(false);
+
+    let mut history_lines: Vec<String> = Vec::new();
+    for m in history.iter().rev().take(6).rev() {
+        let role = if m.role == "user" { "User" } else { "Assistant" };
+        history_lines.push(format!("{}: {}", role, m.text));
+    }
+    let history_block = if history_lines.is_empty() {
+        "(no prior messages)".to_string()
+    } else {
+        history_lines.join("\n")
+    };
+
+    let developer = format!(
+        "You are a Vietnamese course advisor for an e-learning website. \
+Answer naturally and helpfully. Keep it brief if style is brief (1-2 sentences). \
+Use the conversation history and user context. \
+If the user asks how to use the website, guide them with these routes: \
+/signup, /login, /courses, /course-detail/<id>, /cart, /my-courses, \
+/instructor-dashboard, /create-course. \
+Do not invent course names; course suggestions are handled separately. \
+Style: {}. User role: {}. Authenticated: {}.",
+        style,
+        role_text,
+        auth_text
+    );
+
     let prompt = format!(
-        "System: {}\nUser: \"{}\"\nCandidates:\n{}\n",
+        "System: {}\nConversation:\n{}\nUser: \"{}\"\nCandidates:\n{}\n",
         developer,
+        history_block,
         query,
         candidate_list.join("\n")
     );

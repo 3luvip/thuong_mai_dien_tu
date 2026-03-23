@@ -23,8 +23,37 @@ const quickPrompts = [
   "UI/UX Design",
 ];
 
-const greetings = ["hello", "hi", "hey", "greetings", "howdy", "sup", "good morning", "good evening"];
 
+const greetings = ["xin chao", "chao", "hello", "hi", "hey", "chào", "xin chào"];
+const faqRules: Array<{ keywords: string[]; answer: string }> = [
+  {
+    keywords: ["dang ky", "dang ki", "dang ky khoa hoc", "dang ki khoa hoc", "register"],
+    answer:
+      "Cach dang ky khoa hoc (chi tiet):\n1) Tao tai khoan o /signup hoac dang nhap o /login.\n2) Vao danh sach khoa hoc o /courses, chon khoa hoc muon hoc.\n3) Bam Them vao gio hoac Mua ngay tren trang chi tiet khoa hoc.\n4) Vao gio hang /cart de kiem tra va tien hanh thanh toan.\n5) Sau khi mua thanh cong, vao /my-courses de bat dau hoc.",
+  },
+  {
+    keywords: ["thanh toan", "payment", "mua khoa hoc", "mua"],
+    answer:
+      "Thanh toan (chi tiet):\n1) Mo trang khoa hoc can mua.\n2) Bam Mua ngay hoac Them vao gio.\n3) Vao /cart, kiem tra thong tin khoa hoc va gia.\n4) Tien hanh thanh toan theo huong dan hien tren man hinh.\n5) Hoan tat xong, khoa hoc se xuat hien trong /my-courses.",
+  },
+  {
+    keywords: ["thong tin", "gioi thieu", "ve chung toi", "about", "lien he", "ho tro", "support"],
+    answer:
+      "Thong tin co ban: day la nen tang hoc tap truc tuyen. Ban co the:\n- Tao tai khoan o /signup va dang nhap o /login.\n- Tim khoa hoc tai /courses.\n- Mua khoa hoc va quan ly trong /cart va /my-courses.\nNeu can ho tro chi tiet, hay mo ta van de (loi dang nhap, thanh toan, khoa hoc...).",
+  },
+  {
+    keywords: ["dang nhap", "login", "quen mat khau", "mat khau"],
+    answer:
+      "Dang nhap: vao /login, nhap email va mat khau. Neu quen mat khau, hay lien he quan tri vien hoac nhan ho tro qua kenh lien he cua web.",
+  },
+  {
+    keywords: ["giang vien", "instructor", "tao khoa hoc"],
+    answer:
+      "Neu ban la giang vien: sau khi dang nhap voi role giang vien, vao /instructor-dashboard de quan ly, va /create-course de tao khoa hoc moi.",
+  },
+];
+=======
+const greetings = ["hello", "hi", "hey", "greetings", "howdy", "sup", "good morning", "good evening"];
 function SupportChat() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -83,10 +112,39 @@ function SupportChat() {
       return;
     }
 
+    const faq = faqRules.find((r) => r.keywords.some((k) => normalized.includes(k)));
+    if (faq) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `b-${Date.now()}`,
+          role: "bot",
+          text: faq.answer,
+        },
+      ]);
+      setLoading(false);
+      return;
+    }
+
     try {
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
+      const history = messages
+        .slice(-6)
+        .map((m) => ({ role: m.role === "user" ? "user" : "assistant", text: m.text }));
+
       const res = await axiosInstance.post<{ answer?: string; suggestions?: Suggestion[] }>(
         "/ai/suggest",
-        { query: clean, limit: 5 }
+        {
+          query: clean,
+          limit: 5,
+          style: "brief",
+          history,
+          user: {
+            is_authenticated: !!token,
+            role: role || "guest",
+          },
+        }
       );
 
       const suggestions = res.data?.suggestions ?? [];
