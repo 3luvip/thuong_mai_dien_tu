@@ -4,6 +4,7 @@ import { FiPlay, FiBook, FiClock, FiAward, FiSearch } from "react-icons/fi";
 import axiosInstance from "../../lib/axios";
 import { getCourseImageUrl } from "../../utils/courseImage";
 import "../../style/components/_my_courses.scss";
+import { session } from "../../lib/storage";
 
 interface LastLecture { id: string; title: string; }
 
@@ -24,7 +25,7 @@ interface MyCourse {
 
 export default function MyCoursesPage() {
   const navigate = useNavigate();
-  const userId = localStorage.getItem("userId");
+  const userId = session.getUserId();
 
   const [courses, setCourses] = useState<MyCourse[]>([]);
   const [loading, setLoading] = useState(true);

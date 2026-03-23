@@ -104,11 +104,38 @@ function Navbar() {
       <nav aria-label="Primary navigation">
         <div className="navbar">
           {/* ── Logo ── */}
-          <NavLink to="/" end className="logo" aria-label="Home">
+          <NavLink to="/" end className="logo" aria-label="Home"
+            style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}
+          >
             <img
               src="https://khoacntp.ctuet.edu.vn/wp-content/uploads/2020/03/%C4%90%E1%BA%A1i_h%E1%BB%8Dc_K%E1%BB%B9_thu%E1%BA%ADt_-_C%C3%B4ng_ngh%E1%BB%87_C%E1%BA%A7n_Th%C6%A1.png"
               alt="CTUET"
             />
+            <span style={{
+              display: "flex",
+              flexDirection: "column",
+              lineHeight: 1.15,
+            }}>
+              <span style={{
+                fontSize: 14,
+                fontWeight: 800,
+                color: "#e2e8f0",
+                letterSpacing: "0.04em",
+                whiteSpace: "nowrap",
+              }}>
+                CTUT
+              </span>
+              <span style={{
+                fontSize: 9.5,
+                fontWeight: 600,
+                color: "#6366f1",
+                letterSpacing: "0.18em",
+                textTransform: "uppercase" as const,
+                whiteSpace: "nowrap",
+              }}>
+                Learning
+              </span>
+            </span>
           </NavLink>
 
           <div className="nav-list">

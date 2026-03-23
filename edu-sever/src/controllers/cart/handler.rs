@@ -82,6 +82,55 @@ pub async fn add_to_cart(
     State(state): State<AppState>,
     Json(body): Json<AddToCartRequest>,
 ) -> AppResult<Json<Value>> {
+    // Chuẩn hóa course_id (có thể gửi id khóa học hoặc id course_card)
+    let (course_id, instructor_id): (String, String) =
+        if let Some(row) =
+            sqlx::query_as::<_, (String, String)>("SELECT id, instructor_id FROM courses WHERE id = ?")
+                .bind(&body.course_id)
+                .fetch_optional(&state.db)
+                .await?
+        {
+            row
+        } else if let Some((detail_id,)) = sqlx::query_as::<_, (String,)>(
+            "SELECT course_detail_id FROM course_cards WHERE id = ?",
+        )
+        .bind(&body.course_id)
+        .fetch_optional(&state.db)
+        .await?
+        {
+            sqlx::query_as::<_, (String, String)>(
+                "SELECT id, instructor_id FROM courses WHERE id = ?",
+            )
+            .bind(&detail_id)
+            .fetch_optional(&state.db)
+            .await?
+            .ok_or_else(|| AppError::NotFound("Không tìm thấy khóa học".into()))?
+        } else {
+            return Err(AppError::NotFound("Không tìm thấy khóa học".into()));
+        };
+
+    if instructor_id == body.user_id {
+        return Err(AppError::Validation(
+            "Bạn không thể thêm khóa học do chính mình giảng dạy vào giỏ hàng.".into(),
+        ));
+    }
+
+    let (paid_cnt,): (i64,) = sqlx::query_as(
+        r#"SELECT COUNT(*) FROM order_items oi
+           INNER JOIN orders o ON o.id = oi.order_id
+           WHERE oi.course_id = ? AND o.user_id = ? AND o.status = 'paid'"#,
+    )
+    .bind(&course_id)
+    .bind(&body.user_id)
+    .fetch_one(&state.db)
+    .await?;
+
+    if paid_cnt > 0 {
+        return Err(AppError::Validation(
+            "Bạn đã mua khóa học này rồi.".into(),
+        ));
+    }
+
     let cart: Option<(String,)> = sqlx::query_as("SELECT id FROM carts WHERE user_id = ?")
         .bind(&body.user_id)
         .fetch_optional(&state.db)
@@ -102,7 +151,7 @@ pub async fn add_to_cart(
     let exists: Option<(String,)> =
         sqlx::query_as("SELECT cart_id FROM cart_courses WHERE cart_id = ? AND course_id = ?")
             .bind(&cart_id)
-            .bind(&body.course_id)
+            .bind(&course_id)
             .fetch_optional(&state.db)
             .await?;
 
@@ -112,7 +161,7 @@ pub async fn add_to_cart(
 
     sqlx::query("INSERT INTO cart_courses (cart_id, course_id) VALUES (?, ?)")
         .bind(&cart_id)
-        .bind(&body.course_id)
+        .bind(&course_id)
         .execute(&state.db)
         .await?;
 

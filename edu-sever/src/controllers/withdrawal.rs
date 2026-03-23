@@ -13,13 +13,13 @@
 //   GET    /admin/requests                 → admin: list all pending
 
 use axum::{
+    Json,
     extract::{Path, State},
     http::StatusCode,
-    Json,
 };
 use bigdecimal::ToPrimitive;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use uuid::Uuid;
 
 use crate::errors::{AppError, AppResult};
@@ -31,8 +31,8 @@ use crate::state::AppState;
 
 #[derive(Debug, Deserialize)]
 pub struct UpsertBankRequest {
-    pub bank_name:      String,
-    pub bank_branch:    Option<String>,
+    pub bank_name: String,
+    pub bank_branch: Option<String>,
     pub account_number: String,
     pub account_holder: String,
 }
@@ -40,7 +40,7 @@ pub struct UpsertBankRequest {
 #[derive(Debug, Deserialize)]
 pub struct CreateWithdrawalRequest {
     pub instructor_id: String,
-    pub amount:        f64,
+    pub amount: f64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -52,25 +52,25 @@ pub struct ReviewRequest {
 
 #[derive(sqlx::FromRow)]
 struct BankRow {
-    id:             String,
-    bank_name:      String,
-    bank_branch:    Option<String>,
+    id: String,
+    bank_name: String,
+    bank_branch: Option<String>,
     account_number: String,
     account_holder: String,
 }
 
 #[derive(sqlx::FromRow)]
 struct WithdrawalRow {
-    id:            String,
+    id: String,
     instructor_id: String,
-    amount:        bigdecimal::BigDecimal,
-    platform_fee:  bigdecimal::BigDecimal,
-    net_amount:    bigdecimal::BigDecimal,
-    status:        String,
-    note:          Option<String>,
-    bank_snapshot: String,   // JSON stored as text
-    created_at:    chrono::NaiveDateTime,
-    updated_at:    chrono::NaiveDateTime,
+    amount: bigdecimal::BigDecimal,
+    platform_fee: bigdecimal::BigDecimal,
+    net_amount: bigdecimal::BigDecimal,
+    status: String,
+    note: Option<String>,
+    bank_snapshot: String, // JSON stored as text
+    created_at: chrono::NaiveDateTime,
+    updated_at: chrono::NaiveDateTime,
 }
 
 fn withdrawal_to_json(r: &WithdrawalRow) -> Value {
@@ -114,7 +114,10 @@ pub async fn get_balance(
     .fetch_one(&state.db)
     .await?;
 
-    let gross = gross_revenue.as_ref().and_then(|v| v.to_f64()).unwrap_or(0.0);
+    let gross = gross_revenue
+        .as_ref()
+        .and_then(|v| v.to_f64())
+        .unwrap_or(0.0);
     let platform_cut = gross * PLATFORM_FEE_RATE;
     let net_revenue = gross - platform_cut;
 
@@ -195,7 +198,9 @@ pub async fn upsert_bank_account(
         return Err(AppError::Validation("Account number is required".into()));
     }
     if body.account_holder.trim().is_empty() {
-        return Err(AppError::Validation("Account holder name is required".into()));
+        return Err(AppError::Validation(
+            "Account holder name is required".into(),
+        ));
     }
 
     let id = Uuid::new_v4().to_string();
@@ -219,7 +224,9 @@ pub async fn upsert_bank_account(
     .execute(&state.db)
     .await?;
 
-    Ok(Json(json!({ "message": "Bank account saved successfully" })))
+    Ok(Json(
+        json!({ "message": "Bank account saved successfully" }),
+    ))
 }
 
 // ─── POST /withdrawal/request ─────────────────────────────────────────────────
@@ -231,7 +238,9 @@ pub async fn create_withdrawal(
 ) -> AppResult<(StatusCode, Json<Value>)> {
     // Must be requesting for own account
     if claims.sub != body.instructor_id {
-        return Err(AppError::Forbidden("Cannot request withdrawal for another instructor".into()));
+        return Err(AppError::Forbidden(
+            "Cannot request withdrawal for another instructor".into(),
+        ));
     }
 
     if body.amount <= 0.0 {
@@ -300,7 +309,7 @@ pub async fn create_withdrawal(
     }
 
     let platform_fee = (body.amount * PLATFORM_FEE_RATE).round();
-    let net_amount   = body.amount - platform_fee;
+    let net_amount = body.amount - platform_fee;
 
     // Snapshot bank info at time of request
     let bank_snapshot = json!({
@@ -345,10 +354,10 @@ pub async fn get_my_requests(
 ) -> AppResult<Json<Value>> {
     let rows: Vec<WithdrawalRow> = sqlx::query_as(
         r#"SELECT id, instructor_id, amount, platform_fee, net_amount,
-                  status, note, bank_snapshot, created_at, updated_at
-           FROM withdrawal_requests
-           WHERE instructor_id = ?
-           ORDER BY created_at DESC"#,
+          status, note, CAST(bank_snapshot AS CHAR) AS bank_snapshot, created_at, updated_at
+   FROM withdrawal_requests
+   WHERE instructor_id = ?
+   ORDER BY created_at DESC"#,
     )
     .bind(&instructor_id)
     .fetch_all(&state.db)
@@ -365,15 +374,14 @@ pub async fn cancel_request(
     AuthUser(claims): AuthUser,
     Path(request_id): Path<String>,
 ) -> AppResult<Json<Value>> {
-    let row: Option<(String, String)> = sqlx::query_as(
-        "SELECT instructor_id, status FROM withdrawal_requests WHERE id = ?",
-    )
-    .bind(&request_id)
-    .fetch_optional(&state.db)
-    .await?;
+    let row: Option<(String, String)> =
+        sqlx::query_as("SELECT instructor_id, status FROM withdrawal_requests WHERE id = ?")
+            .bind(&request_id)
+            .fetch_optional(&state.db)
+            .await?;
 
-    let (owner_id, status) = row
-        .ok_or_else(|| AppError::NotFound("Withdrawal request not found".into()))?;
+    let (owner_id, status) =
+        row.ok_or_else(|| AppError::NotFound("Withdrawal request not found".into()))?;
 
     if owner_id != claims.sub {
         return Err(AppError::Forbidden("Not your request".into()));
@@ -404,12 +412,11 @@ pub async fn approve_request(
     // For now any authenticated user with this endpoint can approve
     let _ = claims;
 
-    let row: Option<(String,)> = sqlx::query_as(
-        "SELECT status FROM withdrawal_requests WHERE id = ?",
-    )
-    .bind(&request_id)
-    .fetch_optional(&state.db)
-    .await?;
+    let row: Option<(String,)> =
+        sqlx::query_as("SELECT status FROM withdrawal_requests WHERE id = ?")
+            .bind(&request_id)
+            .fetch_optional(&state.db)
+            .await?;
 
     let (status,) = row.ok_or_else(|| AppError::NotFound("Request not found".into()))?;
 
@@ -438,12 +445,11 @@ pub async fn reject_request(
 ) -> AppResult<Json<Value>> {
     let _ = claims;
 
-    let row: Option<(String,)> = sqlx::query_as(
-        "SELECT status FROM withdrawal_requests WHERE id = ?",
-    )
-    .bind(&request_id)
-    .fetch_optional(&state.db)
-    .await?;
+    let row: Option<(String,)> =
+        sqlx::query_as("SELECT status FROM withdrawal_requests WHERE id = ?")
+            .bind(&request_id)
+            .fetch_optional(&state.db)
+            .await?;
 
     let (status,) = row.ok_or_else(|| AppError::NotFound("Request not found".into()))?;
 
@@ -464,54 +470,55 @@ pub async fn reject_request(
 
 // ─── GET /withdrawal/admin/requests  (admin: all pending) ────────────────────
 
-pub async fn admin_list_requests(
-    State(state): State<AppState>,
-) -> AppResult<Json<Value>> {
+pub async fn admin_list_requests(State(state): State<AppState>) -> AppResult<Json<Value>> {
     #[derive(sqlx::FromRow)]
     struct AdminRow {
-        id:            String,
+        id: String,
         instructor_id: String,
         instructor_name: Option<String>,
-        amount:        bigdecimal::BigDecimal,
-        platform_fee:  bigdecimal::BigDecimal,
-        net_amount:    bigdecimal::BigDecimal,
-        status:        String,
-        note:          Option<String>,
+        amount: bigdecimal::BigDecimal,
+        platform_fee: bigdecimal::BigDecimal,
+        net_amount: bigdecimal::BigDecimal,
+        status: String,
+        note: Option<String>,
         bank_snapshot: String,
-        created_at:    chrono::NaiveDateTime,
-        updated_at:    chrono::NaiveDateTime,
+        created_at: chrono::NaiveDateTime,
+        updated_at: chrono::NaiveDateTime,
     }
 
     let rows: Vec<AdminRow> = sqlx::query_as(
         r#"SELECT wr.id, wr.instructor_id,
-                  u.name AS instructor_name,
-                  wr.amount, wr.platform_fee, wr.net_amount,
-                  wr.status, wr.note, wr.bank_snapshot,
-                  wr.created_at, wr.updated_at
-           FROM withdrawal_requests wr
-           JOIN users u ON u.id = wr.instructor_id
-           ORDER BY wr.created_at DESC
-           LIMIT 100"#,
+          u.name AS instructor_name,
+          wr.amount, wr.platform_fee, wr.net_amount,
+          wr.status, wr.note, CAST(wr.bank_snapshot AS CHAR) AS bank_snapshot,
+          wr.created_at, wr.updated_at
+   FROM withdrawal_requests wr
+   JOIN users u ON u.id = wr.instructor_id
+   ORDER BY wr.created_at DESC
+   LIMIT 100"#,
     )
     .fetch_all(&state.db)
     .await?;
 
-    let list: Vec<Value> = rows.iter().map(|r| {
-        let snapshot: Value = serde_json::from_str(&r.bank_snapshot).unwrap_or(Value::Null);
-        json!({
-            "id":             r.id,
-            "instructorId":   r.instructor_id,
-            "instructorName": r.instructor_name,
-            "amount":         r.amount.to_f64().unwrap_or(0.0),
-            "platformFee":    r.platform_fee.to_f64().unwrap_or(0.0),
-            "netAmount":      r.net_amount.to_f64().unwrap_or(0.0),
-            "status":         r.status,
-            "note":           r.note,
-            "bankSnapshot":   snapshot,
-            "createdAt":      r.created_at.format("%Y-%m-%d %H:%M").to_string(),
-            "updatedAt":      r.updated_at.format("%Y-%m-%d %H:%M").to_string(),
+    let list: Vec<Value> = rows
+        .iter()
+        .map(|r| {
+            let snapshot: Value = serde_json::from_str(&r.bank_snapshot).unwrap_or(Value::Null);
+            json!({
+                "id":             r.id,
+                "instructorId":   r.instructor_id,
+                "instructorName": r.instructor_name,
+                "amount":         r.amount.to_f64().unwrap_or(0.0),
+                "platformFee":    r.platform_fee.to_f64().unwrap_or(0.0),
+                "netAmount":      r.net_amount.to_f64().unwrap_or(0.0),
+                "status":         r.status,
+                "note":           r.note,
+                "bankSnapshot":   snapshot,
+                "createdAt":      r.created_at.format("%Y-%m-%d %H:%M").to_string(),
+                "updatedAt":      r.updated_at.format("%Y-%m-%d %H:%M").to_string(),
+            })
         })
-    }).collect();
+        .collect();
 
     Ok(Json(json!({ "requests": list })))
 }

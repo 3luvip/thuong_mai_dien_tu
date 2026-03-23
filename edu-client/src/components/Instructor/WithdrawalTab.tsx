@@ -10,6 +10,7 @@ import {
 import { RiBankLine } from "react-icons/ri";
 import axiosInstance from "../../lib/axios";
 import { formatVnd } from "../../utils/currency";
+import {  useToast } from "../../context/toast";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -127,6 +128,7 @@ function BalanceCard({ balance, loading }: { balance: Balance | null; loading: b
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function WithdrawalTab({ instructorId }: { instructorId: string }) {
+  const toast    = useToast();
   const [balance,  setBalance]  = useState<Balance | null>(null);
   const [bank,     setBank]     = useState<BankAccount | null>(null);
   const [requests, setRequests] = useState<WithdrawalRequest[]>([]);
@@ -146,7 +148,6 @@ export default function WithdrawalTab({ instructorId }: { instructorId: string }
   const [submitting, setSubmitting] = useState(false);
 
   // UI
-  const [toast, setToast] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
@@ -176,23 +177,19 @@ export default function WithdrawalTab({ instructorId }: { instructorId: string }
         });
       }
     } catch {
-      showToast("error", "Failed to load withdrawal data");
+      toast.error("error", "Failed to load withdrawal data");
     } finally {
       setLoadingBal(false);
       setLoadingReqs(false);
     }
   }
 
-  function showToast(type: "success" | "error", msg: string) {
-    setToast({ type, msg });
-    setTimeout(() => setToast(null), 4000);
-  }
 
   // ── Save bank account ──────────────────────────────────────────────────────
 
   async function handleSaveBank() {
     if (!bankForm.bank_name || !bankForm.account_number || !bankForm.account_holder) {
-      showToast("error", "Please fill in all required fields");
+      toast.error("error", "Please fill in all required fields");
       return;
     }
     setSavingBank(true);
@@ -203,11 +200,11 @@ export default function WithdrawalTab({ instructorId }: { instructorId: string }
         account_number: bankForm.account_number,
         account_holder: bankForm.account_holder,
       });
-      showToast("success", "Bank account saved successfully");
+      toast.success("success", "Bank account saved successfully");
       setEditingBank(false);
       await fetchAll();
     } catch (e: unknown) {
-      showToast("error", (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Failed to save");
+      toast.error("error", (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Failed to save");
     } finally {
       setSavingBank(false);
     }
@@ -218,7 +215,7 @@ export default function WithdrawalTab({ instructorId }: { instructorId: string }
   async function handleWithdraw() {
     const amt = parseFloat(withdrawAmount.replace(/[^0-9.]/g, ""));
     if (!amt || isNaN(amt)) {
-      showToast("error", "Please enter a valid amount");
+      toast.error("error", "Please enter a valid amount");
       return;
     }
     setSubmitting(true);
@@ -227,12 +224,12 @@ export default function WithdrawalTab({ instructorId }: { instructorId: string }
         instructor_id: instructorId,
         amount: amt,
       });
-      showToast("success", `Withdrawal request of ${formatVnd(amt)} ₫ submitted!`);
+      toast.success("success", `Withdrawal request of ${formatVnd(amt)} ₫ submitted!`);
       setShowWithdrawForm(false);
       setWithdrawAmount("");
       await fetchAll();
     } catch (e: unknown) {
-      showToast("error", (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Request failed");
+      toast.error("error", (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Request failed");
     } finally {
       setSubmitting(false);
     }
@@ -244,10 +241,10 @@ export default function WithdrawalTab({ instructorId }: { instructorId: string }
     if (!confirm("Cancel this withdrawal request?")) return;
     try {
       await axiosInstance.delete(`/withdrawal/request/${id}`);
-      showToast("success", "Request cancelled");
+      toast.success("success", "Request cancelled");
       setRequests(prev => prev.map(r => r.id === id ? { ...r, status: "cancelled" } : r));
     } catch {
-      showToast("error", "Could not cancel request");
+      toast.error("error", "Could not cancel request");
     }
   }
 
@@ -259,14 +256,6 @@ export default function WithdrawalTab({ instructorId }: { instructorId: string }
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div style={S.page}>
-
-      {/* Toast */}
-      {toast && (
-        <div style={{ ...S.toast, ...(toast.type === "error" ? S.toastError : S.toastSuccess) }}>
-          {toast.type === "success" ? <FiCheck size={14} /> : <FiAlertCircle size={14} />}
-          {toast.msg}
-        </div>
-      )}
 
       <div style={S.grid}>
 

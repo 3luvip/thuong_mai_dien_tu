@@ -5,6 +5,7 @@ import { formatVnd } from "../../utils/currency";
 import { getCourseImageUrl } from "../../utils/courseImage";
 import Rating from "../Course/Rating";
 import "../../style/components/_tabs.scss";
+import { ratingFromCourseListItem } from "../../utils/courseRating";
 
 interface Course {
   id: string;
@@ -19,6 +20,8 @@ interface Course {
   category: string;
   path: string;
   instructorName: string | null;
+  avgRating?: number;
+  totalReviews?: number;
 }
 
 const menuCategories: Record<string, string[]> = {
@@ -67,14 +70,6 @@ const matchesCategory = (label: string, courseCategory: string) => {
   const c = normalize(courseCategory);
   return c === l || c.includes(l) || l.includes(c);
 };
-
-function getMockRating(id: string) {
-  const h = id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  return {
-    value: Math.min(3.5 + (h % 15) / 10, 4.9),
-    review: 800 + (h % 9) * 200 + (h % 37) * 10,
-  };
-}
 
 function useQuery() {
   const { search } = useLocation();
@@ -224,7 +219,7 @@ export default function CoursesPage() {
               const to = course.cardId
                 ? `/course-detail/${course.cardId}`
                 : "#";
-              const { value, review } = getMockRating(course.id);
+              const { value, review } = ratingFromCourseListItem(course);
 
               return (
                 <div key={course.id} className="tabs-card">

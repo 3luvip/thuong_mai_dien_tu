@@ -7,13 +7,17 @@ import { BsCheck2 } from "react-icons/bs";
 import { IoCartOutline } from "react-icons/io5";
 import axiosInstance from "../lib/axios";
 import { formatVnd } from "../utils/currency";
+import { getCourseImageUrl } from "../utils/courseImage";
 import Rating from "../components/Course/Rating";
 import HeartButton from "../components/Wishlist/HeartButton";
 import { useWishlist } from "../context/wishlistContext";
 import { useCart } from "../context/useCart";
 import { useToast } from "../context/toast";
 import "../style/components/_tabs.scss";
-
+import { session } from "../lib/storage";
+import { ratingFromCourseListItem } from "../utils/courseRating";
+import { usePurchasedCourseIds } from "../hooks/usePurchasedCourseIds";
+import PopupCartOrOwned from "../components/Card/PopupCartOrOwned";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Course {
@@ -29,6 +33,9 @@ interface Course {
   category: string;
   path: string;
   instructorName: string | null;
+  instructorId?: string;
+  avgRating?: number;
+  totalReviews?: number;
 }
 
 interface CategoryGroup {
@@ -49,14 +56,6 @@ const TAB_ORDER = [
   "Business Analytics",
 ];
 
-function getMockRating(id: string) {
-  const h = id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  return {
-    value: Math.min(3.5 + (h % 15) / 10, 4.9),
-    review: 800 + (h % 9) * 200 + (h % 37) * 10,
-  };
-}
-
 const MOCK_HIGHLIGHTS = [
   "Lifetime access",
   "Certificate of completion",
@@ -69,15 +68,17 @@ function CoursePopup({
   course,
   anchorRect,
   onAddToCart,
+  purchasedIds,
 }: {
   course: Course;
   anchorRect: DOMRect;
   onAddToCart: (c: Course) => void;
+  purchasedIds: Set<string>;
 }) {
   const POPUP_WIDTH = 320;
   const GAP = 8;
-  const userId = localStorage.getItem("userId");
-  const { value, review } = getMockRating(course.id);
+  const userId = session.getUserId();
+  const { value, review } = ratingFromCourseListItem(course);
   const hasDiscount =
     course.currentPrice > 0 && course.currentPrice < course.price;
 
@@ -91,6 +92,8 @@ function CoursePopup({
     window.scrollY + window.innerHeight - 460,
   );
 
+  const detailPath = `/course-detail/${course.cardId ?? course.id}`;
+
   return createPortal(
     <div className="tabs-popup" style={{ top, left }}>
       <div className="tabs-popup__header">
@@ -102,7 +105,11 @@ function CoursePopup({
         </span>
       </div>
 
-      <h3 className="tabs-popup__title">{course.title}</h3>
+      <h3 className="tabs-popup__title">
+        <Link to={detailPath} style={{ color: "inherit", textDecoration: "none" }}>
+          {course.title}
+        </Link>
+      </h3>
       <p className="tabs-popup__sub">{course.courseSub}</p>
 
       <div className="tabs-popup__rating">
@@ -126,14 +133,17 @@ function CoursePopup({
       </div>
 
       <div className="tabs-popup__actions">
-        <button
-          className="tabs-popup__cart"
-          type="button"
-          onClick={() => onAddToCart(course)}
+        <PopupCartOrOwned
+          course={course}
+          userId={userId}
+          purchasedIds={purchasedIds}
+          onAddToCart={() => onAddToCart(course)}
         >
-          <IoCartOutline style={{ marginRight: 5, verticalAlign: "middle" }} />
-          Add to cart
-        </button>
+          <>
+            <IoCartOutline style={{ marginRight: 5, verticalAlign: "middle" }} />
+            Add to cart
+          </>
+        </PopupCartOrOwned>
 
         <HeartButton
           courseId={course.id}
@@ -174,15 +184,15 @@ function CourseItem({
   onMouseEnter: (id: string, el: HTMLDivElement) => void;
   onMouseLeave: () => void;
 }) {
-  const userId = localStorage.getItem("userId");
+  const userId = session.getUserId();
   const [hovered, setHovered] = useState(false);
-  const { value, review } = getMockRating(course.id);
+  const { value, review } = ratingFromCourseListItem(course);
   const hasDiscount =
     course.currentPrice > 0 && course.currentPrice < course.price;
   const discountPct = hasDiscount
     ? Math.round(((course.price - course.currentPrice) / course.price) * 100)
     : 0;
-  const to = course.cardId ? `/course-detail/${course.cardId}` : "#";
+  const to = `/course-detail/${course.cardId ?? course.id}`;
 
   return (
     <div
@@ -220,7 +230,7 @@ function CourseItem({
 
       <Link to={to} className="tabs-card__link">
         <img
-          src={course.path}
+          src={getCourseImageUrl(course.path)}
           alt={course.title}
           className="tabs-card__img"
           onError={(e) => {
@@ -297,7 +307,8 @@ function TabComponent() {
   const { addToCart } = useCart();
   const { fetchWishlist } = useWishlist();
   const toast = useToast();
-  const userId = localStorage.getItem("userId");
+  const userId = session.getUserId();
+  const purchasedIds = usePurchasedCourseIds(userId);
 
   // Fetch danh sách courses
   useEffect(() => {
@@ -433,6 +444,7 @@ function TabComponent() {
             course={hoveredCourse}
             anchorRect={anchorRect}
             onAddToCart={handleAddToCart}
+            purchasedIds={purchasedIds}
           />
         </div>
       )}

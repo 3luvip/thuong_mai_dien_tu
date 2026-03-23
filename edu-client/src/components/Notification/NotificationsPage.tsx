@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import {
   IoCheckmarkDoneOutline,
   IoTrashOutline,
-  IoFilterOutline,
   IoRefreshOutline,
   IoSchoolOutline,
   IoPricetagOutline,
@@ -13,6 +12,7 @@ import {
   IoNotificationsOffOutline,
 } from "react-icons/io5";
 import axiosInstance from "../../lib/axios";
+import { session } from "../../lib/storage";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type NotifType = "course_added" | "discount" | "coupon" | "system" | "reminder";
@@ -126,7 +126,7 @@ export default function NotificationsPage() {
   const [hoverId,  setHoverId]  = useState<string | null>(null);
   const [deleting, setDeleting] = useState<Set<string>>(new Set());
 
-  const userId = localStorage.getItem("userId");
+  const userId = session.getUserId();
 
   // ── Fetch ─────────────────────────────────────────────────────────────────
   const fetchNotifs = useCallback(async (showLoader = true) => {

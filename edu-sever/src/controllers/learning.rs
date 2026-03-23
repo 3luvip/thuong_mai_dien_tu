@@ -138,7 +138,16 @@ pub async fn get_learn_data(
     .await?;
 
     if purchased.is_none() {
-        return Err(AppError::Forbidden("Bạn chưa mua khóa học này".into()));
+        let is_instructor: Option<(String,)> = sqlx::query_as(
+            "SELECT id FROM courses WHERE id = ? AND instructor_id = ? LIMIT 1",
+        )
+        .bind(&course_id)
+        .bind(&user_id)
+        .fetch_optional(&state.db)
+        .await?;
+        if is_instructor.is_none() {
+            return Err(AppError::Forbidden("Bạn chưa mua khóa học này".into()));
+        }
     }
 
     // 2. Thông tin course
@@ -261,7 +270,16 @@ pub async fn update_progress(
     .await?;
 
     if purchased.is_none() {
-        return Err(AppError::Forbidden("Bạn chưa mua khóa học này".into()));
+        let is_instructor: Option<(String,)> = sqlx::query_as(
+            "SELECT id FROM courses WHERE id = ? AND instructor_id = ? LIMIT 1",
+        )
+        .bind(&body.course_id)
+        .bind(&body.user_id)
+        .fetch_optional(&state.db)
+        .await?;
+        if is_instructor.is_none() {
+            return Err(AppError::Forbidden("Bạn chưa mua khóa học này".into()));
+        }
     }
 
     let id = Uuid::new_v4().to_string();

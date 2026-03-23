@@ -8,11 +8,14 @@ import {
   FiBell, FiCheck, FiX, FiTrash2, FiSearch,
   FiChevronLeft, FiChevronRight, FiShield,
   FiBarChart2, FiRefreshCw, FiArrowUp, FiLogOut,
-  FiAlertTriangle, FiSend,
+  FiAlertTriangle, FiSend, FiTag, FiPercent,
+  FiToggleLeft, FiToggleRight, FiCopy, FiPlusCircle,
+  FiClock, FiSliders,
 } from "react-icons/fi";
 import { RiBankLine } from "react-icons/ri";
 import { MdOutlineOndemandVideo } from "react-icons/md";
 import { formatVnd } from "../utils/currency";
+import { useToast } from "../context/toast";
 
 // ─── Axios instance with admin token ─────────────────────────────────────────
 
@@ -72,7 +75,16 @@ interface Broadcast {
   recipientCount: number; sentAt: string;
 }
 
-type Tab = "overview" | "users" | "courses" | "withdrawals" | "broadcast";
+interface AdminCoupon {
+  id: string; code: string; scope: string; type: "percent" | "fixed";
+  value: number; totalLimit: number; perUserLimit: number;
+  minOrder: number; maxDiscount: number | null;
+  isActive: boolean; expiresAt: string | null;
+  createdAt: string; usedCount: number; createdByName: string | null;
+  courseIds?: string[];
+}
+
+type Tab = "overview" | "users" | "courses" | "withdrawals" | "broadcast" | "coupons";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -157,17 +169,14 @@ function Modal({ title, children, onClose }: { title: string; children: React.Re
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-
+  const toast = useToast();
   // Auth guard
   useEffect(() => {
     if (localStorage.getItem("adminRole") !== "admin") navigate("/admin/login");
   }, []);
 
   const [tab, setTab] = useState<Tab>("overview");
-  const [toast, setToast] = useState<{ type:"ok"|"err"; msg:string }|null>(null);
 
-  function ok(msg: string)  { setToast({ type:"ok",  msg }); setTimeout(()=>setToast(null), 4000); }
-  function err(msg: string) { setToast({ type:"err", msg }); setTimeout(()=>setToast(null), 5000); }
 
   function logout() {
     ["adminToken","adminUserId","adminRole"].forEach(k => localStorage.removeItem(k));
@@ -181,7 +190,7 @@ export default function AdminDashboard() {
   async function loadStats() {
     setStatsLoading(true);
     try { setStats(await adminFetch<Stats>("GET", "/admin/stats")); }
-    catch(e) { err((e as Error).message); }
+    catch(e) { toast.error((e as Error).message); }
     finally { setStatsLoading(false); }
   }
   useEffect(() => { loadStats(); }, []);
@@ -203,28 +212,28 @@ export default function AdminDashboard() {
       const params = new URLSearchParams({ page: String(userPage), limit:"15", ...(uSearch ? { q:uSearch }:{}), ...(uRole!=="all" ? { role:uRole }:{}) });
       const d = await adminFetch<{ users:User[]; total:number; totalPages:number }>("GET", `/admin/users?${params}`);
       setUsers(d.users); setUserTotal(d.total); setUserPages(d.totalPages);
-    } catch(e) { err((e as Error).message); }
+    } catch(e) { toast.error((e as Error).message); }
     finally { setULoading(false); }
   }, [userPage, uSearch, uRole]);
 
   useEffect(() => { if (tab==="users") loadUsers(); }, [tab, userPage, uRole]);
 
   async function doChangeRole(uid: string, role: string) {
-    try { await adminFetch("PATCH", `/admin/users/${uid}/role`, { role }); ok("Role updated"); loadUsers(); }
-    catch(e) { err((e as Error).message); }
+    try { await adminFetch("PATCH", `/admin/users/${uid}/role`, { role }); toast.success("Role updated"); loadUsers(); }
+    catch(e) { toast.error((e as Error).message); }
   }
   async function doBan(uid: string) {
-    try { await adminFetch("PATCH", `/admin/users/${uid}/ban`, { reason: banReason||null }); ok("User banned"); setBanModal(null); setBanReason(""); loadUsers(); loadStats(); }
-    catch(e) { err((e as Error).message); }
+    try { await adminFetch("PATCH", `/admin/users/${uid}/ban`, { reason: banReason||null }); toast.success("User banned"); setBanModal(null); setBanReason(""); loadUsers(); loadStats(); }
+    catch(e) { toast.error((e as Error).message); }
   }
   async function doUnban(uid: string) {
-    try { await adminFetch("PATCH", `/admin/users/${uid}/unban`); ok("User unbanned"); loadUsers(); loadStats(); }
-    catch(e) { err((e as Error).message); }
+    try { await adminFetch("PATCH", `/admin/users/${uid}/unban`); toast.success("User unbanned"); loadUsers(); loadStats(); }
+    catch(e) { toast.error((e as Error).message); }
   }
   async function doDeleteUser(uid: string) {
     if (!confirm("Permanently delete this user?")) return;
-    try { await adminFetch("DELETE", `/admin/users/${uid}`); ok("User deleted"); loadUsers(); loadStats(); }
-    catch(e) { err((e as Error).message); }
+    try { await adminFetch("DELETE", `/admin/users/${uid}`); toast.success("User deleted"); loadUsers(); loadStats(); }
+    catch(e) { toast.error((e as Error).message); }
   }
 
   // ── Courses ───────────────────────────────────────────────────────────────
@@ -241,7 +250,7 @@ export default function AdminDashboard() {
       const params = new URLSearchParams({ page: String(cPage), limit:"15", ...(cSearch ? { q:cSearch }:{}) });
       const d = await adminFetch<{ courses:Course[]; total:number; totalPages:number }>("GET", `/admin/courses?${params}`);
       setCourses(d.courses); setCTotal(d.total); setCPages(d.totalPages);
-    } catch(e) { err((e as Error).message); }
+    } catch(e) { toast.error((e as Error).message); }
     finally { setCLoading(false); }
   }, [cPage, cSearch]);
 
@@ -249,8 +258,8 @@ export default function AdminDashboard() {
 
   async function doDeleteCourse(cid: string, title: string) {
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
-    try { await adminFetch("DELETE", `/admin/courses/${cid}`); ok("Course deleted"); loadCourses(); loadStats(); }
-    catch(e) { err((e as Error).message); }
+    try { await adminFetch("DELETE", `/admin/courses/${cid}`); toast.success("Course deleted"); loadCourses(); loadStats(); }
+    catch(e) { toast.error((e as Error).message); }
   }
 
   // ── Withdrawals ───────────────────────────────────────────────────────────
@@ -269,7 +278,7 @@ export default function AdminDashboard() {
       const params = new URLSearchParams({ page: String(wPage), limit:"15", ...(wStatus!=="all" ? { status:wStatus }:{}) });
       const d = await adminFetch<{ requests:Withdrawal[]; total:number; totalPages:number }>("GET", `/admin/withdrawals?${params}`);
       setWithdrawals(d.requests); setWTotal(d.total); setWPages(d.totalPages);
-    } catch(e) { err((e as Error).message); }
+    } catch(e) { toast.error((e as Error).message); }
     finally { setWLoading(false); }
   }, [wPage, wStatus]);
 
@@ -280,9 +289,9 @@ export default function AdminDashboard() {
     const { w, action } = reviewModal;
     try {
       await adminFetch("PATCH", `/admin/withdrawals/${w.id}/${action}`, { note: reviewNote||null });
-      ok(action==="approve" ? "Approved — instructor notified ✅" : "Rejected — instructor notified");
+      toast.success(action==="approve" ? "Approved — instructor notified ✅" : "Rejected — instructor notified");
       setReviewModal(null); setReviewNote(""); loadWithdrawals(); loadStats();
-    } catch(e) { err((e as Error).message); }
+    } catch(e) { toast.error((e as Error).message); }
   }
 
   // ── Broadcast ─────────────────────────────────────────────────────────────
@@ -301,16 +310,79 @@ export default function AdminDashboard() {
   useEffect(() => { if (tab==="broadcast") loadBroadcasts(); }, [tab]);
 
   async function doSendBroadcast() {
-    if (!bTitle.trim() || !bBody.trim()) { err("Title and body are required"); return; }
+    if (!bTitle.trim() || !bBody.trim()) { toast.error("Title and body are required"); return; }
     if (!confirm(`Send to all "${bTarget}" users?`)) return;
     setBSending(true);
     try {
       const d = await adminFetch<{ message:string; sent:number }>("POST", "/admin/broadcast", { title:bTitle.trim(), body:bBody.trim(), link:bLink||null, target:bTarget });
-      ok(d.message);
+      toast.success(d.message);
       setBTitle(""); setBBody(""); setBLink("");
       loadBroadcasts();
-    } catch(e) { err((e as Error).message); }
+    } catch(e) { toast.error((e as Error).message); }
     finally { setBSending(false); }
+  }
+
+  // ── Coupons ──────────────────────────────────────────────────────────────────
+  const [adminCoupons, setAdminCoupons]     = useState<AdminCoupon[]>([]);
+  const [cpLoading,    setCpLoading]        = useState(false);
+  const [cpFilter,     setCpFilter]         = useState<"all"|"platform"|"instructor">("all");
+  const [cpSearch,     setCpSearch]         = useState("");
+  const [showCpCreate, setShowCpCreate]     = useState(false);
+  const [cpForm, setCpForm] = useState({
+    code:"", type:"percent" as "percent"|"fixed", value:"",
+    totalLimit:"200", perUserLimit:"1", minOrder:"0",
+    maxDiscount:"", expiresAt:"",
+  });
+  const [cpCreating, setCpCreating]         = useState(false);
+
+  async function loadAdminCoupons() {
+    setCpLoading(true);
+    try {
+      const d = await adminFetch<{ coupons: AdminCoupon[] }>("GET", "/coupons");
+      setAdminCoupons(d.coupons ?? []);
+    } catch(e) { toast.error((e as Error).message); }
+    finally { setCpLoading(false); }
+  }
+  useEffect(() => { if (tab==="coupons") loadAdminCoupons(); }, [tab]);
+
+  async function doToggleCoupon(id: string) {
+    try {
+      const d = await adminFetch<{ isActive: boolean; message: string }>("PATCH", `/coupons/${id}/toggle`);
+      toast.success(d.message);
+      setAdminCoupons(prev => prev.map(c => c.id === id ? { ...c, isActive: d.isActive } : c));
+    } catch(e) { toast.error((e as Error).message); }
+  }
+
+  async function doDeleteCoupon(id: string, code: string) {
+    if (!confirm(`Delete coupon "${code}"? This cannot be undone.`)) return;
+    try {
+      await adminFetch("DELETE", `/coupons/${id}`);
+      toast.success("Coupon deleted");
+      setAdminCoupons(prev => prev.filter(c => c.id !== id));
+    } catch(e) { toast.error((e as Error).message); }
+  }
+
+  async function doCreateAdminCoupon() {
+    if (!cpForm.code.trim() || !cpForm.value) { toast.error("Code and value are required"); return; }
+    setCpCreating(true);
+    try {
+      await adminFetch("POST", "/coupons", {
+        code: cpForm.code.trim().toUpperCase(),
+        type: cpForm.type,
+        value: parseFloat(cpForm.value),
+        totalLimit: parseInt(cpForm.totalLimit) || 200,
+        perUserLimit: parseInt(cpForm.perUserLimit) || 1,
+        minOrder: parseFloat(cpForm.minOrder) || 0,
+        maxDiscount: cpForm.maxDiscount ? parseFloat(cpForm.maxDiscount) : null,
+        expiresAt: cpForm.expiresAt || null,
+        courseIds: [],
+      });
+      toast.success(`Coupon ${cpForm.code.toUpperCase()} created`);
+      setCpForm({ code:"", type:"percent", value:"", totalLimit:"200", perUserLimit:"1", minOrder:"0", maxDiscount:"", expiresAt:"" });
+      setShowCpCreate(false);
+      loadAdminCoupons();
+    } catch(e) { toast.error((e as Error).message); }
+    finally { setCpCreating(false); }
   }
 
   // ── NAV ITEMS ─────────────────────────────────────────────────────────────
@@ -320,19 +392,12 @@ export default function AdminDashboard() {
     { key:"courses",     icon:<MdOutlineOndemandVideo size={16}/>, label:"Courses"    },
     { key:"withdrawals", icon:<RiBankLine size={16}/>,            label:"Withdrawals", badge: stats?.withdrawals.pending },
     { key:"broadcast",   icon:<FiBell size={16}/>,               label:"Broadcast"    },
+    { key:"coupons",     icon:<FiTag size={16}/>,               label:"Coupons"      },
   ];
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div style={S.root}>
-
-      {/* Toast */}
-      {toast && (
-        <div style={{ ...S.toast, ...(toast.type==="err" ? S.toastErr : S.toastOk) }}>
-          {toast.type==="ok" ? <FiCheck size={13}/> : <FiAlertTriangle size={13}/>}
-          {toast.msg}
-        </div>
-      )}
 
       {/* Ban modal */}
       {banModal && (
@@ -746,6 +811,220 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+        {/* ══ COUPONS ══ */}
+        {tab==="coupons" && (
+          <div style={S.content}>
+            <div style={S.pageHead}>
+              <div>
+                <h1 style={S.pageTitle}>Coupon Management</h1>
+                <p style={S.pageSub}>
+                  {adminCoupons.length} total · {adminCoupons.filter(c=>c.isActive).length} active ·{" "}
+                  {adminCoupons.filter(c=>c.scope==="platform").length} platform ·{" "}
+                  {adminCoupons.filter(c=>c.scope==="instructor").length} instructor
+                </p>
+              </div>
+              <button style={S.primaryBtn} onClick={()=>setShowCpCreate(v=>!v)}>
+                <FiPlusCircle size={13}/> {showCpCreate ? "Cancel" : "New Platform Coupon"}
+              </button>
+            </div>
+
+            {/* ── Create form ── */}
+            {showCpCreate && (
+              <div style={{ ...S.card, marginBottom:18 }}>
+                <div style={S.cardHead}>
+                  <span style={S.cardTitle}><FiTag size={12}/> New Platform Coupon</span>
+                  <span style={{ fontSize:11, color:"#475569" }}>Applies to entire cart (all courses)</span>
+                </div>
+                <div style={{ padding:"16px 18px", display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12 }}>
+                  <div>
+                    <label style={S.label}>Code *</label>
+                    <div style={{ display:"flex", gap:5, marginTop:5 }}>
+                      <input style={{ ...S.input, flex:1, textTransform:"uppercase" as const }}
+                        placeholder="SUMMER30" maxLength={50}
+                        value={cpForm.code}
+                        onChange={e=>setCpForm(f=>({...f, code:e.target.value.toUpperCase()}))}/>
+                      <button style={{ ...S.ghostBtn, padding:"6px 10px", fontSize:11 }}
+                        onClick={()=>{
+                          const c = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+                          const code = Array.from({length:8},()=>c[Math.floor(Math.random()*c.length)]).join("");
+                          setCpForm(f=>({...f, code}));
+                        }}>Gen</button>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={S.label}>Type *</label>
+                    <select style={{ ...S.sel, width:"100%", marginTop:5 }}
+                      value={cpForm.type}
+                      onChange={e=>setCpForm(f=>({...f, type:e.target.value as "percent"|"fixed"}))}>
+                      <option value="percent">Percent (%)</option>
+                      <option value="fixed">Fixed (₫)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={S.label}>Value * {cpForm.type==="percent" ? "(1–100)" : "(₫)"}</label>
+                    <input style={{ ...S.input, marginTop:5, width:"100%", boxSizing:"border-box" as const }}
+                      type="number" min={0} max={cpForm.type==="percent"?100:undefined}
+                      placeholder={cpForm.type==="percent"?"30":"50000"}
+                      value={cpForm.value}
+                      onChange={e=>setCpForm(f=>({...f, value:e.target.value}))}/>
+                  </div>
+                  <div>
+                    <label style={S.label}>Total uses</label>
+                    <input style={{ ...S.input, marginTop:5, width:"100%", boxSizing:"border-box" as const }}
+                      type="number" min={1} value={cpForm.totalLimit}
+                      onChange={e=>setCpForm(f=>({...f, totalLimit:e.target.value}))}/>
+                  </div>
+                  <div>
+                    <label style={S.label}>Per-user limit</label>
+                    <input style={{ ...S.input, marginTop:5, width:"100%", boxSizing:"border-box" as const }}
+                      type="number" min={1} value={cpForm.perUserLimit}
+                      onChange={e=>setCpForm(f=>({...f, perUserLimit:e.target.value}))}/>
+                  </div>
+                  <div>
+                    <label style={S.label}>Min order (₫)</label>
+                    <input style={{ ...S.input, marginTop:5, width:"100%", boxSizing:"border-box" as const }}
+                      type="number" min={0} value={cpForm.minOrder} placeholder="0"
+                      onChange={e=>setCpForm(f=>({...f, minOrder:e.target.value}))}/>
+                  </div>
+                  {cpForm.type==="percent" && (
+                    <div>
+                      <label style={S.label}>Max discount cap (₫)</label>
+                      <input style={{ ...S.input, marginTop:5, width:"100%", boxSizing:"border-box" as const }}
+                        type="number" min={0} value={cpForm.maxDiscount} placeholder="optional"
+                        onChange={e=>setCpForm(f=>({...f, maxDiscount:e.target.value}))}/>
+                    </div>
+                  )}
+                  <div>
+                    <label style={S.label}><FiClock size={10}/> Expires at (optional)</label>
+                    <input style={{ ...S.input, marginTop:5, width:"100%", boxSizing:"border-box" as const }}
+                      type="datetime-local" value={cpForm.expiresAt}
+                      onChange={e=>setCpForm(f=>({...f, expiresAt:e.target.value}))}/>
+                  </div>
+                  <div style={{ display:"flex", alignItems:"flex-end" }}>
+                    <button
+                      style={{ ...S.primaryBtn, width:"100%", justifyContent:"center", padding:"10px" }}
+                      onClick={doCreateAdminCoupon}
+                      disabled={cpCreating}>
+                      {cpCreating ? <><span style={S.spinnerSm}/> Creating...</> : <><FiTag size={12}/> Create</>}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── Filter + search ── */}
+            <div style={{ display:"flex", gap:8, marginBottom:16, flexWrap:"wrap", alignItems:"center" }}>
+              {(["all","platform","instructor"] as const).map(f=>(
+                <button key={f} style={{ ...S.filterTab, ...(cpFilter===f ? S.filterTabActive:{}) }}
+                  onClick={()=>setCpFilter(f)}>
+                  {f==="all" ? "All" : f==="platform" ? "🌐 Platform" : "👨‍🏫 Instructor"}
+                  <span style={{ marginLeft:4, fontSize:10, opacity:0.7 }}>
+                    ({adminCoupons.filter(c=>f==="all"||c.scope===f).length})
+                  </span>
+                </button>
+              ))}
+              <div style={{ ...S.searchBox, flex:"1 1 180px" }}>
+                <FiSearch size={13} style={S.searchIcon}/>
+                <input style={S.searchInput} placeholder="Search code or creator…"
+                  value={cpSearch} onChange={e=>setCpSearch(e.target.value)}/>
+              </div>
+              <button style={S.refreshBtn} onClick={loadAdminCoupons}>
+                <FiRefreshCw size={12} style={cpLoading?{animation:"spin 0.8s linear infinite"}:{}}/>
+              </button>
+            </div>
+
+            {/* ── Table ── */}
+            <div style={S.card}>
+              <div style={{ ...S.tHead, gridTemplateColumns:"140px 80px 90px 80px 80px 80px 80px 100px 120px" }}>
+                <span>Code</span><span>Scope</span><span>Type / Value</span>
+                <span>Used</span><span>Limit</span><span>Min Order</span>
+                <span>Status</span><span>Expires</span><span>Actions</span>
+              </div>
+
+              {cpLoading
+                ? <div style={S.loadRow}><FiRefreshCw size={15} style={{animation:"spin 0.8s linear infinite"}}/> Loading...</div>
+                : (() => {
+                    const filtered = adminCoupons.filter(c=>{
+                      if (cpFilter!=="all" && c.scope!==cpFilter) return false;
+                      if (cpSearch && !c.code.toLowerCase().includes(cpSearch.toLowerCase()) &&
+                          !(c.createdByName??'').toLowerCase().includes(cpSearch.toLowerCase())) return false;
+                      return true;
+                    });
+                    return filtered.length===0
+                      ? <div style={S.emptyRow}>No coupons found</div>
+                      : filtered.map(cp => {
+                        const isExpired = cp.expiresAt && new Date(cp.expiresAt) < new Date();
+                        const fillPct = cp.totalLimit > 0 ? (cp.usedCount / cp.totalLimit) * 100 : 0;
+                        return (
+                          <div key={cp.id} style={{ ...S.tRow, gridTemplateColumns:"140px 80px 90px 80px 80px 80px 80px 100px 120px",
+                            opacity:(!cp.isActive||isExpired) ? 0.6 : 1 }}>
+                            <div>
+                              <div style={{ fontSize:13, fontWeight:800, color:"#e2e8f0", letterSpacing:"0.06em" }}>{cp.code}</div>
+                              {cp.createdByName && <div style={{ fontSize:10, color:"#334155" }}>by {cp.createdByName}</div>}
+                            </div>
+                            <span style={{
+                              fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:4,
+                              background: cp.scope==="platform" ? "rgba(99,102,241,0.12)" : "rgba(34,197,94,0.1)",
+                              color: cp.scope==="platform" ? "#a5b4fc" : "#4ade80",
+                              border: `1px solid ${cp.scope==="platform" ? "rgba(99,102,241,0.25)" : "rgba(34,197,94,0.2)"}`,
+                            }}>
+                              {cp.scope==="platform" ? "🌐" : "👨‍🏫"} {cp.scope}
+                            </span>
+                            <div>
+                              <div style={{ fontSize:12, fontWeight:700, color:"#e2e8f0" }}>
+                                {cp.type==="percent" ? `${cp.value}%` : `${(cp.value/1000).toFixed(0)}K ₫`}
+                              </div>
+                              <div style={{ fontSize:10, color:"#334155" }}>{cp.type}</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize:12, fontWeight:600, color:"#e2e8f0" }}>{cp.usedCount}</div>
+                              <div style={{ height:3, background:"#1a2540", borderRadius:99, marginTop:4, overflow:"hidden" }}>
+                                <div style={{ height:"100%", borderRadius:99,
+                                  background: fillPct>=90?"#ef4444":fillPct>=60?"#f59e0b":"#6366f1",
+                                  width:`${Math.min(fillPct,100)}%` }}/>
+                              </div>
+                            </div>
+                            <span style={{ fontSize:12, color:"#94a3b8" }}>{cp.totalLimit}</span>
+                            <span style={{ fontSize:11, color:"#64748b" }}>
+                              {cp.minOrder > 0 ? `${(cp.minOrder/1000).toFixed(0)}K` : "—"}
+                            </span>
+                            <span>
+                              {isExpired
+                                ? <span style={{ fontSize:10, fontWeight:700, color:"#f87171", background:"rgba(239,68,68,0.1)", padding:"2px 7px", borderRadius:4 }}>Expired</span>
+                                : cp.isActive
+                                  ? <span style={{ fontSize:10, fontWeight:700, color:"#4ade80", background:"rgba(34,197,94,0.1)", padding:"2px 7px", borderRadius:4 }}>Active</span>
+                                  : <span style={{ fontSize:10, fontWeight:700, color:"#94a3b8", background:"rgba(148,163,184,0.1)", padding:"2px 7px", borderRadius:4 }}>Off</span>
+                              }
+                            </span>
+                            <span style={{ fontSize:11, color:"#475569" }}>
+                              {cp.expiresAt ? new Date(cp.expiresAt).toLocaleDateString("vi-VN") : "∞"}
+                            </span>
+                            <div style={{ display:"flex", gap:5 }}>
+                              <button
+                                style={{ ...S.actionBtn,
+                                  background: cp.isActive ? "rgba(239,68,68,0.08)" : "rgba(34,197,94,0.1)",
+                                  color: cp.isActive ? "#f87171" : "#4ade80",
+                                  border: `1px solid ${cp.isActive ? "rgba(239,68,68,0.2)" : "rgba(34,197,94,0.2)"}`,
+                                }}
+                                onClick={()=>doToggleCoupon(cp.id)}>
+                                {cp.isActive ? <FiToggleRight size={12}/> : <FiToggleLeft size={12}/>}
+                                {cp.isActive ? "Off" : "On"}
+                              </button>
+                              {cp.usedCount===0 && (
+                                <button style={S.deleteBtn} onClick={()=>doDeleteCoupon(cp.id, cp.code)} title="Delete">
+                                  <FiTrash2 size={12}/>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      });
+                  })()
+              }
+            </div>
+          </div>
+        )}
+
       </main>
 
       <style>{`@keyframes spin{to{transform:rotate(360deg)}} input:focus,textarea:focus{outline:none;border-color:rgba(99,102,241,0.6)!important;box-shadow:0 0 0 3px rgba(99,102,241,0.12)!important}`}</style>

@@ -11,3 +11,5 @@ pub mod review;
 pub mod ai;
 pub mod admin;
 pub mod withdrawal;
+pub mod note;
+pub mod membership;

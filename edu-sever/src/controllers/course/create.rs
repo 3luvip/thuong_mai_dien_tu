@@ -78,9 +78,9 @@ pub async fn create_course(
             "Sub-title must be within 56 characters".into(),
         ));
     }
-    if description.len() > 200 {
+    if description.len() > 5000 {
         return Err(AppError::Validation(
-            "Description must be within 200 characters".into(),
+            "Description must be within 5000 characters".into(),
         ));
     }
     if !["English", "Hindi", "French", "aymur"].contains(&language.as_str()) {

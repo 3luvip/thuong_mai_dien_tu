@@ -7,6 +7,7 @@ import {
 } from "react-icons/fi";
 import axiosInstance from "../../lib/axios";
 import "../../style/components/_create_course.scss";
+import { session } from "../../lib/storage";
 
 // ─── Constants (khớp đúng validation backend) ─────────────────────────────────
 
@@ -15,7 +16,7 @@ const LEVELS    = ["Beginner Level", "Intermediate Level", "Expert", "All Level"
 const CATEGORIES = [
   "Web Development", "Mobile Development", "Data Science",
   "Machine Learning", "Design", "Business", "Marketing",
-  "Photography", "Music", "Health & Fitness", "Other",
+  "Photography", "Music", "Health & Fitness", "Programing Language", "Other",
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -23,7 +24,7 @@ const CATEGORIES = [
 export default function CreateCoursePage() {
   const navigate  = useNavigate();
   const fileRef   = useRef<HTMLInputElement>(null);
-  const instructorId = localStorage.getItem("userId") ?? "";
+  const instructorId = session.getUserId() ?? "";
 
   const [form, setForm] = useState({
     title:       "",
@@ -68,7 +69,7 @@ export default function CreateCoursePage() {
     if (!form.courseSub.trim())        return "Please enter a short description";
     if (form.courseSub.length > 56)    return "Short description max 56 characters";
     if (!form.description.trim())      return "Please enter a detailed description";
-    if (form.description.length > 200) return "Description max 200 characters";
+    if (form.description.length > 5000) return "Description max 5000 characters";
     if (!form.price)                   return "Please enter the course price";
     if (isNaN(Number(form.price)) || Number(form.price) < 0) return "Invalid price";
     if (!image)                        return "Please upload a thumbnail image";
@@ -203,13 +204,13 @@ export default function CreateCoursePage() {
             <label className="cc-label"><FiAlignLeft /> Detailed description <span className="cc-req">*</span></label>
             <textarea
               className="cc-input cc-textarea"
-              placeholder="Describe the content, the target audience, and what learners will achieve..."
+              placeholder={"Mô tả khóa học...\n\nTip: dòng trống = đoạn mới | - hoặc • = bullet | dòng ngắn kết thúc : = tiêu đề"}
               value={form.description}
-              maxLength={200}
-              rows={4}
+              maxLength={5000}
+              rows={7}
               onChange={e => set("description", e.target.value)}
             />
-            <span className="cc-counter">{form.description.length}/200</span>
+            <span className="cc-counter">{form.description.length}/5000</span>
           </div>
 
           {/* Author */}

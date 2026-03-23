@@ -6,6 +6,7 @@ import { MdOutlineEmail, MdLockOutline, MdOutlineBlock } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 import Footer from "../../common/Footer";
 import { useToast } from "../../context/toast";
+import { session } from "../../lib/storage";
 
 interface LoginProps {
   setIsAuthenticated?: (value: boolean) => void;
@@ -30,7 +31,6 @@ function redirectByRole(role: string, navigate: (path: string) => void) {
 function BanModal({ reason, onClose }: { reason: string; onClose: () => void }) {
   return (
     <>
-      {/* Backdrop */}
       <div
         onClick={onClose}
         style={{
@@ -41,8 +41,6 @@ function BanModal({ reason, onClose }: { reason: string; onClose: () => void }) 
           animation: "fadeIn 0.2s ease",
         }}
       />
-
-      {/* Modal */}
       <div style={{
         position: "fixed",
         top: "50%", left: "50%",
@@ -57,7 +55,6 @@ function BanModal({ reason, onClose }: { reason: string; onClose: () => void }) 
         animation: "slideUp 0.25s cubic-bezier(0.22,1,0.36,1)",
         fontFamily: "Inter, system-ui, sans-serif",
       }}>
-        {/* Icon */}
         <div style={{
           width: 64, height: 64,
           borderRadius: "50%",
@@ -69,8 +66,6 @@ function BanModal({ reason, onClose }: { reason: string; onClose: () => void }) 
         }}>
           <MdOutlineBlock />
         </div>
-
-        {/* Title */}
         <h2 style={{
           textAlign: "center",
           fontSize: "1.3rem", fontWeight: 800,
@@ -79,7 +74,6 @@ function BanModal({ reason, onClose }: { reason: string; onClose: () => void }) 
         }}>
           Account Suspended
         </h2>
-
         <p style={{
           textAlign: "center",
           fontSize: "0.88rem", color: "#94a3b8",
@@ -87,8 +81,6 @@ function BanModal({ reason, onClose }: { reason: string; onClose: () => void }) 
         }}>
           Your account has been suspended by an administrator.
         </p>
-
-        {/* Reason box */}
         <div style={{
           background: "rgba(239,68,68,0.06)",
           border: "1px solid rgba(239,68,68,0.2)",
@@ -110,8 +102,6 @@ function BanModal({ reason, onClose }: { reason: string; onClose: () => void }) 
             {reason}
           </p>
         </div>
-
-        {/* Actions */}
         <div style={{ display: "flex", gap: 10 }}>
           <a
             href="mailto:support@ctuet.edu.vn"
@@ -141,7 +131,6 @@ function BanModal({ reason, onClose }: { reason: string; onClose: () => void }) 
           </button>
         </div>
       </div>
-
       <style>{`
         @keyframes fadeIn  { from { opacity: 0 } to { opacity: 1 } }
         @keyframes slideUp {
@@ -170,17 +159,17 @@ function Login({ setIsAuthenticated, setRole }: LoginProps) {
 
   useEffect(() => {
     const verify = async () => {
-      const token = localStorage.getItem("token");
+      const token = session.getToken();
       if (!token) return;
       try {
         await axiosInstance.get<UserVerifyResponse>("/auth/verify");
-        const role = localStorage.getItem("role");
+        const role = session.getRole();
         if (role) {
           safeSetIsAuthenticated(true);
           safeSetRole(role);
           redirectByRole(role, navigate);
         }
-      } catch { localStorage.removeItem("token"); }
+      } catch { session.removeToken(); }
     };
     verify();
   }, [navigate, safeSetIsAuthenticated, safeSetRole]);
@@ -197,7 +186,6 @@ function Login({ setIsAuthenticated, setRole }: LoginProps) {
       const res = await axiosInstance.post<LoginResponse>("/auth/login", { email, password });
       const data = res.data;
 
-      // Tài khoản bị ban — hiện modal với lý do
       if (data.banned) {
         setBanReason(data.reason ?? "Violation of Terms of Service.");
         setLoading(false);
@@ -206,10 +194,10 @@ function Login({ setIsAuthenticated, setRole }: LoginProps) {
 
       const { token, role, userId } = data;
 
-      localStorage.setItem("token",  token);
-      localStorage.setItem("role",   role);
-      localStorage.setItem("userId", userId);
-      if (role === "instructor") localStorage.setItem("instructorId", userId);
+      // ✅ sessionStorage — mỗi tab độc lập
+      session.setToken(token);
+      session.setRole(role);
+      session.setUserId(userId);
 
       safeSetIsAuthenticated(true);
       safeSetRole(role);
@@ -238,7 +226,6 @@ function Login({ setIsAuthenticated, setRole }: LoginProps) {
 
   return (
     <section className="login-page">
-      {/* Ban modal */}
       {banReason && (
         <BanModal
           reason={banReason}

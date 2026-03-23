@@ -1,4 +1,5 @@
 import axios from "axios";
+import { session } from "./storage";
 
 const axiosInstance = axios.create({
   baseURL: "http://localhost:8080",
@@ -10,7 +11,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = session.getToken();
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
@@ -30,23 +31,18 @@ axiosInstance.interceptors.response.use(
       url.includes("/auth/verify");
 
     if (isAuthEndpoint) {
-      // Trả lỗi về cho component xử lý bình thường
       return Promise.reject(error);
     }
 
     if (status === 401) {
-      // Token hết hạn hoặc invalid — logout
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      localStorage.removeItem("userId");
+      // Token hết hạn hoặc invalid — logout tab này
+      session.clear();
       window.location.href = "/#/login";
     }
 
     if (status === 403) {
-      // Tài khoản bị ban giữa chừng (đang dùng app)
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      localStorage.removeItem("userId");
+      // Tài khoản bị ban giữa chừng
+      session.clear();
       window.location.href = "/#/banned";
     }
 

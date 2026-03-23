@@ -11,6 +11,7 @@ import { formatVnd } from "../../utils/currency";
 import axiosInstance from "../../lib/axios";
 import { useToast } from "../../context/toast";
 import "../../style/components/_cart.scss";
+import { session } from "../../lib/storage";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface CouponResult {
@@ -491,18 +492,32 @@ function CartPage() {
   const [couponError, setCouponError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [membershipDiscount, setMembershipDiscount] = useState<{
+    tier: string;
+    discountPct: number;
+    isActive: boolean;
+  } | null>(null);
+
   // Payment modal
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
 
   useEffect(() => {
-    const uid = localStorage.getItem("userId");
+    const uid = session.getUserId();
     if (!uid) {
       navigate("/login");
       return;
     }
     setUserId(uid);
     fetchCart(uid);
+    axiosInstance
+      .get(`/membership/discount/${uid}`)
+      .then((res) => {
+        if (res.data.isActive && res.data.discountPct > 0) {
+          setMembershipDiscount(res.data);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -530,8 +545,16 @@ function CartPage() {
 
   const courseDiscount = totalOriginal - totalAfterCourseDiscount;
   const couponDiscount = couponResult?.discount ?? 0;
-  const finalTotal = couponResult?.finalTotal ?? totalAfterCourseDiscount;
-  const totalSaved = courseDiscount + couponDiscount;
+  const membershipDiscountAmt =
+    membershipDiscount?.isActive && !couponResult
+      ? Math.round(
+          totalAfterCourseDiscount * (membershipDiscount.discountPct / 100),
+        )
+      : 0;
+  const finalTotal =
+    couponResult?.finalTotal ??
+    totalAfterCourseDiscount - membershipDiscountAmt;
+  const totalSaved = courseDiscount + couponDiscount + membershipDiscountAmt;
 
   // ── Coupon ────────────────────────────────────────────────────────────────
   const handleApplyCoupon = async () => {
@@ -545,6 +568,7 @@ function CartPage() {
         user_id: userId,
         code,
         order_total: totalAfterCourseDiscount,
+        course_ids: cartItems.map((c) => c.id),
       });
       const data = res.data;
       setCouponResult({
@@ -616,9 +640,9 @@ function CartPage() {
         course_ids: cartItems.map((c) => c.id),
         coupon_id: couponResult?.couponId ?? null,
         total_amount: totalOriginal,
-        discount_amount: totalSaved,
+        discount_amount: totalSaved, // ← bao gồm cả membership discount
         final_amount: finalTotal,
-        payment_method: method, // gửi kèm method cho backend nếu cần
+        payment_method: method,
       });
 
       setShowPaymentModal(false);
@@ -783,6 +807,56 @@ function CartPage() {
                   <span>-{formatVnd(courseDiscount)} ₫</span>
                 </div>
               )}
+              {membershipDiscountAmt > 0 && !couponResult && (
+                <div className="cart-summary__row cart-summary__row--discount">
+                  <span>
+                    Membership{" "}
+                    <strong
+                      style={{
+                        color:
+                          membershipDiscount?.tier === "pro"
+                            ? "#818cf8"
+                            : "#22d3ee",
+                      }}
+                    >
+                      {membershipDiscount?.tier === "pro"
+                        ? "⚡ Pro"
+                        : "🏆 Team"}
+                    </strong>{" "}
+                    (-{membershipDiscount?.discountPct}%)
+                  </span>
+                  <span>-{formatVnd(membershipDiscountAmt)} ₫</span>
+                </div>
+              )}
+              {couponResult &&
+                membershipDiscount?.isActive &&
+                couponDiscount > membershipDiscountAmt && (
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#64748b",
+                      textAlign: "center",
+                      padding: "4px 0",
+                    }}
+                  >
+                    💡 Coupon tốt hơn Membership — đã dùng coupon
+                  </div>
+                )}
+              {couponResult &&
+                membershipDiscount?.isActive &&
+                membershipDiscountAmt >= couponDiscount && (
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#64748b",
+                      textAlign: "center",
+                      padding: "4px 0",
+                    }}
+                  >
+                    💡 Membership tốt hơn — bỏ coupon để dùng giảm giá
+                    membership
+                  </div>
+                )}
               {couponResult && couponDiscount > 0 && (
                 <div className="cart-summary__row cart-summary__row--coupon">
                   <span>

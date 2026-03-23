@@ -3,6 +3,7 @@ use crate::controllers::coupon::handler::{apply_coupon, confirm_coupon};
 use crate::controllers::course::{create_course, create_course_card, create_course_instruction, get_all_courses, get_categories, get_course, get_course_cards, get_course_detail_full, get_footer};
 use crate::controllers::order::handler::{checkout, get_my_orders};
 use crate::controllers::review::handler::create_review;
+use crate::routes::coupon_routes;
 use crate::state::AppState;
 use axum::{
     Router,
@@ -21,7 +22,9 @@ pub fn course_routes() -> Router<AppState> {
         .route("/add-cart", post(add_to_cart))
         .route("/remove-cart", delete(remove_from_cart))
         .route("/clear-cart/{userId}", delete(clear_cart)) 
+        
         .route("/footer", get(get_footer))
+        
         .route("/apply-coupon", post(apply_coupon))
         .route("/confirm-coupon", post(confirm_coupon))
         .route(

@@ -691,3 +691,7 @@ $warning:       #f59e0b;
   animation: couponSpin 0.7s linear infinite;
 }
 @keyframes couponSpin { to { transform: rotate(360deg); } }
+
+.cart-summary__row--discount {
+  color: #4ade80;
+}
