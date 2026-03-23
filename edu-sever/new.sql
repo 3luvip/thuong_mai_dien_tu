@@ -1,314 +1,507 @@
-use edu_update;
+/*M!999999\- enable the sandbox mode */ 
+-- MariaDB dump 10.19-12.2.2-MariaDB, for Linux (x86_64)
+--
+-- Host: localhost    Database: edu_update
+-- ------------------------------------------------------
+-- Server version	8.0.45
 
--- ============================================================
--- E-Learning Platform - Cleaned Database Setup
--- ============================================================
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*M!100616 SET @OLD_NOTE_VERBOSITY=@@NOTE_VERBOSITY, NOTE_VERBOSITY=0 */;
 
-CREATE DATABASE IF NOT EXISTS edu_server;
-USE edu_server;
+--
+-- Table structure for table `bank_accounts`
+--
 
--- ─── USERS ───────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS users (
-    id          VARCHAR(36)  NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    email       VARCHAR(255) NOT NULL UNIQUE,
-    password    VARCHAR(255) NOT NULL,
-    name        VARCHAR(255) NOT NULL,
-    role        ENUM('instructor', 'user') NOT NULL,
-    status      VARCHAR(255) NOT NULL DEFAULT 'I am new User',
-    created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+DROP TABLE IF EXISTS `bank_accounts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `bank_accounts` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `instructor_id` varchar(36) NOT NULL,
+  `bank_name` varchar(100) NOT NULL,
+  `bank_branch` varchar(255) DEFAULT NULL,
+  `account_number` varchar(50) NOT NULL,
+  `account_holder` varchar(255) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `instructor_id` (`instructor_id`),
+  CONSTRAINT `bank_accounts_ibfk_1` FOREIGN KEY (`instructor_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ─── COURSE_INSTRUCTIONS ─────────────────────────────────────
-CREATE TABLE IF NOT EXISTS course_instructions (
-    id           VARCHAR(36) NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    role         TEXT        NOT NULL,
-    budget       TEXT        NOT NULL,
-    project_risk TEXT        NOT NULL,
-    case_study   TEXT        NOT NULL,
-    requirement  TEXT        NOT NULL,
-    about_course TEXT        NOT NULL,
-    created_at   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+--
+-- Table structure for table `cart_courses`
+--
 
--- ─── COURSES ─────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS courses (
-    id                    VARCHAR(36)   NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    title                 VARCHAR(255)  NOT NULL,
-    author                VARCHAR(255)  NOT NULL,
-    course_sub            VARCHAR(255)  NOT NULL,
-    description           TEXT          NOT NULL,
-    price                 DECIMAL(10,2) NOT NULL,
-    language              VARCHAR(100)  NOT NULL,
-    level                 VARCHAR(100)  NOT NULL,
-    category              VARCHAR(100)  NOT NULL,
-    path                  VARCHAR(500)  NOT NULL,
-    filename              VARCHAR(255)  NOT NULL,
-    instructor_id         VARCHAR(36)   NOT NULL,
-    course_instruction_id VARCHAR(36)   NULL,
-    created_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (instructor_id)         REFERENCES users(id)               ON DELETE CASCADE,
-    FOREIGN KEY (course_instruction_id) REFERENCES course_instructions(id) ON DELETE SET NULL
-);
+DROP TABLE IF EXISTS `cart_courses`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `cart_courses` (
+  `cart_id` varchar(36) NOT NULL,
+  `course_id` varchar(36) NOT NULL,
+  `added_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`cart_id`,`course_id`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `cart_courses_ibfk_1` FOREIGN KEY (`cart_id`) REFERENCES `carts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cart_courses_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-CREATE INDEX idx_courses_instructor ON courses (instructor_id);
-CREATE INDEX idx_courses_category   ON courses (category);
+--
+-- Table structure for table `carts`
+--
 
--- ─── COURSE_CARDS ─────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS course_cards (
-    id               VARCHAR(36)   NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    title            VARCHAR(255)  NOT NULL,
-    author           VARCHAR(255)  NOT NULL,
-    price            DECIMAL(10,2) NOT NULL,
-    current_price    DECIMAL(10,2) NOT NULL,
-    path             VARCHAR(500)  NOT NULL,
-    filename         VARCHAR(255)  NOT NULL,
-    instructor_id    VARCHAR(36)   NOT NULL,
-    course_detail_id VARCHAR(36)   NOT NULL,
-    created_at       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (instructor_id)    REFERENCES users(id)   ON DELETE CASCADE,
-    FOREIGN KEY (course_detail_id) REFERENCES courses(id) ON DELETE CASCADE
-);
+DROP TABLE IF EXISTS `carts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `carts` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `user_id` varchar(36) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_carts_user` (`user_id`),
+  CONSTRAINT `carts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-CREATE INDEX idx_course_cards_detail ON course_cards (course_detail_id);
+--
+-- Table structure for table `coupon_courses`
+--
 
--- ─── COUPONS ─────────────────────────────────────────────────
--- (Định nghĩa MỘT LẦN duy nhất)
-CREATE TABLE IF NOT EXISTS coupons (
-    id             VARCHAR(36)             NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    code           VARCHAR(50)             NOT NULL UNIQUE,
-    type           ENUM('percent','fixed') NOT NULL DEFAULT 'percent',
-    value          DECIMAL(10,2)           NOT NULL,
-    total_limit    INT                     NOT NULL DEFAULT 100,
-    per_user_limit INT                     NOT NULL DEFAULT 1,
-    min_order      DECIMAL(10,2)           NOT NULL DEFAULT 0,
-    max_discount   DECIMAL(10,2)           NULL,
-    is_active      TINYINT(1)              NOT NULL DEFAULT 1,
-    expires_at     DATETIME                NULL,
-    created_at     DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at     DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+DROP TABLE IF EXISTS `coupon_courses`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `coupon_courses` (
+  `coupon_id` varchar(36) NOT NULL,
+  `course_id` varchar(36) NOT NULL,
+  PRIMARY KEY (`coupon_id`,`course_id`),
+  KEY `idx_coupon_courses_course` (`course_id`),
+  CONSTRAINT `coupon_courses_ibfk_1` FOREIGN KEY (`coupon_id`) REFERENCES `coupons` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `coupon_courses_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-CREATE TABLE IF NOT EXISTS coupon_usages (
-    id              VARCHAR(36)   NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    coupon_id       VARCHAR(36)   NOT NULL,
-    user_id         VARCHAR(36)   NOT NULL,
-    used_at         DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
-    FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id)   REFERENCES users(id)   ON DELETE CASCADE
-);
+--
+-- Table structure for table `coupon_usages`
+--
 
-CREATE INDEX idx_coupon_usages_user_coupon ON coupon_usages (user_id, coupon_id);
+DROP TABLE IF EXISTS `coupon_usages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `coupon_usages` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `coupon_id` varchar(36) NOT NULL,
+  `user_id` varchar(36) NOT NULL,
+  `used_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `discount_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  PRIMARY KEY (`id`),
+  KEY `coupon_id` (`coupon_id`),
+  KEY `idx_coupon_usages_user_coupon` (`user_id`,`coupon_id`),
+  CONSTRAINT `coupon_usages_ibfk_1` FOREIGN KEY (`coupon_id`) REFERENCES `coupons` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `coupon_usages_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ─── WISHLISTS ────────────────────────────────────────────────
--- (Phải tạo TRƯỚC wishlist_courses)
-CREATE TABLE IF NOT EXISTS wishlists (
-    id         VARCHAR(36) NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    user_id    VARCHAR(36) NOT NULL UNIQUE,
-    created_at DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
+--
+-- Table structure for table `coupons`
+--
 
--- ─── WISHLIST_COURSES ─────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS wishlist_courses (
-    wishlist_id VARCHAR(36) NOT NULL,
-    course_id   VARCHAR(36) NOT NULL,
-    added_at    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (wishlist_id, course_id),
-    FOREIGN KEY (wishlist_id) REFERENCES wishlists(id) ON DELETE CASCADE,
-    FOREIGN KEY (course_id)   REFERENCES courses(id)   ON DELETE CASCADE
-);
+DROP TABLE IF EXISTS `coupons`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `coupons` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `code` varchar(50) NOT NULL,
+  `scope` enum('platform','instructor') NOT NULL DEFAULT 'platform' COMMENT 'platform = admin tạo, áp toàn giỏ; instructor = chỉ áp khóa học của GV đó',
+  `created_by_user_id` varchar(36) DEFAULT NULL COMMENT 'NULL = seeded by system; admin/instructor UUID',
+  `type` enum('percent','fixed') NOT NULL DEFAULT 'percent',
+  `value` decimal(10,2) NOT NULL,
+  `total_limit` int NOT NULL DEFAULT '100',
+  `per_user_limit` int NOT NULL DEFAULT '1',
+  `min_order` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `max_discount` decimal(10,2) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `expires_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
+  KEY `idx_coupons_scope_active` (`scope`,`is_active`,`expires_at`),
+  KEY `idx_coupons_creator` (`created_by_user_id`,`is_active`),
+  CONSTRAINT `fk_coupons_creator` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-CREATE INDEX idx_wishlist_courses_course ON wishlist_courses (course_id);
+--
+-- Table structure for table `course_cards`
+--
 
--- ─── CARTS ────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS carts (
-    id         VARCHAR(36) NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    user_id    VARCHAR(36) NOT NULL,
-    created_at DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
+DROP TABLE IF EXISTS `course_cards`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `course_cards` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `title` varchar(255) NOT NULL,
+  `author` varchar(255) NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `current_price` decimal(10,2) NOT NULL,
+  `path` varchar(500) NOT NULL,
+  `filename` varchar(255) NOT NULL,
+  `instructor_id` varchar(36) NOT NULL,
+  `course_detail_id` varchar(36) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `instructor_id` (`instructor_id`),
+  KEY `idx_course_cards_detail` (`course_detail_id`),
+  CONSTRAINT `course_cards_ibfk_1` FOREIGN KEY (`instructor_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `course_cards_ibfk_2` FOREIGN KEY (`course_detail_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-CREATE INDEX idx_carts_user ON carts (user_id);
+--
+-- Table structure for table `course_instructions`
+--
 
--- ─── CART_COURSES ─────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS cart_courses (
-    cart_id   VARCHAR(36) NOT NULL,
-    course_id VARCHAR(36) NOT NULL,
-    added_at  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (cart_id, course_id),
-    FOREIGN KEY (cart_id)   REFERENCES carts(id)   ON DELETE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
-);
+DROP TABLE IF EXISTS `course_instructions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `course_instructions` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `role` text NOT NULL,
+  `budget` text NOT NULL,
+  `project_risk` text NOT NULL,
+  `case_study` text NOT NULL,
+  `requirement` text NOT NULL,
+  `about_course` text NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ─── NOTIFICATIONS ────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS notifications (
-    id         VARCHAR(36)  NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    user_id    VARCHAR(36)  NOT NULL,
-    type       ENUM('course_added','discount','coupon','system','reminder') NOT NULL DEFAULT 'system',
-    title      VARCHAR(255) NOT NULL,
-    body       TEXT         NOT NULL,
-    link       VARCHAR(500) NULL,
-    is_read    TINYINT(1)   NOT NULL DEFAULT 0,
-    created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
+--
+-- Table structure for table `course_learnings`
+--
 
-CREATE INDEX idx_notif_user_read ON notifications (user_id, is_read);
-CREATE INDEX idx_notif_user_time ON notifications (user_id, created_at DESC);
+DROP TABLE IF EXISTS `course_learnings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `course_learnings` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `course_id` varchar(36) NOT NULL,
+  `content` text NOT NULL,
+  `position` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_course_learnings` (`course_id`,`position`),
+  CONSTRAINT `course_learnings_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ─── SECTIONS ────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS sections (
-    id         VARCHAR(36)  NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    course_id  VARCHAR(36)  NOT NULL,
-    title      VARCHAR(255) NOT NULL,
-    position   INT          NOT NULL DEFAULT 0,
-    created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
-);
+--
+-- Table structure for table `course_tags`
+--
 
-CREATE INDEX idx_sections_course ON sections (course_id, position);
+DROP TABLE IF EXISTS `course_tags`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `course_tags` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `course_id` varchar(36) NOT NULL,
+  `tag` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_course_tags` (`course_id`),
+  CONSTRAINT `course_tags_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ─── LECTURES ────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS lectures (
-    id           VARCHAR(36)  NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    section_id   VARCHAR(36)  NOT NULL,
-    title        VARCHAR(255) NOT NULL,
-    position     INT          NOT NULL DEFAULT 0,
-    duration_sec INT          NOT NULL DEFAULT 0,
-    is_preview   TINYINT(1)   NOT NULL DEFAULT 0,
-    video_url    VARCHAR(500) NULL,
-    created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (section_id) REFERENCES sections(id) ON DELETE CASCADE
-);
+--
+-- Table structure for table `courses`
+--
 
-CREATE INDEX idx_lectures_section ON lectures (section_id, position);
+DROP TABLE IF EXISTS `courses`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `courses` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `title` varchar(255) NOT NULL,
+  `author` varchar(255) NOT NULL,
+  `course_sub` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `language` varchar(100) NOT NULL,
+  `level` varchar(100) NOT NULL,
+  `category` varchar(100) NOT NULL,
+  `path` varchar(500) NOT NULL,
+  `filename` varchar(255) NOT NULL,
+  `instructor_id` varchar(36) NOT NULL,
+  `course_instruction_id` varchar(36) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `course_instruction_id` (`course_instruction_id`),
+  KEY `idx_courses_instructor` (`instructor_id`),
+  KEY `idx_courses_category` (`category`),
+  CONSTRAINT `courses_ibfk_1` FOREIGN KEY (`instructor_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `courses_ibfk_2` FOREIGN KEY (`course_instruction_id`) REFERENCES `course_instructions` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ─── COURSE_LEARNINGS ─────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS course_learnings (
-    id        VARCHAR(36) NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    course_id VARCHAR(36) NOT NULL,
-    content   TEXT        NOT NULL,
-    position  INT         NOT NULL DEFAULT 0,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
-);
+--
+-- Table structure for table `lecture_notes`
+--
 
-CREATE INDEX idx_course_learnings ON course_learnings (course_id, position);
+DROP TABLE IF EXISTS `lecture_notes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `lecture_notes` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `user_id` varchar(36) NOT NULL,
+  `lecture_id` varchar(36) NOT NULL,
+  `course_id` varchar(36) NOT NULL,
+  `content` text NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `lecture_id` (`lecture_id`),
+  KEY `course_id` (`course_id`),
+  KEY `idx_lecture_notes_user_lecture` (`user_id`,`lecture_id`),
+  CONSTRAINT `lecture_notes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `lecture_notes_ibfk_2` FOREIGN KEY (`lecture_id`) REFERENCES `lectures` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `lecture_notes_ibfk_3` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ─── COURSE_TAGS ──────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS course_tags (
-    id        VARCHAR(36)  NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    course_id VARCHAR(36)  NOT NULL,
-    tag       VARCHAR(100) NOT NULL,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
-);
+--
+-- Table structure for table `lecture_progress`
+--
 
-CREATE INDEX idx_course_tags ON course_tags (course_id);
+DROP TABLE IF EXISTS `lecture_progress`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `lecture_progress` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `user_id` varchar(36) NOT NULL,
+  `lecture_id` varchar(36) NOT NULL,
+  `course_id` varchar(36) NOT NULL,
+  `is_completed` tinyint(1) NOT NULL DEFAULT '0',
+  `watched_sec` int NOT NULL DEFAULT '0',
+  `last_watched_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_user_lecture` (`user_id`,`lecture_id`),
+  KEY `lecture_id` (`lecture_id`),
+  KEY `course_id` (`course_id`),
+  KEY `idx_progress_user_course` (`user_id`,`course_id`),
+  CONSTRAINT `lecture_progress_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `lecture_progress_ibfk_2` FOREIGN KEY (`lecture_id`) REFERENCES `lectures` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `lecture_progress_ibfk_3` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ─── REVIEWS ─────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS reviews (
-    id         VARCHAR(36) NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    course_id  VARCHAR(36) NOT NULL,
-    user_id    VARCHAR(36) NOT NULL,
-    rating     TINYINT     NOT NULL CHECK (rating BETWEEN 1 AND 5),
-    comment    TEXT        NULL,
-    created_at DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_review_user_course (user_id, course_id),
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id)   REFERENCES users(id)   ON DELETE CASCADE
-);
+--
+-- Table structure for table `lectures`
+--
 
-CREATE INDEX idx_reviews_course ON reviews (course_id);
+DROP TABLE IF EXISTS `lectures`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `lectures` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `section_id` varchar(36) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `position` int NOT NULL DEFAULT '0',
+  `duration_sec` int NOT NULL DEFAULT '0',
+  `is_preview` tinyint(1) NOT NULL DEFAULT '0',
+  `video_url` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_lectures_section` (`section_id`,`position`),
+  CONSTRAINT `lectures_ibfk_1` FOREIGN KEY (`section_id`) REFERENCES `sections` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ─── ORDERS ──────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS orders (
-    id              VARCHAR(36)   NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    user_id         VARCHAR(36)   NOT NULL,
-    status          ENUM('pending','paid','failed','refunded') NOT NULL DEFAULT 'pending',
-    total_amount    DECIMAL(10,2) NOT NULL DEFAULT 0,
-    discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
-    final_amount    DECIMAL(10,2) NOT NULL DEFAULT 0,
-    coupon_id       VARCHAR(36)   NULL,
-    created_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id)   REFERENCES users(id)   ON DELETE CASCADE,
-    FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE SET NULL
-);
+--
+-- Table structure for table `memberships`
+--
 
-CREATE INDEX idx_orders_user ON orders (user_id, created_at DESC);
+DROP TABLE IF EXISTS `memberships`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `memberships` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `user_id` varchar(36) NOT NULL,
+  `tier` enum('pro','team') NOT NULL,
+  `price_paid` decimal(12,2) NOT NULL,
+  `duration_days` int NOT NULL DEFAULT '30',
+  `started_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `expires_at` datetime NOT NULL,
+  `status` enum('active','expired','cancelled') NOT NULL DEFAULT 'active',
+  `payment_method` varchar(50) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_memberships_user` (`user_id`,`expires_at` DESC),
+  CONSTRAINT `memberships_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ─── ORDER_ITEMS ──────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS order_items (
-    id         VARCHAR(36)   NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    order_id   VARCHAR(36)   NOT NULL,
-    course_id  VARCHAR(36)   NOT NULL,
-    price      DECIMAL(10,2) NOT NULL,
-    created_at DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (order_id)  REFERENCES orders(id)  ON DELETE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
-);
+--
+-- Table structure for table `notifications`
+--
 
-CREATE INDEX idx_order_items_order  ON order_items (order_id);
-CREATE INDEX idx_order_items_course ON order_items (course_id);
+DROP TABLE IF EXISTS `notifications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `notifications` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `user_id` varchar(36) NOT NULL,
+  `type` enum('course_added','discount','coupon','system','reminder','broadcast') NOT NULL DEFAULT 'system',
+  `title` varchar(255) NOT NULL,
+  `body` text NOT NULL,
+  `link` varchar(500) DEFAULT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_notif_user_read` (`user_id`,`is_read`),
+  KEY `idx_notif_user_time` (`user_id`,`created_at` DESC),
+  CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ─── LECTURE_PROGRESS ─────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS lecture_progress (
-    id              VARCHAR(36) NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    user_id         VARCHAR(36) NOT NULL,
-    lecture_id      VARCHAR(36) NOT NULL,
-    course_id       VARCHAR(36) NOT NULL,
-    is_completed    TINYINT(1)  NOT NULL DEFAULT 0,
-    watched_sec     INT         NOT NULL DEFAULT 0,
-    last_watched_at DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_user_lecture (user_id, lecture_id),
-    FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
-    FOREIGN KEY (lecture_id) REFERENCES lectures(id) ON DELETE CASCADE,
-    FOREIGN KEY (course_id)  REFERENCES courses(id)  ON DELETE CASCADE
-);
+--
+-- Table structure for table `order_items`
+--
 
-CREATE INDEX idx_progress_user_course ON lecture_progress (user_id, course_id);
+DROP TABLE IF EXISTS `order_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `order_items` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `order_id` varchar(36) NOT NULL,
+  `course_id` varchar(36) NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_order_items_order` (`order_id`),
+  KEY `idx_order_items_course` (`course_id`),
+  CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-use edu_update
+--
+-- Table structure for table `orders`
+--
 
-ALTER TABLE users
-  MODIFY COLUMN role ENUM('instructor', 'user', 'admin') NOT NULL;
+DROP TABLE IF EXISTS `orders`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `orders` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `user_id` varchar(36) NOT NULL,
+  `status` enum('pending','paid','failed','refunded') NOT NULL DEFAULT 'pending',
+  `total_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `discount_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `final_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `coupon_id` varchar(36) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `coupon_id` (`coupon_id`),
+  KEY `idx_orders_user` (`user_id`,`created_at` DESC),
+  CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`coupon_id`) REFERENCES `coupons` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-ALTER TABLE users
-  ADD COLUMN is_banned TINYINT(1) NOT NULL DEFAULT 0 AFTER status,
-  ADD COLUMN ban_reason VARCHAR(255) NULL AFTER is_banned;
- 
+--
+-- Table structure for table `reviews`
+--
 
-ALTER TABLE notifications
-  MODIFY COLUMN type ENUM(
-    'course_added',
-    'discount',
-    'coupon',
-    'system',
-    'reminder',
-    'broadcast'
-  ) NOT NULL DEFAULT 'system';
+DROP TABLE IF EXISTS `reviews`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reviews` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `course_id` varchar(36) NOT NULL,
+  `user_id` varchar(36) NOT NULL,
+  `rating` tinyint NOT NULL,
+  `comment` text,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_review_user_course` (`user_id`,`course_id`),
+  KEY `idx_reviews_course` (`course_id`),
+  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `reviews_chk_1` CHECK ((`rating` between 1 and 5))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-INSERT INTO users (id, email, password, name, role, status)
-VALUES (
-  UUID(),
-  'admin@ctuet.edu.vn',
-  '$2b$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-  'Platform Admin',
-  'admin',
-  'System Administrator'
-) ON DUPLICATE KEY UPDATE role = 'admin';
+--
+-- Table structure for table `sections`
+--
 
-DELIMITER $$
-$$
-CREATE DEFINER=`root`@`%` TRIGGER `trg_welcome_user` AFTER INSERT ON `users` FOR EACH ROW BEGIN
+DROP TABLE IF EXISTS `sections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sections` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `course_id` varchar(36) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `position` int NOT NULL DEFAULT '0',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_sections_course` (`course_id`,`position`),
+  CONSTRAINT `sections_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `users` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `role` enum('instructor','user','admin') NOT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'I am new User',
+  `membership_tier` enum('free','pro','team') NOT NULL DEFAULT 'free',
+  `membership_expires_at` datetime DEFAULT NULL,
+  `is_banned` tinyint(1) NOT NULL DEFAULT '0',
+  `ban_reason` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`%`*/ /*!50003 TRIGGER `trg_welcome_user` AFTER INSERT ON `users` FOR EACH ROW BEGIN
 	INSERT INTO wishlists (id, user_id)
     VALUES (UUID(), NEW.id);
 
@@ -319,48 +512,90 @@ CREATE DEFINER=`root`@`%` TRIGGER `trg_welcome_user` AFTER INSERT ON `users` FOR
         id, user_id, type, title, body
     )
     VALUES (
-        UUID(), 
+        UUID(),
         NEW.id,
         'system',
         '🎉 Chào mừng bạn!',
         CONCAT('Xin chào ', NEW.name, '! Chào mừng bạn đến với hệ thống E-learning 🚀')
     );
-END$$
+END */;;
 DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
+--
+-- Table structure for table `wishlist_courses`
+--
 
-CREATE TABLE IF NOT EXISTS bank_accounts (
-    id             VARCHAR(36)  NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    instructor_id  VARCHAR(36)  NOT NULL UNIQUE,        -- one active account per instructor
-    bank_name      VARCHAR(100) NOT NULL,               -- e.g. "Vietcombank"
-    bank_branch    VARCHAR(255) NULL,                   -- optional branch
-    account_number VARCHAR(50)  NOT NULL,
-    account_holder VARCHAR(255) NOT NULL,               -- full name on account
-    created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE
-);
+DROP TABLE IF EXISTS `wishlist_courses`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `wishlist_courses` (
+  `wishlist_id` varchar(36) NOT NULL,
+  `course_id` varchar(36) NOT NULL,
+  `added_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`wishlist_id`,`course_id`),
+  KEY `idx_wishlist_courses_course` (`course_id`),
+  CONSTRAINT `wishlist_courses_ibfk_1` FOREIGN KEY (`wishlist_id`) REFERENCES `wishlists` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `wishlist_courses_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Table structure for table `wishlists`
+--
 
-CREATE TABLE IF NOT EXISTS withdrawal_requests (
-    id              VARCHAR(36)    NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-    instructor_id   VARCHAR(36)    NOT NULL,
-    amount          DECIMAL(12,2)  NOT NULL,             -- amount requested
-    platform_fee    DECIMAL(12,2)  NOT NULL DEFAULT 0,   -- platform cut (stored for audit)
-    net_amount      DECIMAL(12,2)  NOT NULL,             -- amount actually paid out
-    status          ENUM(
-                        'pending',    -- waiting for admin
-                        'approved',   -- admin approved, money sent
-                        'rejected',   -- admin rejected
-                        'cancelled'   -- instructor cancelled before review
-                    ) NOT NULL DEFAULT 'pending',
-    note            TEXT           NULL,                 -- admin note on approve/reject
-    bank_snapshot   JSON           NOT NULL,             -- snapshot of bank info at request time
-    created_at      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE
-);
+DROP TABLE IF EXISTS `wishlists`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `wishlists` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `user_id` varchar(36) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_id` (`user_id`),
+  CONSTRAINT `wishlists_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-CREATE INDEX idx_withdrawal_instructor ON withdrawal_requests (instructor_id, created_at DESC);
-CREATE INDEX idx_withdrawal_status     ON withdrawal_requests (status, created_at DESC);
- 
+--
+-- Table structure for table `withdrawal_requests`
+--
+
+DROP TABLE IF EXISTS `withdrawal_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `withdrawal_requests` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `instructor_id` varchar(36) NOT NULL,
+  `amount` decimal(12,2) NOT NULL,
+  `platform_fee` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `net_amount` decimal(12,2) NOT NULL,
+  `status` enum('pending','approved','rejected','cancelled') NOT NULL DEFAULT 'pending',
+  `note` text,
+  `bank_snapshot` json NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_withdrawal_instructor` (`instructor_id`,`created_at` DESC),
+  KEY `idx_withdrawal_status` (`status`,`created_at` DESC),
+  CONSTRAINT `withdrawal_requests_ibfk_1` FOREIGN KEY (`instructor_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping routines for database 'edu_update'
+--
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
+
+-- Dump completed on 2026-03-23 15:11:09
