@@ -1,4 +1,4 @@
-﻿use edu_update;
+use edu_update;
 
 -- ============================================================
 -- E-Learning Platform - Cleaned Database Setup
@@ -364,5 +364,3 @@ CREATE TABLE IF NOT EXISTS withdrawal_requests (
 CREATE INDEX idx_withdrawal_instructor ON withdrawal_requests (instructor_id, created_at DESC);
 CREATE INDEX idx_withdrawal_status     ON withdrawal_requests (status, created_at DESC);
  
-
-select * from users
