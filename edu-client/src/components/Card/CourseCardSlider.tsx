@@ -15,6 +15,10 @@ import "../../style/components/_top_course.scss";
 import "../../style/components/_tabs.scss";
 import { useToast } from "../../context/toast";
 import HeartButton from "../Wishlist/HeartButton";
+import { session } from "../../lib/storage";
+import { ratingFromCourseListItem } from "../../utils/courseRating";
+import { usePurchasedCourseIds } from "../../hooks/usePurchasedCourseIds";
+import PopupCartOrOwned from "./PopupCartOrOwned";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Course {
@@ -30,6 +34,9 @@ interface Course {
   category: string;
   path: string;
   instructorName: string | null;
+  instructorId?: string;
+  avgRating?: number;
+  totalReviews?: number;
 }
 
 interface CourseCardSliderProps {
@@ -49,14 +56,6 @@ interface CourseCardSliderProps {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-function getMockRating(id: string) {
-  const hash = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return {
-    value: Math.min(3.5 + (hash % 15) / 10, 4.9),
-    review: 800 + (hash % 9) * 200 + (hash % 37) * 10,
-  };
-}
-
 function getBadge(id: string): "bestseller" | "new" | null {
   const hash = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
   if (hash % 3 === 0) return "bestseller";
@@ -81,10 +80,12 @@ function CoursePopup({
   course,
   anchorRect,
   onAddToCart,
+  purchasedIds,
 }: {
   course: Course;
   anchorRect: DOMRect;
   onAddToCart: (c: Course) => void;
+  purchasedIds: Set<string>;
 }) {
   const POPUP_WIDTH = 320;
   const GAP = 8;
@@ -97,8 +98,8 @@ function CoursePopup({
     Math.max(anchorRect.top + window.scrollY, 8),
     window.scrollY + window.innerHeight - 440,
   );
-  const userId = localStorage.getItem("userId");
-  const { value, review } = getMockRating(course.id);
+  const userId = session.getUserId();
+  const { value, review } = ratingFromCourseListItem(course);
   const hasDiscount = course.currentPrice > 0 && course.currentPrice < course.price;
 
   return createPortal(
@@ -122,9 +123,14 @@ function CoursePopup({
         <span className="tabs-popup__tag tabs-popup__tag--new">New</span>
       </div>
       <div className="tabs-popup__actions">
-        <button className="tabs-popup__cart" type="button" onClick={() => onAddToCart(course)}>
+        <PopupCartOrOwned
+          course={course}
+          userId={userId}
+          purchasedIds={purchasedIds}
+          onAddToCart={() => onAddToCart(course)}
+        >
           Add to cart
-        </button>
+        </PopupCartOrOwned>
         <HeartButton
           courseId={course.id}
           userId={userId}
@@ -157,7 +163,7 @@ function CourseCard({
   onMouseEnter: (id: string, el: HTMLDivElement) => void;
   onMouseLeave: () => void;
 }) {
-  const { value, review } = getMockRating(course.id);
+  const { value, review } = ratingFromCourseListItem(course);
   const badge = getBadge(course.id);
   const hasDiscount = course.currentPrice > 0 && course.currentPrice < course.price;
   const discountPct = hasDiscount
@@ -232,6 +238,8 @@ function CardSkeleton() {
 // ─── Main Component ───────────────────────────────────────────────────────────
 function CourseCardSlider({ title, subtitle, category, limit = 10, viewAllLink }: CourseCardSliderProps) {
   const toast = useToast();
+  const uid = session.getUserId();
+  const purchasedIds = usePurchasedCourseIds(uid);
   const [courses, setCourses]     = useState<Course[]>([]);
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState<string | null>(null);
@@ -273,7 +281,7 @@ function CourseCardSlider({ title, subtitle, category, limit = 10, viewAllLink }
   };
 
   const handleAddToCart = async (course: Course) => {
-    const userId = localStorage.getItem("userId");
+    const userId = uid;
     if (!userId) return;
     try {
       await axiosInstance.post("/courseCreation/add-cart", {
@@ -363,6 +371,7 @@ function CourseCardSlider({ title, subtitle, category, limit = 10, viewAllLink }
             course={hoveredCourse}
             anchorRect={anchorRect}
             onAddToCart={handleAddToCart}
+            purchasedIds={purchasedIds}
           />
         </div>
       )}

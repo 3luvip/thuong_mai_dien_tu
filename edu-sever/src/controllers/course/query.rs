@@ -155,10 +155,19 @@ pub async fn get_all_courses(
                c.instructor_id,
                u.name  AS instructor_name,
                cc.current_price,
-               cc.id   AS card_id
+               cc.id   AS card_id,
+               rev.avg_rating,
+               rev.review_count
            FROM courses c
            LEFT JOIN users u         ON u.id  = c.instructor_id
            LEFT JOIN course_cards cc ON cc.course_detail_id = c.id
+           LEFT JOIN (
+               SELECT course_id,
+                      AVG(CAST(rating AS DECIMAL(4,2))) AS avg_rating,
+                      COUNT(*) AS review_count
+               FROM reviews
+               GROUP BY course_id
+           ) rev ON rev.course_id = c.id
            {where_clause}
            ORDER BY c.created_at DESC
            LIMIT ? OFFSET ?"#
@@ -197,6 +206,12 @@ pub async fn get_all_courses(
                 "filename":       r.filename,
                 "instructorId":   r.instructor_id,
                 "instructorName": r.instructor_name,
+                "avgRating":      r.avg_rating
+                    .as_ref()
+                    .and_then(|v| v.to_f64())
+                    .map(|x| (x * 10.0).round() / 10.0)
+                    .unwrap_or(0.0),
+                "totalReviews":   r.review_count.unwrap_or(0),
             })
         })
         .collect();

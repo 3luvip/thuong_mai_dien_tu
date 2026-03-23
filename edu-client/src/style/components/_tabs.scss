@@ -358,6 +358,32 @@ $t:        0.18s ease;
     cursor: pointer;
     transition: background $t;
     &:hover { background: #4338ca; }
+    &[href] {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      box-sizing: border-box;
+    }
+  }
+
+  &__cart-owned {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  &__cart-owned-msg {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #15803d;
+    line-height: 1.35;
+    &--muted {
+      color: #6b7280;
+      font-weight: 500;
+    }
   }
 
   &__wish {

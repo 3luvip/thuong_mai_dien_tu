@@ -11,6 +11,10 @@ import "../../style/components/_top_course.scss";
 import "../../style/components/_tabs.scss";
 import axiosInstance from "../../lib/axios";
 import { useToast } from "../../context/toast";
+import { session } from "../../lib/storage";
+import { ratingFromCourseListItem } from "../../utils/courseRating";
+import { usePurchasedCourseIds } from "../../hooks/usePurchasedCourseIds";
+import PopupCartOrOwned from "../Card/PopupCartOrOwned";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Course {
@@ -26,17 +30,12 @@ interface Course {
   category: string;
   path: string;
   instructorName: string | null;
+  instructorId?: string;
+  avgRating?: number;
+  totalReviews?: number;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-function getMockRating(id: string): { value: number; review: number } {
-  const hash = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return {
-    value: Math.min(3.5 + (hash % 15) / 10, 4.9),
-    review: 800 + (hash % 9) * 200 + (hash % 37) * 10,
-  };
-}
-
 function getBadge(id: string): "bestseller" | "new" | null {
   const hash = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
   if (hash % 3 === 0) return "bestseller";
@@ -55,9 +54,10 @@ interface PopupProps {
   course: Course;
   anchorRect: DOMRect;
   onAddToCart: (course: Course) => void;
+  purchasedIds: Set<string>;
 }
 
-function CoursePopup({ course, anchorRect, onAddToCart }: PopupProps) {
+function CoursePopup({ course, anchorRect, onAddToCart, purchasedIds }: PopupProps) {
   const POPUP_WIDTH = 320;
   const GAP = 8;
 
@@ -72,7 +72,8 @@ function CoursePopup({ course, anchorRect, onAddToCart }: PopupProps) {
     window.scrollY + window.innerHeight - 440,
   );
 
-  const { value, review } = getMockRating(course.id);
+  const userId = session.getUserId();
+  const { value, review } = ratingFromCourseListItem(course);
   const hasDiscount =
     course.currentPrice > 0 && course.currentPrice < course.price;
 
@@ -106,13 +107,14 @@ function CoursePopup({ course, anchorRect, onAddToCart }: PopupProps) {
         <span className="tabs-popup__tag tabs-popup__tag--new">New</span>
       </div>
       <div className="tabs-popup__actions">
-        <button
-          className="tabs-popup__cart"
-          type="button"
-          onClick={() => onAddToCart(course)}
+        <PopupCartOrOwned
+          course={course}
+          userId={userId}
+          purchasedIds={purchasedIds}
+          onAddToCart={() => onAddToCart(course)}
         >
           Add to cart
-        </button>
+        </PopupCartOrOwned>
         <button
           className="tabs-popup__wish"
           type="button"
@@ -156,7 +158,7 @@ function TrendingCard({
   onMouseEnter,
   onMouseLeave,
 }: TrendingCardProps) {
-  const { value, review } = getMockRating(course.id);
+  const { value, review } = ratingFromCourseListItem(course);
   const badge = getBadge(course.id);
   const hasDiscount =
     course.currentPrice > 0 && course.currentPrice < course.price;
@@ -261,9 +263,11 @@ function TrendingCardSkeleton() {
   );
 }
 
-// ─── Main TrendingCourse component ───────────────────────────────────────────
-function TrendingCourse() {
+// ─── Main TrendingCourse component (default export for Home) ────────────────
+export default function TrendingCourse() {
   const toast = useToast();
+  const uid = session.getUserId();
+  const purchasedIds = usePurchasedCourseIds(uid);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -296,7 +300,7 @@ function TrendingCourse() {
   };
 
   const handleAddToCart = (course: Course) => {
-    const userId = localStorage.getItem("userId");
+    const userId = uid;
     if (!userId) {
       toast.warning(
         "Please log in",
@@ -305,11 +309,10 @@ function TrendingCourse() {
       return;
     }
     
-    const courseId = course.cardId ?? course.id;
     axiosInstance
       .post("/courseCreation/add-cart", {
         user_id: userId,
-        course_id: courseId,
+        course_id: course.id,
       })
       .then(() => alert(`Added "${course.title}" to cart!`))
       .catch(console.error);
@@ -366,11 +369,10 @@ function TrendingCourse() {
             course={hoveredCourse}
             anchorRect={anchorRect}
             onAddToCart={handleAddToCart}
+            purchasedIds={purchasedIds}
           />
         </div>
       )}
     </section>
   );
 }
-
-export default TrendingCourse;

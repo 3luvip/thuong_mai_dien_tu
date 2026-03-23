@@ -115,10 +115,11 @@ pub async fn get_course_detail_full(
         position:     i32,
         duration_sec: i32,
         is_preview:   i8,
+        video_url:    Option<String>,
     }
 
     let lectures: Vec<LectureRow> = sqlx::query_as(
-        r#"SELECT l.id, l.section_id, l.title, l.position, l.duration_sec, l.is_preview
+        r#"SELECT l.id, l.section_id, l.title, l.position, l.duration_sec, l.is_preview, l.video_url
            FROM lectures l
            JOIN sections s ON s.id = l.section_id
            WHERE s.course_id = ?
@@ -155,6 +156,7 @@ pub async fn get_course_detail_full(
                     "position":    l.position,
                     "durationSec": l.duration_sec,
                     "isPreview":   l.is_preview == 1,
+                    "videoUrl":    l.video_url,
                 }))
                 .collect();
 

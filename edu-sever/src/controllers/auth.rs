@@ -23,24 +23,19 @@ pub async fn signup(
     State(state): State<AppState>,
     Json(body): Json<SignupRequest>,
 ) -> AppResult<(StatusCode, Json<Value>)> {
-    // Validate email
     if body.email.is_empty() || !body.email.contains('@') {
         return Err(AppError::Validation("Please enter a valid email".into()));
     }
-    // Validate password length
     if body.password.len() < 6 {
         return Err(AppError::Validation("Password must be at least 6 characters".into()));
     }
-    // Validate name
     if body.name.trim().is_empty() {
         return Err(AppError::Validation("Name must not be empty".into()));
     }
-    // Validate role
     if !VALID_ROLES.contains(&body.role.as_str()) {
         return Err(AppError::Validation("Role must be 'instructor' or 'user'".into()));
     }
 
-    // Check email uniqueness
     let existing: Option<(String,)> = sqlx::query_as(
         "SELECT id FROM users WHERE email = ?"
     )
@@ -52,7 +47,6 @@ pub async fn signup(
         return Err(AppError::Validation("Email already exists".into()));
     }
 
-    // Hash password
     let hashed = hash(&body.password, DEFAULT_COST)
         .map_err(|e| AppError::Internal(e.to_string()))?;
 
@@ -80,36 +74,63 @@ pub async fn signup(
 
 // ─── POST /auth/login ─────────────────────────────────────────────────────────
 
+#[derive(sqlx::FromRow)]
+struct UserRow {
+    id:        String,
+    email:     String,
+    password:  String,
+    role:      String,
+    is_banned: i8,
+}
+
 pub async fn login(
     State(state): State<AppState>,
     Json(body): Json<LoginRequest>,
 ) -> AppResult<Json<Value>> {
-    // Find user
-    let user: Option<(String, String, String, String)> = sqlx::query_as(
-        "SELECT id, email, password, role FROM users WHERE email = ?"
+    // Fetch user — cả is_banned
+    let user: Option<UserRow> = sqlx::query_as(
+        "SELECT id, email, password, role, is_banned FROM users WHERE email = ?"
     )
     .bind(&body.email)
     .fetch_optional(&state.db)
     .await?;
 
-    let (user_id, email, hashed_password, role) = user.ok_or_else(|| {
-        AppError::Unauthorized
-    })?;
+    // Không tìm thấy → 404
+    let user = user.ok_or_else(|| AppError::NotFound("Email not found".into()))?;
 
-    // Verify password
-    let is_valid = verify(&body.password, &hashed_password)
+    // Verify password → 401 nếu sai
+    let is_valid = verify(&body.password, &user.password)
         .map_err(|e| AppError::Internal(e.to_string()))?;
 
     if !is_valid {
         return Err(AppError::Unauthorized);
     }
 
+    // Check banned → 403 với lý do
+    if user.is_banned == 1 {
+        let ban_reason: Option<(Option<String>,)> = sqlx::query_as(
+            "SELECT ban_reason FROM users WHERE id = ?"
+        )
+        .bind(&user.id)
+        .fetch_optional(&state.db)
+        .await?;
+
+        let reason = ban_reason
+            .and_then(|(r,)| r)
+            .unwrap_or_else(|| "Violation of Terms of Service".into());
+
+        return Ok(Json(json!({
+            "banned": true,
+            "reason": reason
+        })));
+    }
+
     // Build JWT (8 hour expiry)
     let exp = (Utc::now().timestamp() + 8 * 3600) as usize;
     let claims = Claims {
-        sub: user_id.clone(),
-        email: email.clone(),
-        role: role.clone(),
+        sub:   user.id.clone(),
+        email: user.email.clone(),
+        role:  user.role.clone(),
         exp,
     };
 
@@ -120,9 +141,9 @@ pub async fn login(
     )?;
 
     Ok(Json(json!({
-        "token": token,
-        "userId": user_id,
-        "role": role
+        "token":  token,
+        "userId": user.id,
+        "role":   user.role   // trả về "admin" / "instructor" / "user"
     })))
 }
 
@@ -143,19 +164,20 @@ pub async fn get_user_info(
     State(state): State<AppState>,
     AuthUser(claims): AuthUser,
 ) -> AppResult<Json<Value>> {
-    let row: Option<(String, String)> = sqlx::query_as(
-        "SELECT name, email FROM users WHERE id = ?"
+    let row: Option<(String, String, String, String)> = sqlx::query_as(
+        "SELECT name, email, role, status FROM users WHERE id = ?"
     )
     .bind(&claims.sub)
     .fetch_optional(&state.db)
     .await?;
 
-    let (name, email) = row.ok_or_else(|| AppError::NotFound("User not found".into()))?;
+    let (name, email, role, status) = row
+        .ok_or_else(|| AppError::NotFound("User not found".into()))?;
 
-    Ok(Json(json!({ "name": name, "email": email })))
+    Ok(Json(json!({ "name": name, "email": email, "role": role, "status": status })))
 }
 
-// ─── Update Profile ───────────────────────────────────────────────────────────
+// ─── PUT /auth/update-profile ─────────────────────────────────────────────────
 
 #[derive(Debug, Deserialize)]
 pub struct UpdateProfileRequest {
@@ -177,10 +199,9 @@ pub async fn update_profile(
 ) -> Result<Json<UpdateProfileResponse>, AppError> {
     let user_id = &claims.sub;
 
-    // Validate
     if let Some(ref n) = body.name {
         if n.trim().is_empty() {
-            return Err(AppError::Validation("Tên không được để trống".into()));
+            return Err(AppError::Validation("Name must not be empty".into()));
         }
     }
 
@@ -198,13 +219,13 @@ pub async fn update_profile(
         .await?;
 
     Ok(Json(UpdateProfileResponse {
-        message: "Cập nhật thành công".into(),
+        message: "Updated successfully".into(),
         name:    row.name,
         status:  row.status,
     }))
 }
 
-// ─── Change Password ──────────────────────────────────────────────────────────
+// ─── PUT /auth/change-password ────────────────────────────────────────────────
 
 #[derive(Debug, Deserialize)]
 pub struct ChangePasswordRequest {
@@ -220,7 +241,7 @@ pub async fn change_password(
     let user_id = &claims.sub;
 
     if body.new_password.len() < 6 {
-        return Err(AppError::Validation("Mật khẩu mới phải ít nhất 6 ký tự".into()));
+        return Err(AppError::Validation("New password must be at least 6 characters".into()));
     }
 
     let row = sqlx::query!("SELECT password FROM users WHERE id = ?", user_id)
@@ -231,7 +252,7 @@ pub async fn change_password(
         .map_err(|_| AppError::Internal("bcrypt error".into()))?;
 
     if !ok {
-        return Err(AppError::Validation("Mật khẩu hiện tại không đúng".into()));
+        return Err(AppError::Validation("Current password is incorrect".into()));
     }
 
     let hashed = bcrypt::hash(&body.new_password, bcrypt::DEFAULT_COST)
@@ -241,5 +262,5 @@ pub async fn change_password(
         .execute(&state.db)
         .await?;
 
-    Ok(Json(serde_json::json!({ "message": "Đổi mật khẩu thành công" })))
+    Ok(Json(serde_json::json!({ "message": "Password changed successfully" })))
 }

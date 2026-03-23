@@ -4,13 +4,13 @@ import { IoCartOutline, IoHeart, IoHeartOutline } from "react-icons/io5";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import axiosInstance from "../../lib/axios";
+import { session } from "../../lib/storage";
 import DropDown from "./DropDown";
 import NotificationBell from "../Notification/NotificationBell";
 import { useWishlist } from "../../context/wishlistContext";
 import { useCart } from "../../context/useCart";
 import "../../style/components/_navbar.scss";
 
-/* ── Categories (shared với Navbar & DropDown) ── */
 const categories: Record<string, string[]> = {
   Development: [
     "Web Development",
@@ -46,15 +46,12 @@ const categories: Record<string, string[]> = {
   Music: ["Instruments", "Music Production", "Vocal"],
 };
 
-/* ── Helper ── */
 function getInitials(name: string | null): string {
   if (!name) return "";
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return ((parts[0][0] ?? "") + (parts[parts.length - 1][0] ?? "")).toUpperCase();
 }
-
-/* ══════════════════════════════════════════════════════════════ */
 
 function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) => void }) {
   const navigate = useNavigate();
@@ -78,15 +75,14 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
   const [showSuggest, setShowSuggest] = useState(false);
   const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /* ── Load role ── */
   useEffect(() => {
-    setRole(localStorage.getItem("role"));
+    // ✅ sessionStorage
+    setRole(session.getRole());
   }, []);
 
-  /* ── Load user info & cart ── */
   useEffect(() => {
-    const token  = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
+    const token  = session.getToken();
+    const userId = session.getUserId();
     if (!token) return;
 
     axios
@@ -103,7 +99,6 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
     if (userId) fetchCart(userId);
   }, []);
 
-  /* ── Search suggestions (debounced) ── */
   useEffect(() => {
     if (suggestTimer.current) clearTimeout(suggestTimer.current);
     if (!search.trim()) {
@@ -118,7 +113,6 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
     }, 350);
   }, [search]);
 
-  /* ── Close menus on outside click / Escape ── */
   useEffect(() => {
     const onDocMouseDown = (e: MouseEvent) => {
       if (!(e.target instanceof Node)) return;
@@ -139,33 +133,56 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
     };
   }, []);
 
-  /* ── Hover handlers ── */
   const handleExploreEnter  = () => { if (exploreTimeoutRef.current)  clearTimeout(exploreTimeoutRef.current);  setIsExploreOpen(true);  };
   const handleExploreLeave  = () => { exploreTimeoutRef.current  = setTimeout(() => setIsExploreOpen(false),  150); };
   const handleUserMenuEnter = () => { if (userMenuTimeoutRef.current) clearTimeout(userMenuTimeoutRef.current); setIsUserMenuOpen(true); };
   const handleUserMenuLeave = () => { userMenuTimeoutRef.current = setTimeout(() => setIsUserMenuOpen(false), 150); };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("role");
+    // ✅ Xoá sessionStorage của tab này
+    session.clear();
     setIsAuthenticated(false);
     navigate("/login");
   };
 
-  /* ════════════════════════════ RENDER ════════════════════════════ */
   return (
     <header>
       <nav aria-label="Primary navigation">
         <div className="navbar-auth">
 
-          {/* ── LEFT: logo + explore ── */}
           <div className="nav-left">
-            <NavLink to="/" end className="logo" aria-label="Home">
+            <NavLink to="/" end className="logo" aria-label="Home"
+              style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}
+            >
               <img
                 src="https://khoacntp.ctuet.edu.vn/wp-content/uploads/2020/03/%C4%90%E1%BA%A1i_h%E1%BB%8Dc_K%E1%BB%B9_thu%E1%BA%ADt_-_C%C3%B4ng_ngh%E1%BB%87_C%E1%BA%A7n_Th%C6%A1.png"
                 alt="CTUET"
               />
+              <span style={{
+                display: "flex",
+                flexDirection: "column",
+                lineHeight: 1.15,
+              }}>
+                <span style={{
+                  fontSize: 14,
+                  fontWeight: 800,
+                  color: "#e2e8f0",
+                  letterSpacing: "0.04em",
+                  whiteSpace: "nowrap",
+                }}>
+                  CTUT
+                </span>
+                <span style={{
+                  fontSize: 9.5,
+                  fontWeight: 600,
+                  color: "#6366f1",
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  whiteSpace: "nowrap",
+                }}>
+                  Learning
+                </span>
+              </span>
             </NavLink>
 
             <div
@@ -218,7 +235,6 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
             </div>
           </div>
 
-          {/* ── CENTER: search ── */}
           <div className="nav-center">
             <div className="nav-search" style={{ position: "relative" }}>
               <span className="nav-search-icon" aria-hidden="true">
@@ -272,11 +288,9 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
             </div>
           </div>
 
-          {/* ── RIGHT: nav items + user menu ── */}
           <div className="nav-right">
             <div className="nav-list-item">
               <ul>
-                {/* Role-based link */}
                 {role === "instructor" ? (
                   <li><NavLink to="/instructor-dashboard">Instructor</NavLink></li>
                 ) : (
@@ -285,7 +299,6 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
 
                 <li><NavLink to="/my-courses">My learning</NavLink></li>
 
-                {/* Wishlist */}
                 <li style={{ position: "relative" }}>
                   <NavLink
                     to="/wishlist"
@@ -315,7 +328,6 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
                   </NavLink>
                 </li>
 
-                {/* Cart */}
                 <li className="Cart" style={{ position: "relative" }}>
                   <NavLink
                     to="/cart"
@@ -342,12 +354,10 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
                   </NavLink>
                 </li>
 
-                {/* Notification bell */}
                 <li style={{ display: "flex", alignItems: "center" }}>
                   <NotificationBell />
                 </li>
 
-                {/* Avatar / user menu */}
                 {userInitials && (
                   <li>
                     <div
@@ -385,11 +395,12 @@ function AuthNavbar({ setIsAuthenticated }: { setIsAuthenticated: (v: boolean) =
 
                         {[
                           { label: "My learning",      action: () => navigate("/my-courses")    },
-                          { label: "Wishlist ❤️",     action: () => navigate("/wishlist")      },
-                          { label: "Notifications 🔔", action: () => navigate("/notifications") },
-                          { label: "Account settings", action: () => {}                         },
-                          { label: "Edit profile",     action: () => navigate("/edit-profile")  },
-                          { label: "Help and Support", action: () => {}                         },
+                          { label: "Wishlist",          action: () => navigate("/wishlist")      },
+                          { label: "Notifications",     action: () => navigate("/notifications") },
+                          { label: "Membership & Plans", action: () => navigate("/subscription") },
+                          { label: "Edit profile",      action: () => navigate("/edit-profile")  },
+                          
+                          { label: "Help and Support",  action: () => {}                         },
                         ].map(({ label, action }) => (
                           <div key={label} className="user-menu-section">
                             <button

@@ -8,6 +8,8 @@ import { MdOutlineOndemandVideo } from "react-icons/md";
 import axiosInstance from "../../lib/axios";
 import { getCourseImageUrl } from "../../utils/courseImage";
 import "../../style/components/_learn.scss";
+import { session } from "../../lib/storage";
+import LectureNotes from "./LectureNotes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -60,7 +62,7 @@ function getVideoUrl(videoUrl: string | null): string | null {
 export default function LearnPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
-  const userId = localStorage.getItem("userId");
+  const userId = session.getUserId();
 
   const [courseInfo, setCourseInfo] = useState<CourseInfo | null>(null);
   const [curriculum, setCurriculum] = useState<Section[]>([]);
@@ -293,6 +295,19 @@ export default function LearnPage() {
                   </span>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* ── Lecture Notes ── */}
+          {activeLecture && userId && (
+            <div style={{ padding: "0 0 24px" }}>
+              <LectureNotes
+                key={activeLecture.id}
+                userId={userId}
+                lectureId={activeLecture.id}
+                courseId={courseId ?? ""}
+                lectureTitle={activeLecture.title}
+              />
             </div>
           )}
         </div>

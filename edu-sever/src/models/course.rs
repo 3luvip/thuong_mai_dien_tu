@@ -46,4 +46,8 @@ pub struct AllCourseRow {
     pub instructor_name: Option<String>,
     pub current_price: Option<bigdecimal::BigDecimal>,
     pub card_id: Option<String>,
+    /// AVG(rating) from reviews, NULL if no reviews
+    pub avg_rating: Option<bigdecimal::BigDecimal>,
+    /// COUNT(*) from reviews, NULL if no reviews
+    pub review_count: Option<i64>,
 }

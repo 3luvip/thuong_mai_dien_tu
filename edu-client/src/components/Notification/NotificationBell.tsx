@@ -11,6 +11,7 @@ import {
   IoAlarmOutline,
 } from "react-icons/io5";
 import axiosInstance from "../../lib/axios";
+import { session } from "../../lib/storage";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type NotifType = "course_added" | "discount" | "coupon" | "system" | "reminder";
@@ -34,15 +35,6 @@ const TYPE_ICON: Record<NotifType, React.ReactElement> = {
   reminder:     <IoAlarmOutline />,
 };
 
-const TYPE_COLOR: Record<NotifType, string> = {
-  course_added: "notif-icon--purple",
-  discount:     "notif-icon--red",
-  coupon:       "notif-icon--green",
-  system:       "notif-icon--blue",
-  reminder:     "notif-icon--orange",
-};
-
-// MySQL trả về "2026-03-04 17:30:00" không có 'T' và không có timezone
 // → parse thủ công thành UTC-aware string
 function parseMySQLDate(dateStr: string): Date {
   // "2026-03-04 17:30:00" → "2026-03-04T17:30:00"
@@ -229,7 +221,7 @@ export default function NotificationBell() {
   const panelRef = useRef<HTMLDivElement>(null);
   const btnRef   = useRef<HTMLButtonElement>(null);
 
-  const userId = localStorage.getItem("userId");
+  const userId = session.getUserId();
 
   const fetchNotifs = useCallback(async () => {
     if (!userId) return;

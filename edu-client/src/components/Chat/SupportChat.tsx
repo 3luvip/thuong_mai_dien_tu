@@ -17,11 +17,12 @@ type ChatMessage = {
 };
 
 const quickPrompts = [
-  "Lập trình web cho người mới",
-  "Khóa học AI cơ bản",
-  "Marketing online",
-  "Thiết kế UI/UX",
+  "Web dev for beginners",
+  "Intro to AI & ML",
+  "Online marketing",
+  "UI/UX Design",
 ];
+
 
 const greetings = ["xin chao", "chao", "hello", "hi", "hey", "chào", "xin chào"];
 const faqRules: Array<{ keywords: string[]; answer: string }> = [
@@ -51,24 +52,36 @@ const faqRules: Array<{ keywords: string[]; answer: string }> = [
       "Neu ban la giang vien: sau khi dang nhap voi role giang vien, vao /instructor-dashboard de quan ly, va /create-course de tao khoa hoc moi.",
   },
 ];
-
+=======
+const greetings = ["hello", "hi", "hey", "greetings", "howdy", "sup", "good morning", "good evening"];
 function SupportChat() {
+  const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
       role: "bot",
-      text: "Chào bạn! Mình có thể gợi ý khóa học phù hợp. Bạn đang quan tâm chủ đề nào?",
+      text: "Hi there! 👋 I can recommend courses based on your interests. What topic are you looking to learn?",
     },
   ]);
 
   const listRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!listRef.current) return;
     listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [messages, loading]);
+
+  // Focus input when chat opens
+  useEffect(() => {
+    if (open) {
+      setUnreadCount(0);
+      setTimeout(() => inputRef.current?.focus(), 150);
+    }
+  }, [open]);
 
   const canSend = useMemo(() => input.trim().length > 0 && !loading, [input, loading]);
 
@@ -88,14 +101,13 @@ function SupportChat() {
 
     const normalized = clean.toLowerCase();
     if (greetings.some((g) => normalized.includes(g))) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `b-${Date.now()}`,
-          role: "bot",
-          text: "Chào bạn! Bạn đang muốn học chủ đề nào? Ví dụ: JavaScript, UI/UX, Data, Marketing...",
-        },
-      ]);
+      const botMsg: ChatMessage = {
+        id: `b-${Date.now()}`,
+        role: "bot",
+        text: "Hello! 😊 What topic are you interested in learning? For example: JavaScript, Data Science, Design, Marketing...",
+      };
+      setMessages((prev) => [...prev, botMsg]);
+      if (!open) setUnreadCount((c) => c + 1);
       setLoading(false);
       return;
     }
@@ -141,8 +153,8 @@ function SupportChat() {
         answer && answer.length > 0
           ? answer
           : suggestions.length
-          ? "Day la mot vai khoa hoc phu hop voi ban:"
-          : "Minh chua tim thay khoa hoc phu hop. Ban co the mo ta cu the hon khong?";
+          ? "Here are some courses that match your interests:"
+          : "I couldn't find a perfect match. Could you describe what you're looking for in more detail?";
 
       const botMsg: ChatMessage = {
         id: `b-${Date.now()}`,
@@ -152,15 +164,14 @@ function SupportChat() {
       };
 
       setMessages((prev) => [...prev, botMsg]);
+      if (!open) setUnreadCount((c) => c + 1);
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `b-${Date.now()}`,
-          role: "bot",
-          text: "Hiện tại mình chưa kết nối được dịch vụ tư vấn. Bạn thử lại sau nhé.",
-        },
-      ]);
+      const errMsg: ChatMessage = {
+        id: `b-${Date.now()}`,
+        role: "bot",
+        text: "Oops! I'm having trouble connecting right now. Please try again in a moment.",
+      };
+      setMessages((prev) => [...prev, errMsg]);
     } finally {
       setLoading(false);
     }
@@ -172,62 +183,130 @@ function SupportChat() {
   }
 
   return (
-    <aside className="support-chat" aria-label="AI course advisor">
-      <div className="support-chat__header">
-        <div className="support-chat__title">Tư vấn khóa học</div>
-        <div className="support-chat__subtitle">AI gợi ý nhanh theo nhu cầu</div>
-      </div>
-
-      <div className="support-chat__messages" ref={listRef}>
-        {messages.map((msg) => (
-          <div key={msg.id} className={`support-chat__msg support-chat__msg--${msg.role}`}>
-            <p className="support-chat__text">{msg.text}</p>
-            {msg.suggestions && (
-              <div className="support-chat__suggestions">
-                {msg.suggestions.map((sug) => (
-                  <Link key={sug.url} to={sug.url} className="support-chat__suggestion">
-                    <span className="support-chat__suggestion-title">{sug.title}</span>
-                    <span className="support-chat__suggestion-meta">{sug.category}</span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-        {loading && (
-          <div className="support-chat__msg support-chat__msg--bot">
-            <p className="support-chat__text">Đang tìm khóa học phù hợp...</p>
-          </div>
+    <div className="sc-wrapper">
+      {/* ── Floating toggle button ── */}
+      <button
+        type="button"
+        className={`sc-toggle ${open ? "sc-toggle--open" : ""}`}
+        onClick={() => setOpen((v) => !v)}
+        aria-label={open ? "Close course advisor" : "Open course advisor"}
+      >
+        {open ? (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        ) : (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
         )}
-      </div>
+        {!open && unreadCount > 0 && (
+          <span className="sc-toggle__badge">{unreadCount > 9 ? "9+" : unreadCount}</span>
+        )}
+      </button>
 
-      <div className="support-chat__quick">
-        {quickPrompts.map((prompt) => (
+      {/* ── Chat panel ── */}
+      <aside className={`sc-panel ${open ? "sc-panel--open" : ""}`} aria-label="AI course advisor">
+        <div className="sc-panel__header">
+          <div className="sc-panel__header-left">
+            <div className="sc-panel__avatar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+              </svg>
+            </div>
+            <div>
+              <div className="sc-panel__title">Course Advisor</div>
+              <div className="sc-panel__status">
+                <span className="sc-panel__dot" />
+                AI-powered · Always on
+              </div>
+            </div>
+          </div>
           <button
-            key={prompt}
             type="button"
-            className="support-chat__chip"
-            onClick={() => void sendMessage(prompt)}
-            disabled={loading}
+            className="sc-panel__close"
+            onClick={() => setOpen(false)}
+            aria-label="Close"
           >
-            {prompt}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
-        ))}
-      </div>
+        </div>
 
-      <form className="support-chat__form" onSubmit={onSubmit}>
-        <input
-          className="support-chat__input"
-          type="text"
-          placeholder="Bạn cần tư vấn khóa học gì?"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-        />
-        <button className="support-chat__send" type="submit" disabled={!canSend}>
-          Gửi
-        </button>
-      </form>
-    </aside>
+        <div className="sc-panel__messages" ref={listRef}>
+          {messages.map((msg) => (
+            <div key={msg.id} className={`sc-msg sc-msg--${msg.role}`}>
+              {msg.role === "bot" && (
+                <div className="sc-msg__avatar">AI</div>
+              )}
+              <div className="sc-msg__bubble">
+                <p className="sc-msg__text">{msg.text}</p>
+                {msg.suggestions && (
+                  <div className="sc-suggestions">
+                    {msg.suggestions.map((sug) => (
+                      <Link
+                        key={sug.url}
+                        to={sug.url}
+                        className="sc-suggestion"
+                        onClick={() => setOpen(false)}
+                      >
+                        <span className="sc-suggestion__title">{sug.title}</span>
+                        <span className="sc-suggestion__category">{sug.category}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {loading && (
+            <div className="sc-msg sc-msg--bot">
+              <div className="sc-msg__avatar">AI</div>
+              <div className="sc-msg__bubble">
+                <div className="sc-typing">
+                  <span /><span /><span />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="sc-panel__quick">
+          {quickPrompts.map((prompt) => (
+            <button
+              key={prompt}
+              type="button"
+              className="sc-chip"
+              onClick={() => void sendMessage(prompt)}
+              disabled={loading}
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
+
+        <form className="sc-panel__form" onSubmit={onSubmit}>
+          <input
+            ref={inputRef}
+            className="sc-panel__input"
+            type="text"
+            placeholder="Ask about a course topic..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+          />
+          <button className="sc-panel__send" type="submit" disabled={!canSend}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+          </button>
+        </form>
+      </aside>
+    </div>
   );
 }
 

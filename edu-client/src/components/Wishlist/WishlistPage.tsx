@@ -15,6 +15,7 @@ import { useCart } from "../../context/useCart";
 import { getCourseImageUrl } from "../../utils/courseImage";
 import { formatVnd } from "../../utils/currency";
 import HeartButton from "./HeartButton";
+import { session } from "../../lib/storage";
 
 type SortKey = "newest" | "oldest" | "price_asc" | "price_desc" | "name";
 type ViewMode = "grid" | "list";
@@ -42,7 +43,7 @@ export default function WishlistPage() {
   const [view, setView] = useState<ViewMode>("grid");
   const [category, setCategory] = useState("all");
 
-  const userId = localStorage.getItem("userId");
+  const userId = session.getUserId();
 
   useEffect(() => {
     if (!userId) {

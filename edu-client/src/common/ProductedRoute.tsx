@@ -1,6 +1,6 @@
-
 import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
+import { session } from "../lib/storage";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -20,8 +20,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   allowedRoles,
   redirectTo,
 }) => {
-  const token = localStorage.getItem("token");
-  const storedRole = localStorage.getItem("role");
+  // ✅ Đọc từ sessionStorage — mỗi tab kiểm tra phiên của chính nó
+  const token      = session.getToken();
+  const storedRole = session.getRole();
 
   const authed = isAuthenticated ?? !!token;
   if (!authed) {
@@ -36,6 +37,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   return <>{children}</>;
-}
+};
 
-export default ProtectedRoute
+export default ProtectedRoute;

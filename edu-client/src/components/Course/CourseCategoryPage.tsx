@@ -16,6 +16,10 @@ import { formatVnd } from "../../utils/currency";
 import { useToast } from "../../context/toast";
 import Rating from "./Rating";
 import HeartButton from "../Wishlist/HeartButton";
+import { session } from "../../lib/storage";
+import { ratingFromCourseListItem } from "../../utils/courseRating";
+import { usePurchasedCourseIds } from "../../hooks/usePurchasedCourseIds";
+import PopupCartOrOwned from "../Card/PopupCartOrOwned";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -32,6 +36,9 @@ interface Course {
   category: string;
   path: string;
   instructorName: string | null;
+  instructorId?: string;
+  avgRating?: number;
+  totalReviews?: number;
 }
 
 interface Pagination {
@@ -55,13 +62,10 @@ const MOCK_HIGHLIGHTS = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getMockRating(id: string) {
+/** Thời lượng hiển thị — API chưa có; giữ placeholder ổn định theo id */
+function placeholderHoursFromId(id: string): number {
   const h = id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  return {
-    value:  +(3.5 + (h % 15) / 10).toFixed(1),
-    review: 800  + (h % 9)  * 200 + (h % 37) * 10,
-    hours:  5    + (h % 30),
-  };
+  return 5 + (h % 30);
 }
 
 function StarRow({ value, size = 11 }: { value: number; size?: number }) {
@@ -81,16 +85,17 @@ function StarRow({ value, size = 11 }: { value: number; size?: number }) {
 // ─── Hover Popup ──────────────────────────────────────────────────────────────
 
 function CoursePopup({
-  course, anchorRect, onAddToCart,
+  course, anchorRect, onAddToCart, purchasedIds,
 }: {
   course: Course;
   anchorRect: DOMRect;
   onAddToCart: (c: Course) => void;
+  purchasedIds: Set<string>;
 }) {
   const POPUP_W = 320;
   const GAP     = 8;
-  const userId  = localStorage.getItem("userId");
-  const { value, review } = getMockRating(course.id);
+  const userId  = session.getUserId();
+  const { value, review } = ratingFromCourseListItem(course);
   const hasDiscount = course.currentPrice > 0 && course.currentPrice < course.price;
 
   // anchorRect là rect của thumbnail → popup hiện sát bên phải ảnh
@@ -133,9 +138,14 @@ function CoursePopup({
         <span className="tabs-popup__tag tabs-popup__tag--new">New</span>
       </div>
       <div className="tabs-popup__actions">
-        <button className="tabs-popup__cart" type="button" onClick={() => onAddToCart(course)}>
+        <PopupCartOrOwned
+          course={course}
+          userId={userId}
+          purchasedIds={purchasedIds}
+          onAddToCart={() => onAddToCart(course)}
+        >
           Add to cart
-        </button>
+        </PopupCartOrOwned>
         <HeartButton
           courseId={course.id}
           userId={userId}
@@ -164,6 +174,8 @@ export default function CourseCategoryPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const toast    = useToast();
+  const uid      = session.getUserId();
+  const purchasedIds = usePurchasedCourseIds(uid);
 
   const urlParams     = new URLSearchParams(location.search);
   const categoryParam = urlParams.get("category") ?? "";
@@ -221,8 +233,15 @@ export default function CourseCategoryPage() {
 
       if (sort === "price_asc")  data = [...data].sort((a, b) => (a.currentPrice || a.price) - (b.currentPrice || b.price));
       if (sort === "price_desc") data = [...data].sort((a, b) => (b.currentPrice || b.price) - (a.currentPrice || a.price));
-      if (sort === "rating")     data = [...data].sort((a, b) => getMockRating(b.id).value - getMockRating(a.id).value);
-      if (filterRating !== null) data = data.filter((c) => getMockRating(c.id).value >= filterRating!);
+      if (sort === "rating") {
+        data = [...data].sort(
+          (a, b) =>
+            ratingFromCourseListItem(b).value - ratingFromCourseListItem(a).value,
+        );
+      }
+      if (filterRating !== null) {
+        data = data.filter((c) => ratingFromCourseListItem(c).value >= filterRating!);
+      }
       if (filterLevels.length > 1) data = data.filter((c) => filterLevels.includes(c.level));
 
       setCourses(data);
@@ -254,12 +273,12 @@ export default function CourseCategoryPage() {
   };
 
   const handleAddToCart = async (course: Course) => {
-    const userId = localStorage.getItem("userId");
+    const userId = session.getUserId();
     if (!userId) { navigate("/login"); return; }
     try {
       await axiosInstance.post("/courseCreation/add-cart", {
         user_id:   userId,
-        course_id: course.cardId ?? course.id,
+        course_id: course.id,
       });
       toast.success("Added to cart!", course.title);
     } catch (err: unknown) {
@@ -420,7 +439,12 @@ export default function CourseCategoryPage() {
           onMouseEnter={() => { if (hoverTimer.current) clearTimeout(hoverTimer.current); }}
           onMouseLeave={handleMouseLeave}
         >
-          <CoursePopup course={hoveredCourse} anchorRect={anchorRect} onAddToCart={handleAddToCart} />
+          <CoursePopup
+            course={hoveredCourse}
+            anchorRect={anchorRect}
+            onAddToCart={handleAddToCart}
+            purchasedIds={purchasedIds}
+          />
         </div>
       )}
     </div>
@@ -487,7 +511,8 @@ function ListItem({ course, onMouseEnter, onMouseLeave }: {
   onMouseEnter: (id: string, el: HTMLDivElement) => void;
   onMouseLeave: () => void;
 }) {
-  const { value, review, hours } = getMockRating(course.id);
+  const { value, review } = ratingFromCourseListItem(course);
+  const hours = placeholderHoursFromId(course.id);
   const hasDisc = course.currentPrice > 0 && course.currentPrice < course.price;
   const to      = `/course-detail/${course.cardId ?? course.id}`;
   const [hov, setHov] = useState(false);

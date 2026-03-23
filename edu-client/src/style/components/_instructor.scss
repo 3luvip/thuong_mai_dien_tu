@@ -1,156 +1,507 @@
-// _instructor.scss
-// Dark industrial theme — professional tool aesthetic
+// _instructor.scss — Instructor Dashboard v2
+// Professional dark theme with revenue analytics
 
-$slate_950: #020617;
-$slate_200: #e5e7eb;
-$background_footer: #2a2b3f;
+$bg:          #020617;
+$bg-2:        #0d1527;
+$bg-3:        #131e35;
+$bg-4:        #1a2540;
+$border:      rgba(255,255,255,0.07);
+$border-2:    rgba(99,102,241,0.2);
+$text:        #e2e8f0;
+$dim:         #94a3b8;
+$muted:       #475569;
+$primary:     #6366f1;
+$primary-d:   #4f46e5;
+$green:       #22c55e;
+$amber:       #f59e0b;
+$red:         #f43f5e;
+$font:        "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+$t:           0.18s ease;
 
-$bg-dark: #020617;
-$border-dark: #4b5563;
-$text-light: #e5e7eb;
-$text-muted: #9ca3af;
-$text-subtle: #cbd5f5;
-$primary: #6366f1;
-$primary-dark: #4f46e5;
-$purple: #6d28d2;
-$purple-light: rgba(108, 40, 210, 0.12);
-$indigo-light: rgba(129, 140, 248, 0.26);
-
-$font-base: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-
-$border-radius-sm: 6px;
-$border-radius-md: 8px;
-$border-radius-pill: 25px;
-$border-radius-lg: 12px;
-
-$shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.9);
-$shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.8);
-
-
-
-// ─── Page layout ─────────────────────────────────────────────────────────────
+// ─── Page ─────────────────────────────────────────────────────────────────────
 .id-page {
   min-height: 100vh;
-  background: $bg-dark;
-  color: $text-light;
-  font-family: $font-base;
+  background: $bg;
+  color: $text;
+  font-family: $font;
 }
 
-.id-header {
+// ─── Dashboard header ─────────────────────────────────────────────────────────
+.id-dashboard-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 2rem 2rem 1rem;
-  border-bottom: 1px solid $border-dark;
+  padding: 2rem 2rem 1.2rem;
+  border-bottom: 1px solid $border;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  &__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, $primary, $primary-d);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba($primary, 0.4);
+  }
 
   &__title {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 800;
-    color: $text-light;
-    margin-bottom: 2px;
+    color: $text;
+    margin: 0 0 3px;
+    letter-spacing: -0.02em;
   }
 
   &__sub {
-    font-size: 0.88rem;
-    color: $text-muted;
+    font-size: 0.78rem;
+    color: $muted;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
   }
 }
 
-.id-content {
-  padding: 1.5rem 2rem;
-  max-width: 1100px;
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+.id-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 2rem;
+  border-bottom: 1px solid $border;
+  background: $bg-2;
 }
 
-// ─── Topbar (curriculum view) ─────────────────────────────────────────────────
-.id-topbar {
+.id-tab {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
-  padding: 1rem 2rem;
-  background: #131525;
-  border-bottom: 1px solid $border-dark;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-
-  &__info { flex: 1; }
-
-  &__label {
-    font-size: 0.75rem;
-    color: $text-muted;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  &__title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: $text-light;
-    margin: 2px 0 0;
-  }
-}
-
-.id-back-btn {
+  gap: 7px;
+  padding: 14px 20px;
   background: transparent;
-  border: 1px solid $border-dark;
-  color: $text-muted;
-  padding: 0.5rem 1rem;
-  border-radius: $border-radius-md;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: $dim;
+  font-family: $font;
+  font-size: 0.87rem;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.15s;
+  transition: all $t;
+  margin-bottom: -1px;
 
-  &:hover {
-    color: $text-light;
-    border-color: $primary;
+  &:hover { color: $text; }
+
+  &--active {
+    color: $text;
+    font-weight: 700;
+    border-bottom-color: $primary;
   }
 }
 
-// ─── Stats row ────────────────────────────────────────────────────────────────
-.id-stats-row {
+// ─── Dashboard body ───────────────────────────────────────────────────────────
+.id-dashboard-body {
+  padding: 1.8rem 2rem 4rem;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+// ─── Stat cards ───────────────────────────────────────────────────────────────
+.id-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  padding: 1.5rem 2rem 0;
-  max-width: 1100px;
+  gap: 14px;
 
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 520px) { grid-template-columns: 1fr; }
 }
 
-.id-stat-card {
-  background: #131525;
-  border: 1px solid $border-dark;
-  border-radius: $border-radius-lg;
+.id-stat {
+  background: $bg-2;
+  border: 1px solid $border;
+  border-radius: 14px;
   padding: 1.2rem 1.4rem;
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: border-color 0.2s;
+  align-items: flex-start;
+  gap: 14px;
+  transition: border-color $t, transform $t;
+  position: relative;
+  overflow: hidden;
 
-  &:hover { border-color: $primary; }
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--stat-color, #{$primary});
+    border-radius: 14px 14px 0 0;
+  }
+
+  &:hover { border-color: $border-2; transform: translateY(-2px); }
 
   &__icon {
-    font-size: 1.5rem;
-    color: $primary;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--stat-color, #{$primary}) 15%, transparent);
+    color: var(--stat-color, #{$primary});
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
     flex-shrink: 0;
   }
 
-  &__num {
-    display: block;
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: $text-light;
-    line-height: 1;
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
   }
 
   &__label {
-    display: block;
-    font-size: 0.78rem;
-    color: $text-muted;
-    margin-top: 3px;
+    font-size: 0.75rem;
+    color: $muted;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
+
+  &__value {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: $text;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  &__sub {
+    font-size: 0.72rem;
+    color: $dim;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: 2px;
+
+    &--up   { color: $green; }
+    &--down { color: $red;   }
+  }
+}
+
+// ─── Generic card ─────────────────────────────────────────────────────────────
+.id-card {
+  background: $bg-2;
+  border: 1px solid $border;
+  border-radius: 14px;
+  overflow: hidden;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid $border;
+
+    h3 {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: $text;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+  }
+
+  &__sub {
+    font-size: 0.75rem;
+    color: $muted;
+  }
+}
+
+// ─── Overview grid ────────────────────────────────────────────────────────────
+.id-overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.5rem;
+
+  @media (max-width: 1024px) { grid-template-columns: 1fr; }
+}
+
+// ─── Bar chart ────────────────────────────────────────────────────────────────
+.id-chart {
+  padding: 1rem 1.4rem 1.2rem;
+
+  &__toolbar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 1.2rem;
+  }
+
+  &__tab {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid $border;
+    background: transparent;
+    color: $dim;
+    font-family: $font;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all $t;
+
+    &--active {
+      background: rgba($primary, 0.15);
+      border-color: rgba($primary, 0.4);
+      color: #a5b4fc;
+    }
+  }
+
+  &__bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 180px;
+  }
+
+  &__col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+    position: relative;
+    cursor: pointer;
+  }
+
+  &__bar-wrap {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  &__bar {
+    width: 100%;
+    background: linear-gradient(to top, $primary, rgba($primary, 0.5));
+    border-radius: 4px 4px 0 0;
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1), background $t;
+    min-height: 4px;
+
+    .id-chart__col--hovered & {
+      background: linear-gradient(to top, #818cf8, rgba(#818cf8, 0.6));
+    }
+  }
+
+  &__label {
+    font-size: 0.68rem;
+    color: $muted;
+    white-space: nowrap;
+  }
+
+  &__tooltip {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e2940;
+    border: 1px solid $border-2;
+    border-radius: 7px;
+    padding: 6px 10px;
+    white-space: nowrap;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+
+  &__tooltip-label {
+    font-size: 0.68rem;
+    color: $muted;
+  }
+
+  &__tooltip-val {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #a5b4fc;
+  }
+}
+
+// ─── Top courses list ─────────────────────────────────────────────────────────
+.id-top-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.id-top-course {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 1.4rem;
+  border-bottom: 1px solid $border;
+  transition: background $t;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: rgba(255,255,255,0.02); }
+
+  &__rank {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: $primary;
+    width: 20px;
+    flex-shrink: 0;
+  }
+
+  &__img {
+    width: 44px;
+    height: 28px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: $text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__meta {
+    font-size: 0.7rem;
+    color: $muted;
+  }
+
+  &__rev {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: $green;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+// ─── Breakdown bar ────────────────────────────────────────────────────────────
+.id-breakdown {
+  padding: 1rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__name {
+    font-size: 0.8rem;
+    color: $dim;
+    width: 220px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    @media (max-width: 768px) { width: 140px; }
+  }
+
+  &__bar-wrap {
+    flex: 1;
+    height: 8px;
+    background: $bg-4;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  &__bar {
+    height: 100%;
+    background: linear-gradient(90deg, $primary, #818cf8);
+    border-radius: 99px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 4px;
+  }
+
+  &__val {
+    font-size: 0.72rem;
+    color: $muted;
+    width: 36px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  &__rev {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: $green;
+    width: 120px;
+    text-align: right;
+    flex-shrink: 0;
+
+    @media (max-width: 768px) { display: none; }
+  }
+}
+
+// ─── Courses toolbar ─────────────────────────────────────────────────────────
+.id-courses-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  &__count {
+    font-size: 0.85rem;
+    color: $muted;
+    font-weight: 500;
+  }
+
+  &__right { display: flex; gap: 4px; }
+}
+
+.id-view-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid $border;
+  background: transparent;
+  color: $muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all $t;
+
+  &--active {
+    background: rgba($primary, 0.12);
+    border-color: rgba($primary, 0.3);
+    color: #a5b4fc;
+  }
+
+  &:hover:not(&--active) { color: $text; border-color: rgba(255,255,255,0.15); }
 }
 
 // ─── Course grid ──────────────────────────────────────────────────────────────
@@ -161,22 +512,24 @@ $shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.8);
 }
 
 .id-course-card {
-  background: #131525;
-  border: 1px solid $border-dark;
-  border-radius: $border-radius-lg;
+  background: $bg-2;
+  border: 1px solid $border;
+  border-radius: 14px;
   overflow: hidden;
-  transition: all 0.2s;
+  transition: all $t;
 
   &:hover {
-    border-color: $primary;
+    border-color: $border-2;
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.12);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
   }
 
   &__img-wrap {
     position: relative;
     aspect-ratio: 16/9;
     overflow: hidden;
+
+    &:hover .id-course-card__overlay { opacity: 1; }
   }
 
   &__img {
@@ -184,32 +537,76 @@ $shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.8);
     height: 100%;
     object-fit: cover;
     display: block;
+    transition: transform 0.4s ease;
+
+    .id-course-card__img-wrap:hover & { transform: scale(1.06); }
   }
 
   &__level {
     position: absolute;
     bottom: 8px;
     left: 8px;
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0,0,0,0.7);
     color: #fff;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     padding: 2px 8px;
     border-radius: 3px;
     font-weight: 600;
   }
 
-  &__body {
-    padding: 1rem;
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(2,6,23,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    opacity: 0;
+    transition: opacity $t;
+  }
+
+  &__overlay-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    background: $primary;
+    color: #fff;
+    font-family: $font;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background $t;
+
+    &:hover { background: $primary-d; }
+
+    &--ghost {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      &:hover { background: rgba(255,255,255,0.2); }
+    }
+  }
+
+  &__body { padding: 1rem; }
+
+  &__category {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #a5b4fc;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
   }
 
   &__title {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 700;
-    color: $text-light;
-    margin-bottom: 3px;
-    line-height: 1.3;
-
-    // 2 dòng max
+    color: $text;
+    margin: 0 0 4px;
+    line-height: 1.35;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -217,9 +614,117 @@ $shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.8);
   }
 
   &__sub {
-    font-size: 0.8rem;
-    color: $text-muted;
+    font-size: 0.75rem;
+    color: $muted;
+    margin: 0 0 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__metrics {
+    display: flex;
+    gap: 14px;
     margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  &__metric {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: $dim;
+
+    svg { color: $muted; }
+    em { color: $muted; font-style: normal; }
+    span { font-weight: 600; color: $text; }
+  }
+
+  &__footer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-top: 0.7rem;
+    border-top: 1px solid $border;
+  }
+
+  &__revenue {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+
+    &-label { font-size: 0.68rem; color: $muted; text-transform: uppercase; letter-spacing: 0.04em; }
+    &-val   { font-size: 0.9rem; font-weight: 700; color: $green; }
+  }
+
+  &__price {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: $dim;
+  }
+}
+
+// ─── Course list rows ─────────────────────────────────────────────────────────
+.id-courses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: $bg-2;
+  border: 1px solid $border;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.id-course-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 160px 130px 120px auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid $border;
+  transition: background $t;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: rgba(255,255,255,0.02); }
+
+  @media (max-width: 900px) { grid-template-columns: 60px 1fr auto; }
+
+  &__img {
+    width: 80px;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+
+  &__info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  &__cat {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #a5b4fc;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__sub {
+    font-size: 0.72rem;
+    color: $muted;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -227,138 +732,311 @@ $shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.8);
 
   &__stats {
     display: flex;
-    gap: 12px;
-    font-size: 0.78rem;
-    color: $text-muted;
-    margin-bottom: 0.8rem;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: $dim;
 
-    span {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
+    div { display: flex; align-items: center; gap: 5px; }
+
+    @media (max-width: 900px) { display: none; }
   }
 
-  &__price {
-    font-size: 1rem;
-    font-weight: 700;
-    color: $text-light;
-    margin-bottom: 1rem;
-  }
-
-  &__actions {
+  &__revenue {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 2px;
+    text-align: right;
+
+    span { font-size: 0.88rem; font-weight: 700; color: $green; }
+    small { font-size: 0.68rem; color: $muted; }
+
+    @media (max-width: 900px) { display: none; }
+  }
+
+  &__actions { display: flex; gap: 6px; }
+}
+
+// ─── Star bar ─────────────────────────────────────────────────────────────────
+.id-starbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &__track {
+    flex: 1;
+    height: 6px;
+    background: $bg-4;
+    border-radius: 99px;
+    overflow: hidden;
+    min-width: 60px;
+  }
+
+  &__fill {
+    height: 100%;
+    background: $amber;
+    border-radius: 99px;
+  }
+
+  span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: $amber;
+    white-space: nowrap;
   }
 }
 
-// ─── Curriculum Editor ────────────────────────────────────────────────────────
+// ─── Revenue table ────────────────────────────────────────────────────────────
+.id-rev-table {
+  &__head {
+    display: grid;
+    grid-template-columns: 1fr 100px 80px 130px 120px;
+    gap: 1rem;
+    padding: 0.7rem 1.4rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: $muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid $border;
+
+    @media (max-width: 800px) { grid-template-columns: 1fr 80px 80px; }
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 100px 80px 130px 120px;
+    gap: 1rem;
+    padding: 0.9rem 1.4rem;
+    border-bottom: 1px solid $border;
+    align-items: center;
+    transition: background $t;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: rgba(255,255,255,0.02); }
+
+    @media (max-width: 800px) { grid-template-columns: 1fr 80px 80px; }
+  }
+
+  &__course {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+
+    img {
+      width: 44px;
+      height: 28px;
+      object-fit: cover;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+
+      span { font-size: 0.82rem; font-weight: 600; color: $text; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      small { font-size: 0.7rem; color: $muted; }
+    }
+  }
+
+  &__price    { font-size: 0.82rem; color: $dim; }
+  &__students { font-size: 0.82rem; color: $text; font-weight: 600; }
+  &__rev      { font-size: 0.88rem; font-weight: 700; color: $green; }
+
+  &__share {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &-bar {
+      height: 6px;
+      background: linear-gradient(90deg, $primary, #818cf8);
+      border-radius: 99px;
+      min-width: 4px;
+      max-width: 80px;
+    }
+
+    span { font-size: 0.72rem; color: $muted; white-space: nowrap; }
+  }
+}
+
+// ─── Empty dashboard ──────────────────────────────────────────────────────────
+.id-empty-dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 55vh;
+  padding: 4rem 2rem;
+  text-align: center;
+  gap: 1rem;
+
+  &__icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: rgba($primary, 0.1);
+    border: 1px solid rgba($primary, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: $primary;
+    margin-bottom: 0.5rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: $dim;
+    max-width: 400px;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+// ─── Curriculum editor ────────────────────────────────────────────────────────
+.id-topbar {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1rem 2rem;
+  background: $bg-2;
+  border-bottom: 1px solid $border;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  &__info { flex: 1; }
+  &__label { font-size: 0.72rem; color: $muted; text-transform: uppercase; letter-spacing: 0.5px; }
+  &__title { font-size: 1rem; font-weight: 700; color: $text; margin: 2px 0 0; }
+}
+
+.id-back-btn {
+  background: transparent;
+  border: 1px solid $border;
+  color: $dim;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: $font;
+  transition: all $t;
+
+  &:hover { color: $text; border-color: rgba(255,255,255,0.2); }
+}
+
+.id-content { padding: 1.5rem 2rem; max-width: 900px; }
+
 .id-curriculum {
   &__header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     margin-bottom: 1.2rem;
+    gap: 1rem;
 
-    h3 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: $text-light;
-    }
+    h3 { font-size: 1.05rem; font-weight: 700; color: $text; margin: 0 0 4px; }
   }
+
+  &__meta { font-size: 0.78rem; color: $muted; margin: 0; }
 }
 
 .id-section {
-  border: 1px solid $border-dark;
-  border-radius: $border-radius-md;
-  margin-bottom: 0.8rem;
+  border: 1px solid $border;
+  border-radius: 10px;
+  margin-bottom: 0.7rem;
   overflow: hidden;
 
   &__header {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 0.8rem 1rem;
-    background: #1a1c2e;
+    padding: 0.75rem 1rem;
+    background: $bg-3;
     cursor: default;
   }
 
   &__toggle {
     background: none;
     border: none;
-    color: $text-muted;
+    color: $muted;
     cursor: pointer;
     padding: 2px;
     display: flex;
     align-items: center;
     flex-shrink: 0;
     font-size: 1rem;
-    transition: color 0.15s;
-
-    &:hover { color: $text-light; }
+    transition: color $t;
+    &:hover { color: $text; }
   }
 
-  &__title {
-    flex: 1;
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: $text-light;
-  }
-
-  &__meta {
-    font-size: 0.78rem;
-    color: $text-muted;
-    white-space: nowrap;
-  }
-
-  &__actions {
-    display: flex;
-    gap: 4px;
-    opacity: 0;
-    transition: opacity 0.15s;
-  }
-
-  &__header:hover &__actions { opacity: 1; }
-
-  &__body {
-    background: #0f1120;
-    border-top: 1px solid $border-dark;
-  }
-}
-
-// ─── Lecture row ──────────────────────────────────────────────────────────────
-.id-lecture {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0.65rem 1.2rem;
-  border-bottom: 1px solid rgba(75, 85, 99, 0.2);
-  transition: background 0.15s;
-
-  &:last-child { border-bottom: none; }
-  &:hover { background: rgba(99, 102, 241, 0.04); }
-
-  &__icon {
-    color: $text-muted;
-    font-size: 1rem;
+  &__num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: $primary;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     flex-shrink: 0;
   }
 
   &__title {
     flex: 1;
-    font-size: 0.86rem;
-    color: $text-light;
-    min-width: 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: $text;
+  }
+
+  &__meta {
+    font-size: 0.74rem;
+    color: $muted;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   &__actions {
     display: flex;
     gap: 4px;
     opacity: 0;
-    transition: opacity 0.15s;
+    transition: opacity $t;
+  }
+
+  &__header:hover &__actions { opacity: 1; }
+
+  &__body {
+    background: rgba($bg, 0.5);
+    border-top: 1px solid $border;
+  }
+}
+
+.id-lecture {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.6rem 1.2rem;
+  border-bottom: 1px solid rgba(75,85,99,0.2);
+  transition: background $t;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: rgba(99,102,241,0.04); }
+
+  &__icon { color: $muted; font-size: 1rem; flex-shrink: 0; }
+  &__title { flex: 1; font-size: 0.84rem; color: $text; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  &__actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity $t;
   }
 
   &:hover &__actions { opacity: 1; }
@@ -370,81 +1048,78 @@ $shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.8);
   align-items: center;
   gap: 6px;
   border: none;
-  border-radius: $border-radius-md;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.88rem;
+  font-size: 0.87rem;
   font-weight: 600;
+  font-family: $font;
   padding: 0.6rem 1.1rem;
-  transition: all 0.15s;
+  transition: all $t;
   white-space: nowrap;
 
   &--primary {
     background: $primary;
     color: #fff;
-    &:hover { background: $primary-dark; }
+    &:hover { background: $primary-d; }
   }
 
   &--ghost {
     background: transparent;
-    color: $text-muted;
-    border: 1px solid $border-dark;
-    &:hover { color: $text-light; border-color: $text-muted; }
+    color: $dim;
+    border: 1px solid $border;
+    &:hover { color: $text; border-color: rgba(255,255,255,0.2); }
   }
 
-  &--sm {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
-  }
+  &--sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+  &--lg { padding: 0.8rem 1.8rem; font-size: 0.95rem; }
 }
 
 .id-icon-btn {
   background: none;
   border: none;
-  color: $text-muted;
+  color: $muted;
   cursor: pointer;
   padding: 4px 6px;
   border-radius: 4px;
   display: flex;
   align-items: center;
-  transition: all 0.15s;
+  transition: all $t;
   font-size: 0.85rem;
 
-  &:hover { color: $text-light; background: rgba(255,255,255,0.06); }
-
+  &:hover { color: $text; background: rgba(255,255,255,0.06); }
   &--danger:hover { color: #ef4444; background: rgba(239,68,68,0.08); }
 }
 
-// ─── Inline form ──────────────────────────────────────────────────────────────
+// ─── Inline form ─────────────────────────────────────────────────────────────
 .id-inline-form {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 0.6rem 1rem;
-  background: rgba(99, 102, 241, 0.05);
-  border-top: 1px solid $border-dark;
-
+  background: rgba(99,102,241,0.05);
+  border-top: 1px solid $border;
   &--grow { flex: 1; }
 }
 
 .id-add-lecture-form {
   margin: 4px 1.2rem 8px;
   padding: 0.5rem 0.8rem;
-  border-radius: $border-radius-md;
+  border-radius: 8px;
 }
 
 .id-input {
-  background: #0f1120;
-  border: 1px solid $border-dark;
-  border-radius: $border-radius-sm;
-  color: $text-light;
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: 6px;
+  color: $text;
   padding: 0.45rem 0.75rem;
-  font-size: 0.88rem;
+  font-size: 0.87rem;
+  font-family: $font;
   flex: 1;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color $t;
 
   &:focus { border-color: $primary; }
-
   &--sm { font-size: 0.82rem; padding: 0.35rem 0.65rem; }
 }
 
@@ -455,15 +1130,15 @@ $shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.8);
   color: $primary;
   font-size: 0.82rem;
   font-weight: 600;
+  font-family: $font;
   padding: 0.6rem 1.2rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
   text-align: left;
-  transition: background 0.15s;
-
-  &:hover { background: rgba(99, 102, 241, 0.06); }
+  transition: background $t;
+  &:hover { background: rgba(99,102,241,0.06); }
 }
 
 // ─── Preview badge ────────────────────────────────────────────────────────────
@@ -475,21 +1150,16 @@ $shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.8);
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 3px;
-  border: 1px solid $border-dark;
-  color: $text-muted;
+  border: 1px solid $border;
+  color: $muted;
   background: transparent;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s;
+  transition: all $t;
   flex-shrink: 0;
 
   &:hover { border-color: $primary; color: $primary; }
-
-  &--on {
-    border-color: #10b981;
-    color: #10b981;
-    background: rgba(16, 185, 129, 0.08);
-  }
+  &--on { border-color: #10b981; color: #10b981; background: rgba(16,185,129,0.08); }
 }
 
 // ─── Video upload ─────────────────────────────────────────────────────────────
@@ -498,21 +1168,11 @@ $shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.8);
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-
-  &--has {
-    gap: 6px;
-  }
+  &--has { gap: 6px; }
 }
 
-.id-video-icon {
-  font-size: 0.9rem;
-  &--ok { color: #10b981; }
-}
-
-.id-video-label {
-  font-size: 0.76rem;
-  color: $text-muted;
-}
+.id-video-icon { font-size: 0.9rem; &--ok { color: #10b981; } }
+.id-video-label { font-size: 0.76rem; color: $muted; }
 
 .id-upload-btn {
   display: inline-flex;
@@ -521,24 +1181,22 @@ $shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.8);
   font-size: 0.75rem;
   font-weight: 600;
   color: $primary;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px dashed rgba(99, 102, 241, 0.4);
-  border-radius: $border-radius-sm;
+  background: rgba(99,102,241,0.1);
+  border: 1px dashed rgba(99,102,241,0.4);
+  border-radius: 6px;
   padding: 3px 10px;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s;
+  transition: all $t;
+  font-family: $font;
 
-  &:hover {
-    background: rgba(99, 102, 241, 0.18);
-    border-color: $primary;
-  }
+  &:hover { background: rgba(99,102,241,0.18); border-color: $primary; }
 }
 
 .id-upload-progress {
-  width: 120px;
+  width: 110px;
   height: 22px;
-  background: $border-dark;
+  background: $border;
   border-radius: 3px;
   overflow: hidden;
   position: relative;
@@ -548,67 +1206,36 @@ $shadow-lg: 0 18px 45px rgba(15, 23, 42, 0.8);
 
   &__bar {
     position: absolute;
-    left: 0;
-    top: 0;
+    left: 0; top: 0;
     height: 100%;
     background: $primary;
     transition: width 0.2s ease;
   }
 
-  span {
-    position: relative;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #fff;
-    z-index: 1;
-  }
+  span { position: relative; font-size: 0.72rem; font-weight: 700; color: #fff; z-index: 1; }
 }
 
-.id-error-inline {
-  font-size: 0.72rem;
-  color: #ef4444;
-}
+.id-error-inline { font-size: 0.72rem; color: #ef4444; }
 
-// ─── Empty states ─────────────────────────────────────────────────────────────
+// ─── Empty ────────────────────────────────────────────────────────────────────
 .id-empty {
   padding: 2rem;
   text-align: center;
-  color: $text-muted;
-  font-size: 0.9rem;
+  color: $muted;
+  font-size: 0.88rem;
 
-  svg {
-    font-size: 2rem;
-    margin-bottom: 0.6rem;
-    color: $border-dark;
-    display: block;
-    margin-inline: auto;
-  }
-
-  &--page {
-    padding: 4rem 2rem;
-
-    h3 {
-      font-size: 1.2rem;
-      color: $text-light;
-      margin: 0.5rem 0 0.3rem;
-    }
-
-    p { margin-bottom: 1.2rem; }
-  }
+  svg { font-size: 1.8rem; margin-bottom: 0.5rem; color: $border; display: block; margin-inline: auto; }
 }
 
-// ─── Loading ──────────────────────────────────────────────────────────────────
+// ─── Loading spin ─────────────────────────────────────────────────────────────
 .id-loading-spin {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: $text-muted;
-  font-size: 0.9rem;
-  padding: 2rem;
+  gap: 10px;
+  color: $muted;
+  font-size: 0.88rem;
+  padding: 1.5rem 2rem;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.9s linear infinite; }

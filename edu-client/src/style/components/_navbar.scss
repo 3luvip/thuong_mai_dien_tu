@@ -603,15 +603,19 @@ nav {
 }
 
 .main-menu {
-  // Dùng max-width cố định thay vì % để không bị tràn
   max-width: 1300px;
   width: 100%;
-  display: flex;
-  flex-wrap: nowrap;
-  list-style: none;
-  margin: 0 auto;
+  margin: 0 auto;           // căn giữa cái container
   padding: 0 24px;
+  list-style: none;
   color: #e5e7eb;
+
+  // ── FIX: căn giữa các items ──────────────────────────────────────────
+  display: flex;
+  align-items: center;
+  justify-content: center;  // ← đây là dòng quan trọng
+  flex-wrap: nowrap;
+  gap: 2px;                 // khoảng cách đều giữa các item
   overflow-x: auto;
   scrollbar-width: none;
 
@@ -622,8 +626,7 @@ nav {
 
 .menu-item {
   position: relative;
-  // Giảm padding để tất cả category vừa màn hình
-  padding: 10px 14px;
+  padding: 10px 12px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
@@ -631,7 +634,7 @@ nav {
   white-space: nowrap;
   transition: background 0.2s;
   border-radius: 6px;
-  flex-shrink: 0;
+  flex-shrink: 0;           // không cho item bị co lại
 
   &:hover {
     background-color: rgba(129, 140, 248, 0.18);
@@ -648,7 +651,6 @@ nav {
     color: #a5b4fc;
   }
 
-  // Active link highlight
   &.active {
     color: #818cf8;
   }
@@ -657,8 +659,6 @@ nav {
 .mega-menu {
   position: fixed;
   left: 0;
-  // Dùng CSS custom property để tự động tính từ header thật sự
-  // Fallback: 116px (navbar ~68px + dropdown bar ~48px)
   top: var(--mega-menu-top, 116px);
   width: 100vw;
   background-color: #0d1829;
@@ -674,7 +674,8 @@ nav {
   padding: 0 24px;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 0;
+  justify-content: center;  // ← căn giữa các sub-items
+  gap: 4px 8px;
 }
 
 .mega-item {
