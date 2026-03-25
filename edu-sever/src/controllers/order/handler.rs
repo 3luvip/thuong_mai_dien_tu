@@ -1,4 +1,7 @@
 // src/controllers/order/handler.rs
+// Thay đổi: membership discount và coupon có thể CỘNG DỒN nhau.
+// Trước đây: chỉ áp dụng một trong hai (mức nào cao hơn).
+// Sau:        cả hai đều được áp dụng, tổng giảm không vượt quá total_amount.
 
 use axum::{
     Json,
@@ -97,8 +100,8 @@ pub async fn checkout(
         ));
     }
 
-    // ── Membership discount (chỉ áp nếu không có coupon) ─────────────────
-    let membership_discount = if body.coupon_id.is_none() {
+    // ── Membership discount (LUÔN tính, kể cả khi có coupon) ─────────────────
+    let membership_discount = {
         let row: Option<(String, Option<chrono::NaiveDateTime>)> =
             sqlx::query_as(
                 "SELECT membership_tier, membership_expires_at FROM users WHERE id = ?"
@@ -117,15 +120,16 @@ pub async fn checkout(
             }
             _ => 0.0,
         }
-    } else {
-        0.0
     };
 
-    // Dùng mức giảm cao nhất giữa frontend gửi lên và membership tính được
-    let effective_discount = body.discount_amount.max(membership_discount);
-    let effective_final    = (body.total_amount - effective_discount).max(0.0);
+    // ── Tổng giảm = membership + coupon (cộng dồn), không vượt total_amount ──
+    // body.discount_amount ở đây là coupon discount do frontend gửi lên.
+    // Ta cộng thêm membership_discount vào.
+    let coupon_discount = body.discount_amount; // giảm từ coupon (hoặc 0 nếu không có)
+    let combined_discount = (coupon_discount + membership_discount).min(body.total_amount);
+    let effective_final = (body.total_amount - combined_discount).max(0.0);
 
-    // ── Tạo order ─────────────────────────────────────────────────────────
+    // ── Tạo order ─────────────────────────────────────────────────────────────
     let order_id = Uuid::new_v4().to_string();
     sqlx::query(
         "INSERT INTO orders
@@ -135,13 +139,13 @@ pub async fn checkout(
     .bind(&order_id)
     .bind(&body.user_id)
     .bind(body.total_amount)
-    .bind(effective_discount)
+    .bind(combined_discount)
     .bind(effective_final)
     .bind(&body.coupon_id)
     .execute(&state.db)
     .await?;
 
-    // ── Lấy giá courses ───────────────────────────────────────────────────
+    // ── Lấy giá courses ───────────────────────────────────────────────────────
     let price_placeholders = resolved.iter().map(|_| "?").collect::<Vec<_>>().join(", ");
     let price_sql = format!("SELECT id, price FROM courses WHERE id IN ({price_placeholders})");
     let mut price_q = sqlx::query_as::<_, (String, bigdecimal::BigDecimal)>(&price_sql);
@@ -172,7 +176,7 @@ pub async fn checkout(
     let already_bought: std::collections::HashSet<String> =
         already_rows.into_iter().map(|(id,)| id).collect();
 
-    // ── Insert order items ────────────────────────────────────────────────
+    // ── Insert order items ────────────────────────────────────────────────────
     let mut purchased_titles: Vec<String> = Vec::new();
 
     for course_id in &resolved {
@@ -206,7 +210,7 @@ pub async fn checkout(
         }
     }
 
-    // ── Xóa cart ──────────────────────────────────────────────────────────
+    // ── Xóa cart ──────────────────────────────────────────────────────────────
     sqlx::query(
         r#"DELETE cc FROM cart_courses cc
            JOIN carts c ON c.id = cc.cart_id
@@ -216,7 +220,7 @@ pub async fn checkout(
     .execute(&state.db)
     .await?;
 
-    // ── Notification mua hàng ──────────────────────────────────────────────
+    // ── Notification mua hàng ──────────────────────────────────────────────────
     if !purchased_titles.is_empty() {
         let course_count = purchased_titles.len();
         let notif_title = if course_count == 1 {
@@ -264,11 +268,12 @@ pub async fn checkout(
     Ok((
         StatusCode::CREATED,
         Json(json!({
-            "message":          "Thanh toán thành công!",
-            "orderId":          order_id,
+            "message":           "Thanh toán thành công!",
+            "orderId":           order_id,
             "membershipDiscount": membership_discount,
-            "effectiveDiscount":  effective_discount,
-            "effectiveFinal":     effective_final,
+            "couponDiscount":    coupon_discount,
+            "combinedDiscount":  combined_discount,
+            "effectiveFinal":    effective_final,
         })),
     ))
 }

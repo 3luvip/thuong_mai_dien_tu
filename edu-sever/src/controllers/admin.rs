@@ -116,7 +116,7 @@ pub async fn get_platform_stats(
         "courses": total_courses,
         "orders": { "total": total_orders, "new30d": orders_30d },
         "revenue": {
-            "gross": gross, "platform": gross * 0.30,
+            "gross": gross, "platform": gross * 0.02,
             "last30d": rev_30d.and_then(|v| v.to_f64()).unwrap_or(0.0),
             "monthly": monthly.iter().map(|m| json!({ "month": m.month, "revenue": m.revenue.to_f64().unwrap_or(0.0), "orders": m.orders })).collect::<Vec<_>>(),
         },

@@ -671,13 +671,13 @@ pub async fn update_course(
     // Validate các field nếu được gửi lên
     if let Some(ref t) = title {
         if t.trim().is_empty() { return Err(AppError::Validation("Title cannot be empty".into())); }
-        if t.len() > 56 { return Err(AppError::Validation("Title max 56 characters".into())); }
+        if t.len() > 400 { return Err(AppError::Validation("Title max 400 characters".into())); }
     }
     if let Some(ref a) = author {
         if a.len() > 78 { return Err(AppError::Validation("Author max 78 characters".into())); }
     }
     if let Some(ref s) = course_sub {
-        if s.len() > 56 { return Err(AppError::Validation("Short description max 56 characters".into())); }
+        if s.len() > 200 { return Err(AppError::Validation("Short description max 200 characters".into())); }
     }
     if let Some(ref d) = description {
         if d.len() > 5000 { return Err(AppError::Validation("Description max 5000 characters".into())); }

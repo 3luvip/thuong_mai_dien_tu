@@ -11,6 +11,7 @@ mod withdrawal;
 mod coupon;
 mod note;
 mod membership;
+mod refund;
 
 pub use auth::auth_routes;
 pub use course::course_routes;
@@ -27,3 +28,4 @@ pub use coupon::coupon_routes;
 pub use withdrawal::withdrawal_routes;
 pub use note::note_routes;
 pub use membership::membership_routes;
+pub use refund::refund_routes;

@@ -24,7 +24,7 @@ const quickPrompts = [
 ];
 
 
-const greetings = ["xin chao", "chao", "hello", "hi", "hey", "chào", "xin chào"];
+
 const faqRules: Array<{ keywords: string[]; answer: string }> = [
   {
     keywords: ["dang ky", "dang ki", "dang ky khoa hoc", "dang ki khoa hoc", "register"],
@@ -52,8 +52,9 @@ const faqRules: Array<{ keywords: string[]; answer: string }> = [
       "Neu ban la giang vien: sau khi dang nhap voi role giang vien, vao /instructor-dashboard de quan ly, va /create-course de tao khoa hoc moi.",
   },
 ];
-=======
+
 const greetings = ["hello", "hi", "hey", "greetings", "howdy", "sup", "good morning", "good evening"];
+
 function SupportChat() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");

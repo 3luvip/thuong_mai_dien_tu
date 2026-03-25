@@ -89,8 +89,8 @@ fn withdrawal_to_json(r: &WithdrawalRow) -> Value {
     })
 }
 
-// ─── Platform fee rate (30%) ─────────────────────────────────────────────────
-const PLATFORM_FEE_RATE: f64 = 0.30;
+// ─── Platform fee rate (2%) ──────────────────────────────────────────────────
+const PLATFORM_FEE_RATE: f64 = 0.02;
 
 // ─── GET /withdrawal/balance/:instructor_id ───────────────────────────────────
 // Calculates:

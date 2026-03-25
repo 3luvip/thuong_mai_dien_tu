@@ -63,9 +63,9 @@ pub async fn create_course(
         }
     }
 
-    if title.len() > 56 {
+    if title.len() > 400 {
         return Err(AppError::Validation(
-            "Title must be within 56 characters".into(),
+            "Title must be within 400 characters".into(),
         ));
     }
     if author.len() > 78 {
@@ -73,9 +73,9 @@ pub async fn create_course(
             "Author must be within 78 characters".into(),
         ));
     }
-    if course_sub.len() > 56 {
+    if course_sub.len() > 200 {
         return Err(AppError::Validation(
-            "Sub-title must be within 56 characters".into(),
+            "Sub-title must be within 200 characters".into(),
         ));
     }
     if description.len() > 5000 {
